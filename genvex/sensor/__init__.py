@@ -1,14 +1,14 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import sensor, modbus
+from esphome.components import sensor
 from esphome.const import CONF_ID, CONF_TEMPERATURE, ICON_THERMOMETER, \
     UNIT_CELSIUS, CONF_HUMIDITY, ICON_WATER_PERCENT, UNIT_PERCENT, ICON_EMPTY, UNIT_EMPTY, ICON_PERCENT, ICON_CHECK_CIRCLE_OUTLINE, ICON_GAUGE, \
     CONF_BINARY_SENSOR
 
-AUTO_LOAD = ['modbus']
+DEPENDENCIES = ['genvex']
 
 genvex_ns = cg.esphome_ns.namespace('genvex')
-Genvex = genvex_ns.class_('Genvex', cg.PollingComponent, modbus.ModbusDevice)
+Genvex = genvex_ns.class_('Genvex', cg.PollingComponent)
 
 CONF_TEMP_T1 = "temp_t1"
 CONF_TEMP_T2 = "temp_t2"
@@ -60,13 +60,13 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Optional(CONF_HEAT): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1),
     cv.Optional(CONF_TIMER): sensor.sensor_schema(UNIT_EMPTY, ICON_GAUGE, 1)
 
-}).extend(cv.polling_component_schema('60s')).extend(modbus.modbus_device_schema(0x01))
+}).extend(cv.polling_component_schema('60s'))
 
 
 def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     yield cg.register_component(var, config)
-    yield modbus.register_modbus_device(var, config)
+
 
     if CONF_TEMP_T1 in config:
         conf = config[CONF_TEMP_T1]
