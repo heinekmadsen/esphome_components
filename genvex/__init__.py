@@ -7,10 +7,12 @@ from esphome.const import CONF_ID, CONF_ADDRESS, CONF_UPDATE_INTERVAL
 genvex_ns = cg.esphome_ns.namespace('genvex')
 Genvex = genvex_ns.class_('Genvex', cg.Component)
 
+CONF_GENVEX_ID = 'genvex_id'
+
 CONFIG_SCHEMA = cv.Schema({
-    cv.GenerateID(): cv.declare_id(Genvex),
+    cv.GenerateID(CONF_GENVEX_ID): cv.use_id(Genvex),
     cv.Required(CONF_ADDRESS): cv.string,
-    cv.Required(CONF_UPDATE_INTERVAL): cv.string,
+    cv.Required(CONF_UPDATE_INTERVAL): cv.int_range(min=1, max=100),
 }).extend(cv.COMPONENT_SCHEMA)
 
 def to_code(config):
