@@ -33,7 +33,7 @@ CONF_HEAT = "heat"
 CONF_TIMER = "timer"
 
 CONFIG_SCHEMA = cv.Schema({
-    cv.GenerateID(): cv.declare_id(Genvex),
+    cv.GenerateID(CONF_GENVEX_ID): cv.use_id(Genvex),
     cv.Optional(CONF_TEMP_T1): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1),
     cv.Optional(CONF_TEMP_T2): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1),
     cv.Optional(CONF_TEMP_T3): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1),

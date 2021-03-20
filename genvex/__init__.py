@@ -10,8 +10,8 @@ Genvex = genvex_ns.class_('Genvex', cg.Component)
 CONF_GENVEX_ID = 'genvex_id'
 
 CONFIG_SCHEMA = cv.Schema({
-    cv.GenerateID(CONF_GENVEX_ID): cv.use_id(Genvex),
-    cv.Required(CONF_ADDRESS): cv.string,
+    cv.GenerateID(): cv.declare_id(Genvex),
+    cv.Required(CONF_ADDRESS): cv.int_range(min=1, max=100),
     cv.Required(CONF_UPDATE_INTERVAL): cv.int_range(min=1, max=100),
 }).extend(cv.COMPONENT_SCHEMA)
 
