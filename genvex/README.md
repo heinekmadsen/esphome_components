@@ -38,6 +38,42 @@ sensor:
     measured_humidity:
       id: measured_humidity
       name: "measured_humidity"
+    humidity_calculated_setpoint:
+      id: humidity_calculated_setpoint
+      name: "genvex_humidity_calculated_setpoint"
+    alarm_bit:
+      id: alarm_bit
+      name: "alarm_bit"
+    inlet_fan:
+      id: inlet_fan
+      name: "inlet_fan"
+    extract_fan:
+      id: extract_fan
+      name: "extract_fan"
+    bypass:
+      id: bypass
+      name: "bypass"
+    watervalve:
+      id: watervalve
+      name: "watervalve"
+    humidity_fan_control:
+      id: humidity_fan_control
+      name: "humidity_fan_control"
+    bypass_on_off:
+      id: bypass_on_off
+      name: "bypass_on_off"
+    target_temp:
+      id: target_temp
+      name: "target_temp"
+    speed_mode:
+      id: speed_mode
+      name: "speed_mode"
+    heat:
+      id: heat
+      name: "heat"
+    timer:
+      id: timer
+      name: "timer"
       
 binary_sensor:
   - platform: template
