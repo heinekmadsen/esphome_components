@@ -70,3 +70,10 @@ All sensors are optional.  The available sensors are:
 - `speed_mode`      
 - `heat`
 - `timer`
+
+
+TO-DO:
+1. Add a climate platform
+  a. Be able to set fan speed
+  b. Be able to set target temperature
+2. Handle changes to fan speed and target temperature and write new values via modbus
