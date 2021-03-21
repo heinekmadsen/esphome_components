@@ -23,21 +23,6 @@ void Genvex::on_modbus_data(const std::vector<uint8_t> &data) {
 	auto get_16bit = [&](size_t i) -> uint16_t {
 		return (uint16_t(data[i]) << 8) | uint16_t(data[i + 1]);
 	};
-	auto get_32bit = [&](int i) -> uint32_t {
-		return (uint32_t(get_16bit(i)) << 16) | uint32_t(get_16bit(i));
-	};  
-  //auto genvex_get_32bit = [&](size_t i) -> uint32_t {
-  //  return (uint32_t(genvex_get_16bit(i + 2)) << 16) | (uint32_t(genvex_get_16bit(i + 0)) << 0);
-  //};
-  
-  //auto genvex_get_8bit = [&](size_t i) -> uint8_t {
-  //  return (uint8_t(data[i + 0]) << 4) | (uint8_t(data[i + 1]) << 0);
-  //};
-	
-  //if (data.size() < 4) {
-  //  ESP_LOGW(TAG, "Invalid size for GENVEX!");
-  //  return;
-  //}	
   
 	this->waiting_ = false;
 	if (data.size() < REGISTER_COUNT[this->state_ - 1] * 2) {
@@ -76,60 +61,6 @@ void Genvex::on_modbus_data(const std::vector<uint8_t> &data) {
 		float measured_humidity = raw_16;
 		raw_16 = get_16bit(22);
 		float humidity_calculated_setpoint = raw_16;
-
-
-  //uint16_t raw_t1 = genvex_get_32bit(0);
-  //float t1 = (raw_t1 - 300.0) / 10;
-  //float t1_raw = raw_t1;
-  //
-  //uint16_t raw_t2 = genvex_get_32bit(2);
-  //float t2 = (raw_t2 - 300.0) / 10;
-  //float t2_raw = raw_t2;
-  //
-  //uint16_t raw_t3 = genvex_get_32bit(4);
-  //float t3 = (raw_t3 - 300.0) / 10;
-  //float t3_raw = raw_t3;
-  //
-  //uint16_t raw_t4 = genvex_get_32bit(6);
-  //float t4 = (raw_t4 - 300.0) / 10;
-  //float t4_raw = raw_t4;
-  //
-  //uint16_t raw_t5 = genvex_get_32bit(8);
-  //float t5 = (raw_t5 - 300.0) / 10;
-  //float t5_raw = raw_t5;
-  //
-  //uint16_t raw_t6 = genvex_get_32bit(10);
-  //float t6 = (raw_t6 - 300.0) / 10;
-  //float t6_raw = raw_t6;
-  //
-  //uint16_t raw_t7 = genvex_get_32bit(12);
-  //float t7 = (raw_t7 - 300.0) / 10;
-  //float t7_raw = raw_t7;
-  //
-  //uint16_t raw_t8 = genvex_get_32bit(14);
-  //float t8 = (raw_t8 - 300.0) / 10;
-  //float t8_raw = raw_t8;
-  //
-  //uint16_t raw_t9 = genvex_get_32bit(16);
-  //float t9 = (raw_t9 - 300.0) / 10;
-  //float t9_raw = raw_t9;
-  //
-  //uint16_t raw_t2_panel = genvex_get_32bit(18);
-  //float t2_panel = (raw_t2_panel - 300.0) / 10;
-  //float t2_panel_raw = raw_t2_panel;
-  //
-  //uint16_t raw_humidity = genvex_get_32bit(20);
-  //float measured_humidity = raw_humidity;
-  //float measured_humidity_raw = raw_humidity;
-  //
-  //uint16_t raw_humidity_calculated_setpoint = genvex_get_32bit(22);
-  //float humidity_calculated_setpoint = raw_humidity_calculated_setpoint;
-  //float humidity_calculated_setpoint_raw = raw_humidity_calculated_setpoint;  
-  //
-  //uint16_t raw_something_200= genvex_get_32bit(200);
-  //float something_200 = raw_something_200;
-  //float something_200_raw = raw_something_200;  
-  //ESP_LOGD(TAG, "GENVEX: Something200=%.1f %%", humidity_calculated_setpoint);
   
 		ESP_LOGD(TAG, "GENVEX Humidity: H=%.1f %%, HCS=%.lf %%", measured_humidity, humidity_calculated_setpoint);
 		ESP_LOGD(TAG, "GENVEX Temperature: T1=%.1f °C, T2=%.1f °C, T3=%.1f °C, T4=%.1f °C, T5=%.1f °C, T6=%.1f °C, T7=%.1f °C, T8=%.1f °C, T9=%.1f °C, T2_Panel=%.1f °C", t1, t2, t3, t4, t5, t6, t7, t8, t9, t2_panel);
@@ -209,7 +140,7 @@ void Genvex::on_modbus_data(const std::vector<uint8_t> &data) {
 		this->state_ = 4;
 		this->CMD_FUNCTION_REG = 0x03;
 		
-		raw_16 = get_16bit(0); // register 93
+		raw_16 = get_16bit(0);
 		float target_temp = (raw_16 + 100) / 10;
 		
 		ESP_LOGD(TAG, "Target_temp: Target_Temp=%.2f", target_temp);
@@ -222,11 +153,11 @@ void Genvex::on_modbus_data(const std::vector<uint8_t> &data) {
 		this->state_ = 0;
 		this->CMD_FUNCTION_REG = 0x04;
 		
-		raw_16 = get_16bit(0); // register 93
+		raw_16 = get_16bit(0);
 		float speed_mode = raw_16;
-		raw_16 = get_16bit(4); // register 93
+		raw_16 = get_16bit(4);
 		float heat = raw_16;
-		raw_16 = get_16bit(12); // register 93
+		raw_16 = get_16bit(12);
 		float timer = raw_16;
 		
 		ESP_LOGD(TAG, "Speed: Speed_Mode=%.2f, heat=%.2f, timer=%.2f" , speed_mode, heat, timer);
@@ -251,13 +182,12 @@ void Genvex::on_modbus_data(const std::vector<uint8_t> &data) {
 void Genvex::loop() {
   long now = millis();
   // timeout after 15 seconds
-  if (this->waiting_ && (now - this->last_send_ > 15000)) {
+if (this->waiting_ && (now - this->last_send_ > 15000)) {
     ESP_LOGW(TAG, "timed out waiting for response");
     this->waiting_ = false;
   }
   if (this->waiting_ || (this->state_ == 0) || (now - this->last_send_ < 1000))
     return;
-	Serial.println(state_);
   this->last_send_ = now;
   this->send(CMD_FUNCTION_REG, REGISTER_START[this->state_ - 1], REGISTER_COUNT[this->state_ - 1]);
   this->waiting_ = true;
