@@ -13,7 +13,7 @@ CONF_GENVEX_ID = 'genvex_id'
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(Genvex),
     cv.Required(CONF_ADDRESS): cv.int_range(min=1, max=100),
-    cv.Required(CONF_UPDATE_INTERVAL): cv.int_range(min=1, max=60000),
+    
 }).extend(cv.polling_component_schema('60s')).extend(modbus.modbus_device_schema(0x01))
 
 def to_code(config):

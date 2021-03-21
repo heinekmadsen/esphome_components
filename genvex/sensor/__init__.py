@@ -2,9 +2,21 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import sensor
 from .. import Genvex, CONF_GENVEX_ID
-from esphome.const import CONF_ID, CONF_TEMPERATURE, ICON_THERMOMETER, \
-    UNIT_CELSIUS, CONF_HUMIDITY, ICON_WATER_PERCENT, UNIT_PERCENT, ICON_EMPTY, UNIT_EMPTY, ICON_PERCENT, ICON_CHECK_CIRCLE_OUTLINE, ICON_GAUGE, \
-    CONF_BINARY_SENSOR
+from esphome.const import (
+    CONF_ID,
+    CONF_TEMPERATURE,
+    ICON_THERMOMETER,
+    UNIT_CELSIUS,
+    CONF_HUMIDITY,
+    ICON_WATER_PERCENT,
+    UNIT_PERCENT,
+    ICON_EMPTY,
+    UNIT_EMPTY,
+    ICON_PERCENT,
+    ICON_CHECK_CIRCLE_OUTLINE,
+    ICON_GAUGE,
+    CONF_BINARY_SENSOR,
+)
 
 DEPENDENCIES = ['genvex']
 
