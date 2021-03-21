@@ -17,7 +17,8 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
 }).extend(cv.COMPONENT_SCHEMA)
  
 def to_code(config):
-    var = cg.new_Pvariable(config[CONF_ID])
+    genvex = yield cg.get_variable(config[CONF_GENVEX_ID])
+    var = cg.new_Pvariable(config[CONF_ID], genvex)
     yield cg.register_component(var, config)
     yield climate.register_climate(var, config)
  
