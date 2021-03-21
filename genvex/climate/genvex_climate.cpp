@@ -12,7 +12,9 @@ void GenvexClimate::setup() {
     publish_state();
   });
   current_temperature = sensor_->state;
+  target_temperature = sensor_->state;
   mode = climate::CLIMATE_MODE_HEAT;
+  fan_mode = climate::CLIMATE_FAN_OFF;
 }
 
 void GenvexClimate::control(const climate::ClimateCall &call) {
