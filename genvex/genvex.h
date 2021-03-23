@@ -41,7 +41,9 @@ class Genvex : public PollingComponent, public modbus::ModbusDevice {
   void update() override;
 
   void on_modbus_data(const std::vector<uint8_t> &data) override;
-
+  
+  void writeTargetTemperature(float new_target_temp);
+  
   void dump_config() override;
 
  protected:

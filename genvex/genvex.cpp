@@ -199,6 +199,12 @@ if (this->waiting_ && (now - this->last_send_ > 15000)) {
 
 void Genvex::update() { this->state_ = 1; }
 
+void Genvex::writeTargetTemperature(float new_target_temp)
+{
+	ESP_LOGI(TAG, "Writing new target temp to system....");
+	this->send(CMD_WRITE_SINGLE_REG, 0, (new_target_temp - 100));
+}
+
 void Genvex::dump_config() {
   ESP_LOGCONFIG(TAG, "GENVEX:");
   ESP_LOGCONFIG(TAG, "  Address: 0x%02X", this->address_);

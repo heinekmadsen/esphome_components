@@ -33,9 +33,18 @@ void GenvexClimate::setup() {
 }
 
 void GenvexClimate::control(const climate::ClimateCall &call) {
-  //if (call.get_target_temperature_low().has_value())
-  //  ;
-  //this->publish_state();
+  if (call.get_target_temperature().has_value())
+  {
+	  this->target_temperature = *call.get_target_temperature();
+		float target = target_temperature;
+		//fan_mode = *call.get_fan_mode();
+	  ESP_LOGD(TAG, "Target temperature changed to: %", target);
+	  Genvex::writeTargetTemperature(target);
+  }
+  
+  if (call.get_target_temperature_low().has_value())
+    ;
+  this->publish_state();
 }
 
 climate::ClimateTraits GenvexClimate::traits() {
