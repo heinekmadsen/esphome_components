@@ -9,16 +9,16 @@ static const char *TAG = "genvex";
 static const uint8_t CMD_READ_INPUT_REG = 0x04;
 static const uint8_t CMD_READ_HOLDING_REG = 0x03;
 static const uint8_t CMD_WRITE_SINGLE_REG = 0x06;
-
-static const uint16_t REGISTER_START[] = {0, 100, 0};
-static const uint16_t REGISTER_COUNT[] = {12, 10, 1};
+static const uint8_t CMD_FUNCTION_REG = 0x04;
+static const uint16_t REGISTER_START[] = {0, 100, 0, 100};
+static const uint16_t REGISTER_COUNT[] = {12, 10, 1, 7};
 static const uint16_t REGISTER_WRITE[] = {4};
-//static const uint8_t GENVEX_REGISTER_COUNT = 12;  // 2x 16-bit registers
 
 void Genvex::add_target_temp_callback(std::function<void(float)> &&callback) { target_temp_callback_.add(std::move(callback)); }
 void Genvex::add_fan_speed_callback(std::function<void(int)> &&callback) { fan_speed_callback_.add(std::move(callback)); }
 
 void Genvex::on_modbus_data(const std::vector<uint8_t> &data) {
+	uint32_t raw_32;
 	uint16_t raw_16;
   
 	auto get_16bit = [&](size_t i) -> uint16_t {
@@ -171,7 +171,7 @@ void Genvex::on_modbus_data(const std::vector<uint8_t> &data) {
 		if (this->timer_sensor_ != nullptr)
 			this->timer_sensor_->publish_state(timer);
 		return;
-	}	
+	}
 }
 
 void Genvex::loop() {
@@ -222,6 +222,15 @@ void Genvex::dump_config() {
   LOG_SENSOR("", "Temp_t2_panel", this->temp_t2_panel_sensor_);
   LOG_SENSOR("", "Measured_Humidity", this->measured_humidity_sensor_);
   LOG_SENSOR("", "Humidity_Calculated_Setpoint", this->humidity_calculated_setpoint_sensor_);
+  LOG_SENSOR("", "Alarm_Bit", this->alarm_bit_sensor_);
+  LOG_SENSOR("", "Inlet_Fan", this->inlet_fan_sensor_);
+  LOG_SENSOR("", "Extract_Fan", this->extract_fan_sensor_);
+  LOG_SENSOR("", "Bypass_Sensor", this->bypass_sensor_);
+  LOG_SENSOR("", "Watervalve", this->watervalve_sensor_);
+  LOG_SENSOR("", "Target_Temp", this->target_temp_sensor_);
+  LOG_SENSOR("", "Speed_Mode", this->speed_mode_sensor_);
+  LOG_SENSOR("", "Heat", this->heat_sensor_);
+  LOG_SENSOR("", "Timer", this->timer_sensor_);
 }
 
 }  // namespace genvex

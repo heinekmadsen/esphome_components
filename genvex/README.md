@@ -2,7 +2,7 @@
 
 A configured uart component is required.
 
-Example:
+Example minimal required config:
 ```yaml
 uart:
   rx_pin: GPIO16
@@ -14,80 +14,28 @@ uart:
   
 modbus:
   uart_id: uart_modbus
-  
+ 
+genvex:
+  address: 1
+  update_interval: 60s
+ 
 sensor:
   - platform: genvex
-    address: 1
-    update_interval: 60s
-    id: my_genvex
     temp_t1:
-      id: temp_t1
-      name: "temp_t1"
-    temp_t3:
-      id: temp_t3
-      name: "temp_t3"
-    temp_t4:
-      id: temp_t4
-      name: "temp_t4"
-    temp_t7:
-      id: temp_t7
-      name: "temp_t7"
-    temp_t2_panel:
-      id: temp_t2_panel
-      name: "temp_t2_panel"
-    measured_humidity:
-      id: measured_humidity
-      name: "measured_humidity"
-    humidity_calculated_setpoint:
-      id: humidity_calculated_setpoint
-      name: "genvex_humidity_calculated_setpoint"
-    alarm_bit:
-      id: alarm_bit
-      name: "alarm_bit"
-    inlet_fan:
-      id: inlet_fan
-      name: "inlet_fan"
-    extract_fan:
-      id: extract_fan
-      name: "extract_fan"
-    bypass:
-      id: bypass
-      name: "bypass"
-    watervalve:
-      id: watervalve
-      name: "watervalve"
-    humidity_fan_control:
-      id: humidity_fan_control
-      name: "humidity_fan_control"
-    bypass_on_off:
-      id: bypass_on_off
-      name: "bypass_on_off"
+      name: "genvex_temp_t1"
+      id: genvex_temp_t1
     target_temp:
-      id: target_temp
-      name: "target_temp"
+      name: "genvex_target_temp"
     speed_mode:
-      id: speed_mode
-      name: "speed_mode"
-    heat:
-      id: heat
-      name: "heat"
-    timer:
-      id: timer
-      name: "timer"
-      
-binary_sensor:
-  - platform: template
-    name: "bypass_on_off"
-    lambda: |-
-      if (id(bypass_on_off).state == 1) {
-        // Open
-        return true;
-      } else {
-        return false;
-      }
+      name: "genvex_speed_mode"
+
+climate:
+  - platform: genvex
+    name: genvex
+    sensor: genvex_temp_t1
 ```
 
-All sensors are optional.  The available sensors are:
+List of optional sensors:
 - `temp_t1`
 - `temp_t3`
 - `temp_t4`
@@ -101,15 +49,13 @@ All sensors are optional.  The available sensors are:
 - `bypass`
 - `watervalve`
 - `humidity_fan_control`
-- `bypass_on_off`
-- `target_temp`
-- `speed_mode`      
+- `bypass_on_off`      
 - `heat`
 - `timer`
 
 
 TO-DO:
-1. Add a climate platform
-  a. Be able to set fan speed
-  b. Be able to set target temperature
-2. Handle changes to fan speed and target temperature and write new values via modbus
+1. .....
+
+Kudos:
+A bit thanks to ssieb from the ESPHome Discord community for assisting i making this happen! https://github.com/ssieb
