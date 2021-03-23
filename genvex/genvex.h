@@ -1,6 +1,7 @@
 #pragma once
 
 #include "esphome/core/component.h"
+#include "esphome/core/helpers.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/modbus/modbus.h"
 
@@ -32,6 +33,9 @@ class Genvex : public PollingComponent, public modbus::ModbusDevice {
   void set_speed_mode_sensor(sensor::Sensor *speed_mode_sensor) { speed_mode_sensor_ = speed_mode_sensor; }
   void set_heat_sensor(sensor::Sensor *heat_sensor) { heat_sensor_ = heat_sensor; }
   void set_timer_sensor(sensor::Sensor *timer_sensor) { timer_sensor_ = timer_sensor; }
+
+  void add_target_temp_callback(std::function<void(float)> &&callback);
+  void add_fan_speed_callback(std::function<void(int)> &&callback);
   
   void loop() override;
   void update() override;
@@ -69,6 +73,9 @@ class Genvex : public PollingComponent, public modbus::ModbusDevice {
   sensor::Sensor *speed_mode_sensor_;
   sensor::Sensor *heat_sensor_;
   sensor::Sensor *timer_sensor_;
+
+  CallbackManager<void(float)> target_temp_callback_;
+  CallbackManager<void(int)> fan_speed_callback_;
 };
 
 }  // namespace genvex

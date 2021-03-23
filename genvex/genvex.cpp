@@ -15,6 +15,8 @@ static const uint16_t REGISTER_COUNT[] = {12, 10, 1, 7, 1};
 static const uint16_t REGISTER_WRITE[] = {4};
 //static const uint8_t GENVEX_REGISTER_COUNT = 12;  // 2x 16-bit registers
 
+void Genvex::add_target_temp_callback(std::function<void(float)> &&callback) { target_temp_callback_.add(std::move(callback)); }
+void Genvex::add_fan_speed_callback(std::function<void(int)> &&callback) { fan_speed_callback_.add(std::move(callback)); }
 
 void Genvex::on_modbus_data(const std::vector<uint8_t> &data) {
 	uint32_t raw_32;
@@ -146,6 +148,7 @@ void Genvex::on_modbus_data(const std::vector<uint8_t> &data) {
 		ESP_LOGD(TAG, "Target_temp: Target_Temp=%.2f", target_temp);
 		if (this->target_temp_sensor_ != nullptr)
 			this->target_temp_sensor_->publish_state(target_temp);
+		target_temp_callback_.call(target_temp);
 		return;
 	}
 	
@@ -154,15 +157,16 @@ void Genvex::on_modbus_data(const std::vector<uint8_t> &data) {
 		this->CMD_FUNCTION_REG = 0x04;
 		
 		raw_16 = get_16bit(0);
-		float speed_mode = raw_16;
+		int speed_mode = raw_16;
 		raw_16 = get_16bit(4);
 		float heat = raw_16;
 		raw_16 = get_16bit(12);
 		float timer = raw_16;
 		
-		ESP_LOGD(TAG, "Speed: Speed_Mode=%.2f, heat=%.2f, timer=%.2f" , speed_mode, heat, timer);
+		ESP_LOGD(TAG, "Speed: Speed_Mode=%d, heat=%.2f, timer=%.2f" , speed_mode, heat, timer);
 		if (this->speed_mode_sensor_ != nullptr)
 			this->speed_mode_sensor_->publish_state(speed_mode);
+		fan_speed_callback_.call(speed_mode);
 		if (this->heat_sensor_ != nullptr)
 			this->heat_sensor_->publish_state(heat);
 		if (this->timer_sensor_ != nullptr)
