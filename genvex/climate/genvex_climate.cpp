@@ -18,6 +18,7 @@ void GenvexClimate::setup() {
   genvex_->add_fan_speed_callback([this](int state) {
     climate::ClimateFanMode fmode;
     switch (state) {
+	  case 1: fmode = climate::CLIMATE_FAN_LOW; break;
       case 2: fmode = climate::CLIMATE_FAN_LOW; break;
       case 3: fmode = climate::CLIMATE_FAN_MEDIUM; break;
       case 4: fmode = climate::CLIMATE_FAN_HIGH; break;
@@ -36,14 +37,24 @@ void GenvexClimate::control(const climate::ClimateCall &call) {
   if (call.get_target_temperature().has_value())
   {
 	  this->target_temperature = *call.get_target_temperature();
-		float target = target_temperature;
-		//fan_mode = *call.get_fan_mode();
+	  float target = target_temperature;
 	  ESP_LOGD(TAG, "Target temperature changed to: %", target);
-	  Genvex::writeTargetTemperature(target);
+	  genvex_->writeTargetTemperature(target);
   }
   
-  if (call.get_target_temperature_low().has_value())
-    ;
+  if (call.get_fan_mode().has_value())
+  {
+	  int mode;
+	  this->fan_mode = *call.get_fan_mode();
+	  switch (fan_mode) {
+		  case climate::CLIMATE_FAN_LOW: mode = 2; break;
+		  case climate::CLIMATE_FAN_MEDIUM: mode = 3; break;
+		  case climate::CLIMATE_FAN_HIGH: mode = 4; break;
+		  case climate::CLIMATE_FAN_OFF: mode = 0; break;
+	  }
+	  ESP_LOGD(TAG, "Fan mode set to: %i", mode);
+	  genvex_->writeFanMode(mode);
+  }
   this->publish_state();
 }
 

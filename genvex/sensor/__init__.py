@@ -49,7 +49,7 @@ CONF_TIMER = "timer"
 
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(CONF_GENVEX_ID): cv.use_id(Genvex),
-    cv.Optional(CONF_TEMP_T1): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1, DEVICE_CLASS_TEMPERATURE),
+    cv.Required(CONF_TEMP_T1): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1, DEVICE_CLASS_TEMPERATURE),
     cv.Optional(CONF_TEMP_T2): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1, DEVICE_CLASS_TEMPERATURE),
     cv.Optional(CONF_TEMP_T3): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1, DEVICE_CLASS_TEMPERATURE),
     cv.Optional(CONF_TEMP_T4): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1, DEVICE_CLASS_TEMPERATURE),
@@ -68,8 +68,8 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Optional(CONF_WATERVALVE): sensor.sensor_schema(UNIT_PERCENT, ICON_PERCENT, 1, DEVICE_CLASS_EMPTY),
     cv.Optional(CONF_HUMIDITY_FAN_CONTROL): sensor.sensor_schema(UNIT_PERCENT, ICON_PERCENT, 1, DEVICE_CLASS_EMPTY),
     cv.Optional(CONF_BYPASS_ON_OFF): sensor.sensor_schema(UNIT_EMPTY, ICON_CHECK_CIRCLE_OUTLINE, 1, DEVICE_CLASS_EMPTY),
-    cv.Optional(CONF_TARGET_TEMP): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1, DEVICE_CLASS_EMPTY),
-    cv.Optional(CONF_SPEED_MODE): sensor.sensor_schema(UNIT_EMPTY, ICON_GAUGE, 1, DEVICE_CLASS_EMPTY),
+    cv.Required(CONF_TARGET_TEMP): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1, DEVICE_CLASS_TEMPERATURE),
+    cv.Required(CONF_SPEED_MODE): sensor.sensor_schema(UNIT_EMPTY, ICON_GAUGE, 1, DEVICE_CLASS_EMPTY),
     cv.Optional(CONF_HEAT): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1, DEVICE_CLASS_EMPTY),
     cv.Optional(CONF_TIMER): sensor.sensor_schema(UNIT_EMPTY, ICON_GAUGE, 1, DEVICE_CLASS_EMPTY)
 }).extend(cv.polling_component_schema('60s'))

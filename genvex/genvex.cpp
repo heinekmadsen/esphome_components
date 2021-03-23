@@ -10,8 +10,8 @@ static const uint8_t CMD_READ_INPUT_REG = 0x04;
 static const uint8_t CMD_READ_HOLDING_REG = 0x03;
 static const uint8_t CMD_WRITE_SINGLE_REG = 0x06;
 
-static const uint16_t REGISTER_START[] = {0, 100, 0, 100, 0};
-static const uint16_t REGISTER_COUNT[] = {12, 10, 1, 7, 1};
+static const uint16_t REGISTER_START[] = {0, 100, 0};
+static const uint16_t REGISTER_COUNT[] = {12, 10, 1};
 static const uint16_t REGISTER_WRITE[] = {4};
 //static const uint8_t GENVEX_REGISTER_COUNT = 12;  // 2x 16-bit registers
 
@@ -19,7 +19,6 @@ void Genvex::add_target_temp_callback(std::function<void(float)> &&callback) { t
 void Genvex::add_fan_speed_callback(std::function<void(int)> &&callback) { fan_speed_callback_.add(std::move(callback)); }
 
 void Genvex::on_modbus_data(const std::vector<uint8_t> &data) {
-	uint32_t raw_32;
 	uint16_t raw_16;
   
 	auto get_16bit = [&](size_t i) -> uint16_t {
@@ -172,15 +171,7 @@ void Genvex::on_modbus_data(const std::vector<uint8_t> &data) {
 		if (this->timer_sensor_ != nullptr)
 			this->timer_sensor_->publish_state(timer);
 		return;
-	}
-	if (this->state_ == 5) {
-		this->state_ = 0;
-		ESP_LOGI(TAG, "Just before writing....");
-		this->send(CMD_WRITE_SINGLE_REG, 0, (220 - 100));
-		ESP_LOGI(TAG, ".... After writing.");
-		return;
-	}
-	
+	}	
 }
 
 void Genvex::loop() {
@@ -201,9 +192,18 @@ void Genvex::update() { this->state_ = 1; }
 
 void Genvex::writeTargetTemperature(float new_target_temp)
 {
-	ESP_LOGI(TAG, "Writing new target temp to system....");
-	this->send(CMD_WRITE_SINGLE_REG, 0, (new_target_temp - 100));
+	
+	ESP_LOGD(TAG, "Writing new target temp to system.... (%f)",(new_target_temp * 10 - 100));
+	this->send(CMD_WRITE_SINGLE_REG, 0, (new_target_temp * 10 - 100));
 }
+
+void Genvex::writeFanMode(int new_fan_speed)
+{
+	
+	ESP_LOGD(TAG, "Writing new fan speed to system.... (%i)",new_fan_speed);
+	this->send(CMD_WRITE_SINGLE_REG, 100, new_fan_speed);
+}
+
 
 void Genvex::dump_config() {
   ESP_LOGCONFIG(TAG, "GENVEX:");
