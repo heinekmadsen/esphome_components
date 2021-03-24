@@ -38,7 +38,7 @@ void GenvexClimate::control(const climate::ClimateCall &call) {
   {
 	  this->target_temperature = *call.get_target_temperature();
 	  float target = target_temperature;
-	  ESP_LOGD(TAG, "Target temperature changed to: %", target);
+	  ESP_LOGD(TAG, "Target temperature changed to: %f", target);
 	  genvex_->writeTargetTemperature(target);
   }
   
@@ -51,6 +51,7 @@ void GenvexClimate::control(const climate::ClimateCall &call) {
 		  case climate::CLIMATE_FAN_MEDIUM: mode = 3; break;
 		  case climate::CLIMATE_FAN_HIGH: mode = 4; break;
 		  case climate::CLIMATE_FAN_OFF: mode = 0; break;
+		  default: mode = 2; break;
 	  }
 	  ESP_LOGD(TAG, "Fan mode set to: %i", mode);
 	  genvex_->writeFanMode(mode);
