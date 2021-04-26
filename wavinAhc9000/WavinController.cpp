@@ -115,22 +115,6 @@ bool WavinController::readRegisters(uint8_t category, uint8_t page, uint8_t inde
 
   message[6] = crc & 0xFF;
   message[7] = crc >> 8;
-  Serial.print("0 - Device address: ");
-  Serial.println((message[0]));
-  Serial.print("1 - Read register: ");
-  Serial.println((message[1]));
-  Serial.print("2 - category: ");
-  Serial.println((message[2]));
-  Serial.print("3 - index: ");
-  Serial.println((message[3]));
-  Serial.print("4 - page: ");
-  Serial.println((message[4]));
-  Serial.print("5 - count: ");
-  Serial.println((message[5]));
-  Serial.print("6 - crc & 0xFF: ");
-  Serial.println((message[6]));
-  Serial.print("7 - crc >> 8: ");
-  Serial.println((message[7]));
 
   transmit(message, 8);
   
