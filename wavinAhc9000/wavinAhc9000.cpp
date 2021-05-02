@@ -17,7 +17,7 @@ uint16_t registers[11];
 uint16_t primaryElement = registers[0] & WavinController::CHANNELS_PRIMARY_ELEMENT_ELEMENT_MASK;
 bool allThermostatsLost = registers[0] & WavinController::CHANNELS_PRIMARY_ELEMENT_ALL_TP_LOST_MASK;   
 
-void WavinAhc9000::add_target_temp_callback(std::function<void(float)> &&callback) { target_temp_callback_.add(std::move(callback)); }
+void WavinAhc9000::add_target_temp_callback(std::function<void(float,uint8_t)> &&callback) { target_temp_callback_.add(std::move(callback)); }
 void WavinAhc9000::add_fan_speed_callback(std::function<void(int)> &&callback) { fan_speed_callback_.add(std::move(callback)); }
 
 void WavinAhc9000::prep()
@@ -32,19 +32,20 @@ void WavinAhc9000::prep()
 
 
 }
-
+// ------------------------------------------------
+// Functions for reading from Wavin AHC 9000
 // Read the current setpoint programmed for channel
 void WavinAhc9000::readsetpoint(uint8_t channel)
 {
   if (wavinController.readRegisters(WavinController::CATEGORY_PACKED_DATA, channel, WavinController::PACKED_DATA_MANUAL_TEMPERATURE, 1, registers))
   {
     float float_setpoint = (((float)registers[0]) / 10);
-    ESP_LOGD(TAG, "!!!!SETUP READ!!!!! Setpoint %i: %f",channel, float_setpoint );
+    ESP_LOGD(TAG, "Setpoint %i: %f",channel, float_setpoint );
   }
 }
 
 // Read the current mode for the channel
-void WavinAhc9000::readmodeforchannel(uint8_t channel)
+void WavinAhc9000::readmode(uint8_t channel)
 {
   if (wavinController.readRegisters(WavinController::CATEGORY_PACKED_DATA, channel, WavinController::PACKED_DATA_CONFIGURATION, 1, registers))
   {
@@ -54,7 +55,7 @@ void WavinAhc9000::readmodeforchannel(uint8_t channel)
 }
 
 // Read the current status of the output for channel
-void WavinAhc9000::readstatusforchannel(uint8_t channel)
+void WavinAhc9000::readstatus(uint8_t channel)
 {
   if (wavinController.readRegisters(WavinController::CATEGORY_CHANNELS, channel, WavinController::CHANNELS_TIMER_EVENT, 1, registers))
   {
@@ -68,7 +69,7 @@ void WavinAhc9000::readstatusforchannel(uint8_t channel)
     {
       payload = "on";
     }
-    ESP_LOGD(TAG, "Status %s",payload );
+    ESP_LOGD(TAG, "Status %i: %s",channel, payload );
   }
 }
 
@@ -77,6 +78,7 @@ void WavinAhc9000::readtempandbat(uint8_t channel)
 {
   uint16_t primaryElement = registers[0] & WavinController::CHANNELS_PRIMARY_ELEMENT_ELEMENT_MASK;
   bool allThermostatsLost = registers[0] & WavinController::CHANNELS_PRIMARY_ELEMENT_ALL_TP_LOST_MASK;   
+
   if(!allThermostatsLost)
   {
     // Read values from the primary thermostat connected to this channel 
@@ -84,118 +86,118 @@ void WavinAhc9000::readtempandbat(uint8_t channel)
     if (wavinController.readRegisters(WavinController::CATEGORY_ELEMENTS, primaryElement-1, 0, 11, registers))
     {
       float temperature = (((float)registers[WavinController::ELEMENTS_AIR_TEMPERATURE])/10);
-      float battery = ((float)registers[WavinController::ELEMENTS_BATTERY_STATUS]); // In 10% steps
-
+//      float battery = (((float)registers[WavinController::ELEMENTS_BATTERY_STATUS])*10); // In 10% steps
+      int battery = (((int)registers[WavinController::ELEMENTS_BATTERY_STATUS])*10); // In 10% steps
       
 
       ESP_LOGD(TAG, "Tempetature channel %i: %f",channel,temperature );
-      ESP_LOGD(TAG, "Battery channel %i: %f",channel,battery );
-      if(channel == 1)
+      ESP_LOGD(TAG, "Battery channel %i: %i",channel,battery );
+      if(channel == 0)
       {
         if(this->temp_c1_sensor_ != nullptr)
           this->temp_c1_sensor_ ->publish_state(temperature);
         if(this->bat_c1_sensor_ != nullptr)
           this->bat_c1_sensor_ ->publish_state(battery);
       }
-      if(channel == 2)
+      if(channel == 1)
       {
         if(this->temp_c2_sensor_ != nullptr)
           this->temp_c2_sensor_ ->publish_state(temperature);
         if(this->bat_c2_sensor_ != nullptr)
           this->bat_c2_sensor_ ->publish_state(battery);
       }
-      if(channel == 3)
+      if(channel == 2)
       {
         if(this->temp_c3_sensor_ != nullptr)
           this->temp_c3_sensor_ ->publish_state(temperature);
         if(this->bat_c3_sensor_ != nullptr)
           this->bat_c3_sensor_ ->publish_state(battery);
       }
-      if(channel == 4)
+      if(channel == 3)
       {
         if(this->temp_c4_sensor_ != nullptr)
           this->temp_c4_sensor_ ->publish_state(temperature);
         if(this->bat_c4_sensor_ != nullptr)
           this->bat_c4_sensor_ ->publish_state(battery);
       }
-      if(channel == 5)
+      if(channel == 4)
       {
         if(this->temp_c5_sensor_ != nullptr)
           this->temp_c5_sensor_ ->publish_state(temperature);
         if(this->bat_c5_sensor_ != nullptr)
           this->bat_c5_sensor_ ->publish_state(battery);
       }
-      if(channel == 6)
+      if(channel == 5)
       {
         if(this->temp_c6_sensor_ != nullptr)
           this->temp_c6_sensor_ ->publish_state(temperature);
         if(this->bat_c6_sensor_ != nullptr)
           this->bat_c6_sensor_ ->publish_state(battery);
       }
-      if(channel == 7)
+      if(channel == 6)
       {
         if(this->temp_c7_sensor_ != nullptr)
           this->temp_c7_sensor_ ->publish_state(temperature);
         if(this->bat_c7_sensor_ != nullptr)
           this->bat_c7_sensor_ ->publish_state(battery);
       }
-      if(channel == 8)
+      if(channel == 7)
       {
         if(this->temp_c8_sensor_ != nullptr)
           this->temp_c8_sensor_ ->publish_state(temperature);
         if(this->bat_c8_sensor_ != nullptr)
           this->bat_c8_sensor_ ->publish_state(battery);
       }                  
-      if(channel == 9)
+      if(channel == 8)
       {
         if(this->temp_c9_sensor_ != nullptr)
           this->temp_c9_sensor_ ->publish_state(temperature);
         if(this->bat_c9_sensor_ != nullptr)
           this->bat_c9_sensor_ ->publish_state(battery);
       }
-      if(channel == 10)
+      if(channel == 9)
       {
         if(this->temp_c10_sensor_ != nullptr)
           this->temp_c10_sensor_ ->publish_state(temperature);
         if(this->bat_c10_sensor_ != nullptr)
           this->bat_c10_sensor_ ->publish_state(battery);
       }
-      if(channel == 11)
+      if(channel == 10)
       {
         if(this->temp_c11_sensor_ != nullptr)
           this->temp_c11_sensor_ ->publish_state(temperature);
         if(this->bat_c11_sensor_ != nullptr)
           this->bat_c11_sensor_ ->publish_state(battery);
       }
-      if(channel == 12)
+      if(channel == 11)
       {
         if(this->temp_c12_sensor_ != nullptr)
           this->temp_c12_sensor_ ->publish_state(temperature);
         if(this->bat_c12_sensor_ != nullptr)
           this->bat_c12_sensor_ ->publish_state(battery);
       }
-      if(channel == 13)
+      if(channel == 12)
       {
         if(this->temp_c13_sensor_ != nullptr)
           this->temp_c13_sensor_ ->publish_state(temperature);
         if(this->bat_c13_sensor_ != nullptr)
           this->bat_c13_sensor_ ->publish_state(battery);
       }
-      if(channel == 14)
+      if(channel == 13)
       {
         if(this->temp_c14_sensor_ != nullptr)
           this->temp_c14_sensor_ ->publish_state(temperature);
         if(this->bat_c14_sensor_ != nullptr)
           this->bat_c14_sensor_ ->publish_state(battery);
       }
-      if(channel == 15)
+      if(channel == 14)
       {
         if(this->temp_c15_sensor_ != nullptr)
           this->temp_c15_sensor_ ->publish_state(temperature);
         if(this->bat_c15_sensor_ != nullptr)
           this->bat_c15_sensor_ ->publish_state(battery);
       }
-      if(channel == 16)
+      if(channel == 15)
       {
         if(this->temp_c16_sensor_ != nullptr)
           this->temp_c16_sensor_ ->publish_state(temperature);
@@ -206,14 +208,10 @@ void WavinAhc9000::readtempandbat(uint8_t channel)
   }
 }
 
+// ------------------------------------------------
 
-
-void WavinAhc9000::setup()
-{
-  prep();
-  readsetpoint(1);
-}
-
+// ------------------------------------------------
+// Functions for writing to Wavin AHC 9000
 void WavinAhc9000::writeFanMode(int new_fan_speed)
 {
 	
@@ -227,15 +225,19 @@ void WavinAhc9000::writeTargetTemperature(float new_target_temp)
 	//ESP_LOGD(TAG, "Writing new fan speed to system.... (%i)",new_fan_speed);
 	//this->send(CMD_WRITE_SINGLE_REG, 100, new_fan_speed);
 }
+// ------------------------------------------------
 
-// Returns temperature in degrees with one decimal
-float temperatureAsFloatString(uint16_t temperature)
+
+
+
+void WavinAhc9000::setup()
 {
-  float temperatureAsFloat = ((float)temperature) / 10;
-  return temperatureAsFloat;
+  prep();
+  //readsetpoint(1);
 }
 
-void WavinAhc9000::loop() {
+void WavinAhc9000::loop() 
+{
   if (lastUpdateTime + POLL_TIME_MS < millis())
   {
     //prep();
@@ -244,75 +246,48 @@ void WavinAhc9000::loop() {
     //uint16_t registers[11];
       for(uint8_t channel = 0; channel < WavinController::NUMBER_OF_CHANNELS; channel++)
       {
-        readtempandbat(channel);
-
-        char * str;
-
         if (wavinController.readRegisters(WavinController::CATEGORY_CHANNELS, channel, WavinController::CHANNELS_PRIMARY_ELEMENT, 1, registers))
         {
-          //uint16_t primaryElement = registers[0] & WavinController::CHANNELS_PRIMARY_ELEMENT_ELEMENT_MASK;
-          //bool allThermostatsLost = registers[0] & WavinController::CHANNELS_PRIMARY_ELEMENT_ALL_TP_LOST_MASK;   
-
-          // Read the current setpoint programmed for channel
-          //if (wavinController.readRegisters(WavinController::CATEGORY_PACKED_DATA, channel, WavinController::PACKED_DATA_MANUAL_TEMPERATURE, 1, registers))
-          //{
-          //  float float_setpoint = (((float)registers[0]) / 10);
-          //  ESP_LOGD(TAG, "Setpoint %i: %f",channel, float_setpoint );
-          //}
-          // Read the current mode for the channel
-          //if (wavinController.readRegisters(WavinController::CATEGORY_PACKED_DATA, channel, WavinController::PACKED_DATA_CONFIGURATION, 1, registers))
-          //{
-          //  float float_mode = ((float)(registers[0] & WavinController::PACKED_DATA_CONFIGURATION_MODE_MASK));
-          //  ESP_LOGD(TAG, "Mode %i: %f",channel, float_mode );
-          //}
-          // Read the current status of the output for channel
-          //if (wavinController.readRegisters(WavinController::CATEGORY_CHANNELS, channel, WavinController::CHANNELS_TIMER_EVENT, 1, registers))
-          //{
-          //  uint16_t status = registers[0] & WavinController::CHANNELS_TIMER_EVENT_OUTP_ON_MASK;
-          //  String payload;
-          //  if (status & WavinController::CHANNELS_TIMER_EVENT_OUTP_ON_MASK)
-          //  {
-          //    payload = "on";
-          //  }
-          //  else
-          //  {
-          //    payload = "on";
-          //  }
-          //  ESP_LOGD(TAG, "Status %s",payload );
-          //}
-                    // If a thermostat for the channel is connected to the controller
-          //if(!allThermostatsLost)
-          //{
-            // Read values from the primary thermostat connected to this channel 
-            // Primary element from controller is returned as index+1, so 1 i subtracted here to read the correct element
-          //  if (wavinController.readRegisters(WavinController::CATEGORY_ELEMENTS, primaryElement-1, 0, 11, registers))
-          //  {
-          //    float temperature = (((float)registers[WavinController::ELEMENTS_AIR_TEMPERATURE])/10);
-          //    uint16_t battery = registers[WavinController::ELEMENTS_BATTERY_STATUS]; // In 10% steps
-
-          //    ESP_LOGD(TAG, "Tempetature channel %i: %f2",channel,temperature );
-          //    ESP_LOGD(TAG, "Battery channel %i: %i",channel,battery );
-
-          //  }
-          //}  
+          readtempandbat(channel);
+          readmode(channel);
+          readsetpoint(channel);
+          readstatus(channel);
         }
-
+        
       }
-    //readRegisters(1, 8, 0, 11, registers);
-    //uint16_t temperature = registers[Wavin2::ELEMENTS_AIR_TEMPERATURE];
-    //uint16_t battery = registers[Wavin2::ELEMENTS_BATTERY_STATUS]; // In 10% steps
-    
-    //float float_temp = (((float)temperature) / 10);
-    //float float_bat_b8 = (((float)battery) * 10);
-
-    //if (this->temp_t8_sensor_ != nullptr)
-		//	this->temp_t8_sensor_->publish_state(float_temp);
-    //if (this->bat_b8_sensor_ != nullptr)
-		//	this->bat_b8_sensor_->publish_state(float_temp);
   }
 }
 
-void WavinAhc9000::update() {}
+void WavinAhc9000::update() {  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// TO BE DELETED
+/* // Returns temperature in degrees with one decimal
+float temperatureAsFloatString(uint16_t temperature)
+{
+  float temperatureAsFloat = ((float)temperature) / 10;
+  return temperatureAsFloat;
+}
+
+
+
+
 
 unsigned int WavinAhc9000::calculateCRC(uint8_t *frame, uint8_t bufferSize)
 {
@@ -477,6 +452,6 @@ bool WavinAhc9000::writeMaskedRegister(uint8_t category, uint8_t page, uint8_t i
 
   uint16_t reply[1];
   return recieve(reply, MODBUS_WRITE_MASKED_REGISTER); // Recieve reply but ignore it. Asume it's ok
-}
+} */
 }
 }

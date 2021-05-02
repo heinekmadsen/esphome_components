@@ -16,32 +16,33 @@ class WavinAhc9000 : public PollingComponent {
       void set_temp_c3_sensor(sensor::Sensor * temp_c3_sensor) { temp_c3_sensor_ = temp_c3_sensor; }
       void set_bat_c3_sensor(sensor::Sensor * bat_c3_sensor) { bat_c3_sensor_ = bat_c3_sensor; }
       void set_temp_c4_sensor(sensor::Sensor * temp_c4_sensor) { temp_c4_sensor_ = temp_c4_sensor; }
-  void set_bat_c4_sensor(sensor::Sensor * bat_c4_sensor) { bat_c4_sensor_ = bat_c4_sensor; }
-    void set_temp_c5_sensor(sensor::Sensor * temp_c5_sensor) { temp_c5_sensor_ = temp_c5_sensor; }
-  void set_bat_c5_sensor(sensor::Sensor * bat_c5_sensor) { bat_c5_sensor_ = bat_c5_sensor; }
-    void set_temp_c6_sensor(sensor::Sensor * temp_c6_sensor) { temp_c6_sensor_ = temp_c6_sensor; }
-  void set_bat_c6_sensor(sensor::Sensor * bat_c6_sensor) { bat_c6_sensor_ = bat_c6_sensor; }
-    void set_temp_c7_sensor(sensor::Sensor * temp_c7_sensor) { temp_c7_sensor_ = temp_c7_sensor; }
-  void set_bat_c7_sensor(sensor::Sensor * bat_c7_sensor) { bat_c7_sensor_ = bat_c7_sensor; }
-    void set_temp_c8_sensor(sensor::Sensor * temp_c8_sensor) { temp_c8_sensor_ = temp_c8_sensor; }
-  void set_bat_c8_sensor(sensor::Sensor * bat_c8_sensor) { bat_c8_sensor_ = bat_c8_sensor; }
-    void set_temp_c9_sensor(sensor::Sensor * temp_c9_sensor) { temp_c9_sensor_ = temp_c9_sensor; }
-  void set_bat_c9_sensor(sensor::Sensor * bat_c9_sensor) { bat_c9_sensor_ = bat_c9_sensor; }
-    void set_temp_c10_sensor(sensor::Sensor * temp_c10_sensor) { temp_c10_sensor_ = temp_c10_sensor; }
-  void set_bat_c10_sensor(sensor::Sensor * bat_c10_sensor) { bat_c10_sensor_ = bat_c10_sensor; }
-    void set_temp_c11_sensor(sensor::Sensor * temp_c11_sensor) { temp_c11_sensor_ = temp_c11_sensor; }
-  void set_bat_c11_sensor(sensor::Sensor * bat_c11_sensor) { bat_c11_sensor_ = bat_c11_sensor; }
-    void set_temp_c12_sensor(sensor::Sensor * temp_c12_sensor) { temp_c12_sensor_ = temp_c12_sensor; }
-  void set_bat_c12_sensor(sensor::Sensor * bat_c12_sensor) { bat_c12_sensor_ = bat_c12_sensor; }
-    void set_temp_c13_sensor(sensor::Sensor * temp_c13_sensor) { temp_c13_sensor_ = temp_c13_sensor; }
-  void set_bat_c13_sensor(sensor::Sensor * bat_c13_sensor) { bat_c13_sensor_ = bat_c13_sensor; }
-    void set_temp_c14_sensor(sensor::Sensor * temp_c14_sensor) { temp_c14_sensor_ = temp_c14_sensor; }
-  void set_bat_c14_sensor(sensor::Sensor * bat_c14_sensor) { bat_c14_sensor_ = bat_c14_sensor; }
-    void set_temp_c15_sensor(sensor::Sensor * temp_c15_sensor) { temp_c15_sensor_ = temp_c15_sensor; }
-  void set_bat_c15_sensor(sensor::Sensor * bat_c15_sensor) { bat_c15_sensor_ = bat_c15_sensor; }
-    void set_temp_c16_sensor(sensor::Sensor * temp_c16_sensor) { temp_c16_sensor_ = temp_c16_sensor; }
-  void set_bat_c16_sensor(sensor::Sensor * bat_c16_sensor) { bat_c16_sensor_ = bat_c16_sensor; }
+      void set_bat_c4_sensor(sensor::Sensor * bat_c4_sensor) { bat_c4_sensor_ = bat_c4_sensor; }
+      void set_temp_c5_sensor(sensor::Sensor * temp_c5_sensor) { temp_c5_sensor_ = temp_c5_sensor; }
+      void set_bat_c5_sensor(sensor::Sensor * bat_c5_sensor) { bat_c5_sensor_ = bat_c5_sensor; }
+      void set_temp_c6_sensor(sensor::Sensor * temp_c6_sensor) { temp_c6_sensor_ = temp_c6_sensor; }
+      void set_bat_c6_sensor(sensor::Sensor * bat_c6_sensor) { bat_c6_sensor_ = bat_c6_sensor; }
+      void set_temp_c7_sensor(sensor::Sensor * temp_c7_sensor) { temp_c7_sensor_ = temp_c7_sensor; }
+      void set_bat_c7_sensor(sensor::Sensor * bat_c7_sensor) { bat_c7_sensor_ = bat_c7_sensor; }
+      void set_temp_c8_sensor(sensor::Sensor * temp_c8_sensor) { temp_c8_sensor_ = temp_c8_sensor; }
+      void set_bat_c8_sensor(sensor::Sensor * bat_c8_sensor) { bat_c8_sensor_ = bat_c8_sensor; }
+      void set_temp_c9_sensor(sensor::Sensor * temp_c9_sensor) { temp_c9_sensor_ = temp_c9_sensor; }
+      void set_bat_c9_sensor(sensor::Sensor * bat_c9_sensor) { bat_c9_sensor_ = bat_c9_sensor; }
+      void set_temp_c10_sensor(sensor::Sensor * temp_c10_sensor) { temp_c10_sensor_ = temp_c10_sensor; }
+      void set_bat_c10_sensor(sensor::Sensor * bat_c10_sensor) { bat_c10_sensor_ = bat_c10_sensor; }
+      void set_temp_c11_sensor(sensor::Sensor * temp_c11_sensor) { temp_c11_sensor_ = temp_c11_sensor; }
+      void set_bat_c11_sensor(sensor::Sensor * bat_c11_sensor) { bat_c11_sensor_ = bat_c11_sensor; }
+      void set_temp_c12_sensor(sensor::Sensor * temp_c12_sensor) { temp_c12_sensor_ = temp_c12_sensor; }
+      void set_bat_c12_sensor(sensor::Sensor * bat_c12_sensor) { bat_c12_sensor_ = bat_c12_sensor; }
+      void set_temp_c13_sensor(sensor::Sensor * temp_c13_sensor) { temp_c13_sensor_ = temp_c13_sensor; }
+      void set_bat_c13_sensor(sensor::Sensor * bat_c13_sensor) { bat_c13_sensor_ = bat_c13_sensor; }
+      void set_temp_c14_sensor(sensor::Sensor * temp_c14_sensor) { temp_c14_sensor_ = temp_c14_sensor; }
+      void set_bat_c14_sensor(sensor::Sensor * bat_c14_sensor) { bat_c14_sensor_ = bat_c14_sensor; }
+      void set_temp_c15_sensor(sensor::Sensor * temp_c15_sensor) { temp_c15_sensor_ = temp_c15_sensor; }
+      void set_bat_c15_sensor(sensor::Sensor * bat_c15_sensor) { bat_c15_sensor_ = bat_c15_sensor; }
+      void set_temp_c16_sensor(sensor::Sensor * temp_c16_sensor) { temp_c16_sensor_ = temp_c16_sensor; }
+      void set_bat_c16_sensor(sensor::Sensor * bat_c16_sensor) { bat_c16_sensor_ = bat_c16_sensor; }
 
+    void setup();
     void prep();
     void loop() override;
     void update() override;
@@ -82,22 +83,22 @@ class WavinAhc9000 : public PollingComponent {
     void add_fan_speed_callback(std::function<void(int)> &&callback);
     void writeFanMode(int new_fan_speed);
     void writeTargetTemperature(float new_target_temp);
-    void readstatusforchannel(uint8_t channel);
+    
+    void readstatus(uint8_t channel);
     void readtempandbat(uint8_t channel);
-
     void readsetpoint(uint8_t channel);
-    void readmodeforchannel(uint8_t channel);
+    void readmode(uint8_t channel);
 
 
-    void setup();
+    void add_target_temp_callback(std::function<void(float,uint8_t)> &&callback);
 
 
   private:
     uint8_t txEnablePin;
     uint16_t recieveTimeout_ms;
-    void transmit(uint8_t *data, uint8_t lenght);
-    bool recieve(uint16_t *reply, uint8_t cmdtype);
-    unsigned int calculateCRC(unsigned char *frame, unsigned char bufferSize);
+    //void transmit(uint8_t *data, uint8_t lenght);
+    //bool recieve(uint16_t *reply, uint8_t cmdtype);
+    //unsigned int calculateCRC(unsigned char *frame, unsigned char bufferSize);
 
     const uint8_t MODBUS_DEVICE = 0x01;
     const uint8_t MODBUS_READ_REGISTER = 0x43;
@@ -140,7 +141,7 @@ class WavinAhc9000 : public PollingComponent {
     sensor::Sensor *bat_c15_sensor_;
     sensor::Sensor *temp_c16_sensor_; 
     sensor::Sensor *bat_c16_sensor_;
-    CallbackManager<void(float)> target_temp_callback_;
+    CallbackManager<void(float,uint8_t)> target_temp_callback_;
     CallbackManager<void(int)> fan_speed_callback_;
 };
 }
