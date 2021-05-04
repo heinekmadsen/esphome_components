@@ -47,7 +47,7 @@ void GenvexClimate::control(const climate::ClimateCall &call) {
 	  int mode;
 	  this->fan_mode = *call.get_fan_mode();
 	  switch (fan_mode) {
-		  case climate::CLIMATE_FAN_LOW: mode = 2; break;
+		  case climate::CLIMATE_FAN_LOW: mode = 1; break;
 		  case climate::CLIMATE_FAN_MEDIUM: mode = 3; break;
 		  case climate::CLIMATE_FAN_HIGH: mode = 4; break;
 		  case climate::CLIMATE_FAN_OFF: mode = 0; break;
