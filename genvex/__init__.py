@@ -26,4 +26,4 @@ def to_code(config):
     if CONF_ADDRESS in config:
         cg.add(var.set_address(config[CONF_ADDRESS]))
     if CONF_UPDATE_INTERVAL in config:
-        cg.add(var.set_update_interval(config[CONF_UPDATE_INTERVAL]))    
+        cg.add(var.set_update_interval(config[CONF_UPDATE_INTERVAL]))
