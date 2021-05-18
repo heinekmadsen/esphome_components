@@ -113,6 +113,8 @@ void WavinAhc9000::loop() {
     state_ = 4;
     waiting_ = false;
   }
+  if (waiting_)
+    return;
   if (++state_ > 4) {
     if (++channel_ > 15) {
       state_ = 0;
@@ -123,6 +125,7 @@ void WavinAhc9000::loop() {
   }
 
   rw_pin_->digital_write(true);
+  ESP_LOGV(TAG, "sending for channel %d, state %d", channel_, state_);
   switch(state_) {
     case 1:
       send(MODBUS_READ_REGISTER, (CATEGORY_CHANNELS << 8) + 0, (channel_ << 8) + 3);

@@ -17,5 +17,6 @@ CONFIG_SCHEMA = cv.Schema({
 def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     yield cg.register_component(var, config)
+    yield modbus.register_modbus_device(var, config)
     pin = yield cg.gpio_pin_expression(config[CONF_RW_PIN])
     cg.add(var.set_rw_pin(pin))
