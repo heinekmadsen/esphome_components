@@ -70,7 +70,7 @@ void WavinAhc9000::on_modbus_data(const std::vector<uint8_t> &data) {
 void WavinAhc9000::handle_channel_data_(const std::vector<uint8_t> &data) {
   element_ = data[5] & PRIMARY_ELEMENT_MASK;
   if (element_ == 0) { // this channel isn't used
-    ESP_LOGV(TAG, "channel %d isn't used", channel_);
+    ESP_LOGV(TAG, "Channel %d isn't used", channel_);
     state_ = 4;
     return;
   }
@@ -79,7 +79,7 @@ void WavinAhc9000::handle_channel_data_(const std::vector<uint8_t> &data) {
     state_++; // skip temp and bat data
   }
   bool output_on = data[0] & CHANNEL_OUTP_ON;
-  ESP_LOGD(TAG, "Status %i: %s",channel_, ONOFF(output_on));
+  ESP_LOGD(TAG, "Status channel %i: %s",channel_, ONOFF(output_on));
   output_callbacks_[channel_].call(output_on);
 }
 
@@ -100,7 +100,7 @@ void WavinAhc9000::handle_target_temp_data_(const std::vector<uint8_t> &data) {
 
 void WavinAhc9000::handle_mode_data_(const std::vector<uint8_t> &data) {
   int mode = data[0] & MODE_MASK;
-  ESP_LOGD(TAG, "Mode %i: %d",channel_, mode );
+  ESP_LOGD(TAG, "Mode channel %i: %d",channel_, mode );
 }
 
 void WavinAhc9000::loop() {
@@ -109,7 +109,7 @@ void WavinAhc9000::loop() {
     return;
   long now = millis();
   if (waiting_ && (last_update_time + 1000 < now)) {
-    ESP_LOGD(TAG, "timeout on channel %d, state %d", channel_, state_);
+    ESP_LOGD(TAG, "Timeout on channel %d, state %d", channel_, state_);
     state_ = 4;
     waiting_ = false;
   }
@@ -125,7 +125,7 @@ void WavinAhc9000::loop() {
   }
 
   rw_pin_->digital_write(true);
-  ESP_LOGV(TAG, "sending for channel %d, state %d", channel_, state_);
+  ESP_LOGV(TAG, "Sending for channel %d, state %d", channel_, state_);
   switch(state_) {
     case 1:
       send(MODBUS_READ_REGISTER, (CATEGORY_CHANNELS << 8) + 0, (channel_ << 8) + 3);
@@ -149,7 +149,7 @@ void WavinAhc9000::loop() {
 
 void WavinAhc9000::update() {
   if (waiting_) {
-    ESP_LOGW(TAG, "update interval overrun");
+    ESP_LOGW(TAG, "Update interval overrun");
     return;
   }
   channel_ = 0;
