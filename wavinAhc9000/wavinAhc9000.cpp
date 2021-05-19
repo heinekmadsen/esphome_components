@@ -131,6 +131,7 @@ void WavinAhc9000::loop() {
       send(MODBUS_READ_REGISTER, (CATEGORY_CHANNELS << 8) + 0, (channel_ << 8) + 3);
       break;
     case 2:
+      ESP_LOGV(TAG, "Reading data for element %d", element_);
       send(MODBUS_READ_REGISTER, (CATEGORY_ELEMENTS << 8) + 4, (element_ << 8) + 7);
       break;
     case 3:
