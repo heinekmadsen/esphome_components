@@ -49,7 +49,7 @@ void WavinAhc9000::add_output_callback(int channel, std::function<void(bool)> &&
 }
 
 void WavinAhc9000::on_modbus_data(const std::vector<uint8_t> &data) {
-  ESP_LOGV(TAG, "Channel %d, state %d, Data: %s", channel_, state_, hexencode(data).c_str());
+  ESP_LOGV(TAG, "Channel %d, state %d, Data: %s", channel_ + 1, state_, hexencode(data).c_str());
   switch (state_) {
     case 1:
       handle_channel_data_(data);
@@ -70,12 +70,12 @@ void WavinAhc9000::on_modbus_data(const std::vector<uint8_t> &data) {
 void WavinAhc9000::handle_channel_data_(const std::vector<uint8_t> &data) {
   element_ = data[5] & PRIMARY_ELEMENT_MASK;
   if (element_ == 0) { // this channel isn't used
-    ESP_LOGV(TAG, "Channel %d isn't used", channel_);
+    ESP_LOGV(TAG, "Channel %d isn't used", channel_ + 1);
     state_ = 4;
     return;
   }
   if (data[0] & ALL_TP_LOST_MASK) {
-    ESP_LOGD(TAG, "All TP lost for channel %d", channel_);
+    ESP_LOGD(TAG, "All TP lost for channel %d", channel_ + 1);
     state_++; // skip temp and bat data
   }
   bool output_on = data[0] & CHANNEL_OUTP_ON;
@@ -86,21 +86,21 @@ void WavinAhc9000::handle_channel_data_(const std::vector<uint8_t> &data) {
 void WavinAhc9000::handle_element_data_(const std::vector<uint8_t> &data) {
   float temperature = ((data[0] << 8) + data[1]) / 10.0;
   int battery = data[13] * 10;
-  ESP_LOGD(TAG, "Temperature channel %i: %f", channel_, temperature);
-  ESP_LOGD(TAG, "Battery channel %i: %i", channel_, battery);
+  ESP_LOGD(TAG, "Temperature channel %i: %f", channel_ + 1, temperature);
+  ESP_LOGD(TAG, "Battery channel %i: %i", channel_ + 1, battery);
   temp_callbacks_[channel_].call(temperature);
   bat_callbacks_[channel_].call(battery);
 }
 
 void WavinAhc9000::handle_target_temp_data_(const std::vector<uint8_t> &data) {
   float temperature = ((data[0] << 8) + data[1]) / 10.0;
-  ESP_LOGD(TAG, "Target temperature channel %i: %f", channel_, temperature);
+  ESP_LOGD(TAG, "Target temperature channel %i: %f", channel_ + 1, temperature);
   target_temp_callbacks_[channel_].call(temperature);
 }
 
 void WavinAhc9000::handle_mode_data_(const std::vector<uint8_t> &data) {
   int mode = data[0] & MODE_MASK;
-  ESP_LOGD(TAG, "Mode channel %i: %d",channel_, mode );
+  ESP_LOGD(TAG, "Mode channel %i: %d",channel_ + 1, mode );
 }
 
 void WavinAhc9000::loop() {
@@ -109,7 +109,7 @@ void WavinAhc9000::loop() {
     return;
   long now = millis();
   if (waiting_ && (last_update_time + 1000 < now)) {
-    ESP_LOGD(TAG, "Timeout on channel %d, state %d", channel_, state_);
+    ESP_LOGD(TAG, "Timeout on channel %d, state %d", channel_ + 1, state_);
     state_ = 4;
     waiting_ = false;
   }
@@ -125,7 +125,7 @@ void WavinAhc9000::loop() {
   }
 
   rw_pin_->digital_write(true);
-  ESP_LOGV(TAG, "Sending for channel %d, state %d", channel_, state_);
+  ESP_LOGV(TAG, "Sending for channel %d, state %d", channel_ + 1, state_);
   switch(state_) {
     case 1:
       send(MODBUS_READ_REGISTER, (CATEGORY_CHANNELS << 8) + 0, (channel_ << 8) + 3);

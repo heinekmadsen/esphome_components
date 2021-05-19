@@ -21,4 +21,4 @@ def to_code(config):
     yield cg.register_component(var, config)
     yield climate.register_climate(var, config)
  
-    cg.add(var.set_channel(config[CONF_CHANNEL]))
+    cg.add(var.set_channel(config[CONF_CHANNEL] - 1))
