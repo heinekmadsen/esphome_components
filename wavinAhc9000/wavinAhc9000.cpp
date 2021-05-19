@@ -79,7 +79,7 @@ void WavinAhc9000::handle_channel_data_(const std::vector<uint8_t> &data) {
     state_++; // skip temp and bat data
   }
   bool output_on = data[0] & CHANNEL_OUTP_ON;
-  ESP_LOGD(TAG, "Status channel %i: %s",channel_, ONOFF(output_on));
+  ESP_LOGD(TAG, "Status channel %i: %s",channel_ + 1, ONOFF(output_on));
   output_callbacks_[channel_].call(output_on);
 }
 
