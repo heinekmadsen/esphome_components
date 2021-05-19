@@ -68,8 +68,8 @@ void WavinAhc9000::on_modbus_data(const std::vector<uint8_t> &data) {
 }
 
 void WavinAhc9000::handle_channel_data_(const std::vector<uint8_t> &data) {
-  element_ = data[5] & PRIMARY_ELEMENT_MASK;
-  if (element_ == 0) { // this channel isn't used
+  element_ = (data[5] & PRIMARY_ELEMENT_MASK) - 1;
+  if (element_ == -1) { // this channel isn't used
     ESP_LOGV(TAG, "Channel %d isn't used", channel_ + 1);
     state_ = 4;
     return;
