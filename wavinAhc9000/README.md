@@ -73,7 +73,7 @@ Example with both battery level and current temperature sensor:
 
 
 TO-DO:
-1. It's currently not possible to write back the temperature to the Wavin unit, this is a work in progress...
+1. ...
 
 Kudos:
-A bit thanks to ssieb from the ESPHome Discord community for assisting i making this happen! https://github.com/ssieb
+A big thanks to ssieb from the ESPHome Discord community for assisting i making this happen! https://github.com/ssieb
