@@ -3,6 +3,7 @@
 #include "../wavinAhc9000.h"
 #include "esphome/core/component.h"
 #include "esphome/components/climate/climate.h"
+#include "esphome/components/sensor/sensor.h"
 
 namespace esphome {
 namespace wavinAhc9000 {
@@ -14,6 +15,7 @@ class WavinAhc9000Climate : public climate::Climate, public Component {
   void dump_config() override;
 
   void set_channel(int channel) { channel_ = channel; }
+  void set_battery_level_sensor(sensor::Sensor *battery_level_sensor) { battery_level_sensor_ = battery_level_sensor; }
 
  protected:
   WavinAhc9000 *wavin_;
@@ -21,6 +23,7 @@ class WavinAhc9000Climate : public climate::Climate, public Component {
   climate::ClimateTraits traits() override;
 
   int channel_;
+  sensor::Sensor *battery_level_sensor_{nullptr};
 };
 
 }  // namespace wavinAhc9000

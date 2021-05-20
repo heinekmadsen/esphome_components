@@ -15,9 +15,9 @@ class WavinAhc9000 : public PollingComponent, public modbus::ModbusDevice {
 
     void set_rw_pin(GPIOPin *pin) { rw_pin_ = pin; }
     void add_temp_callback(int channel, std::function<void(float)> &&callback);
-    void add_bat_callback(int channel, std::function<void(float)> &&callback);
+    void add_bat_level_callback(int channel, std::function<void(float)> &&callback);
     void add_target_temp_callback(int channel, std::function<void(float)> &&callback);
-    void add_fan_speed_callback(int channel, std::function<void(int)> &&callback);
+    void add_mode_callback(int channel, std::function<void(int)> &&callback);
     void add_output_callback(int channel, std::function<void(bool)> &&callback);
 
   private:
@@ -33,9 +33,9 @@ class WavinAhc9000 : public PollingComponent, public modbus::ModbusDevice {
     bool waiting_ = false;
 
     CallbackManager<void(float)> temp_callbacks_[16];
-    CallbackManager<void(float)> bat_callbacks_[16];
+    CallbackManager<void(float)> bat_level_callbacks_[16];
     CallbackManager<void(float)> target_temp_callbacks_[16];
-    CallbackManager<void(int)> fan_speed_callbacks_[16];
+    CallbackManager<void(int)> mode_callbacks_[16];
     CallbackManager<void(bool)> output_callbacks_[16];
 };
 }

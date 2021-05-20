@@ -32,16 +32,16 @@ void WavinAhc9000::add_temp_callback(int channel, std::function<void(float)> &&c
   temp_callbacks_[channel].add(std::move(callback));
 }
 
-void WavinAhc9000::add_bat_callback(int channel, std::function<void(float)> &&callback) {
-  bat_callbacks_[channel].add(std::move(callback));
+void WavinAhc9000::add_bat_level_callback(int channel, std::function<void(float)> &&callback) {
+  bat_level_callbacks_[channel].add(std::move(callback));
 }
 
 void WavinAhc9000::add_target_temp_callback(int channel, std::function<void(float)> &&callback) {
   target_temp_callbacks_[channel].add(std::move(callback));
 }
 
-void WavinAhc9000::add_fan_speed_callback(int channel, std::function<void(int)> &&callback) {
-  fan_speed_callbacks_[channel].add(std::move(callback));
+void WavinAhc9000::add_mode_callback(int channel, std::function<void(int)> &&callback) {
+  mode_callbacks_[channel].add(std::move(callback));
 }
 
 void WavinAhc9000::add_output_callback(int channel, std::function<void(bool)> &&callback) {
@@ -89,7 +89,7 @@ void WavinAhc9000::handle_element_data_(const std::vector<uint8_t> &data) {
   ESP_LOGD(TAG, "Temperature channel %i: %f", channel_ + 1, temperature);
   ESP_LOGD(TAG, "Battery channel %i: %i", channel_ + 1, battery);
   temp_callbacks_[channel_].call(temperature);
-  bat_callbacks_[channel_].call(battery);
+  bat_level_callbacks_[channel_].call(battery);
 }
 
 void WavinAhc9000::handle_target_temp_data_(const std::vector<uint8_t> &data) {
@@ -101,6 +101,7 @@ void WavinAhc9000::handle_target_temp_data_(const std::vector<uint8_t> &data) {
 void WavinAhc9000::handle_mode_data_(const std::vector<uint8_t> &data) {
   int mode = data[0] & MODE_MASK;
   ESP_LOGD(TAG, "Mode channel %i: %d",channel_ + 1, mode );
+  mode_callbacks_[channel_].call(mode);
 }
 
 void WavinAhc9000::loop() {

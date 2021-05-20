@@ -8,13 +8,31 @@ static const char *TAG = "wavinAhc9000.climate";
 
 void WavinAhc9000Climate::setup() {
   wavin_->add_temp_callback(channel_, [this](float state) {
-    current_temperature = state;
-    publish_state();
+    if (current_temperature != state) {
+      current_temperature = state;
+      publish_state();
+    }
   });
   wavin_->add_target_temp_callback(channel_, [this](float state) {
-    target_temperature = state;
-    publish_state();
+    if (target_temperature != state) {
+      target_temperature = state;
+      publish_state();
+    }
   });
+  wavin_->add_output_callback(channel_, [this](bool is_on) {
+    if (is_on && (mode != climate::CLIMATE_MODE_HEAT)) {
+      mode = climate::CLIMATE_MODE_HEAT;
+      publish_state();
+    } else if (!is_on && (mode != climate::CLIMATE_MODE_OFF)) {
+      mode = climate::CLIMATE_MODE_OFF;
+      publish_state();
+    }
+  });
+  if (battery_level_sensor_ != nullptr) {
+    wavin_->add_bat_level_callback(channel_, [this](int level) {
+      battery_level_sensor_->publish_state(level);
+    });
+  }
 }
 
 void WavinAhc9000Climate::control(const climate::ClimateCall &call) {
