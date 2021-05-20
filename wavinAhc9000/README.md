@@ -1,4 +1,4 @@
-# Wavin AHC 9000 floot heating modbus interface
+# Wavin AHC 9000 floor heating modbus interface
 
 A configured uart component and a modbus component is required.
 
