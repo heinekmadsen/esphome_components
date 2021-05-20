@@ -37,6 +37,7 @@ climate:
 ```
 
 Optional:
+
 To get a battery level sensor of the room sensors add battery_level:
 Example with battery level sensor:
 ```yaml
