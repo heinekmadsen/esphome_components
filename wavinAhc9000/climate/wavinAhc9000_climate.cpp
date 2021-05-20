@@ -46,6 +46,8 @@ void WavinAhc9000Climate::control(const climate::ClimateCall &call) {
     float target = target_temperature;
     ESP_LOGD(TAG, "Target temperature for channel %d changed to: %f", channel_ + 1, target);
     wavin_->set_target_temp(channel_, target);
+    target_temperature = target;
+    publish_state();
   }
 }
 
