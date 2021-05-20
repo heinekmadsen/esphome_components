@@ -22,9 +22,13 @@ climate:
   - platform: wavinAhc9000
     channel: 1
     name: "Floor room 1"
+    visual:
+      temperature_step: 0.5 °C
   - platform: wavinAhc9000
     channel: 2
     name: "Floor room 2"
+    visual:
+      temperature_step: 0.5 °C
     battery_level:
       name: "Battery room 2"
     current_temp:
@@ -34,6 +38,8 @@ climate:
   - platform: wavinAhc9000
     channel: 16
     name: "Floor room 16"
+    visual:
+      temperature_step: 0.5 °C
 ```
 
 Optional:
@@ -44,6 +50,8 @@ Example with battery level sensor:
   - platform: wavinAhc9000
     channel: 1
     name: "Floor room 1"
+    visual:
+      temperature_step: 0.5 °C
     battery_level:
       name: "Battery room 1"
 ```
@@ -54,6 +62,8 @@ Example current temperature sensor:
   - platform: wavinAhc9000
     channel: 2
     name: "Floor room 2"
+    visual:
+      temperature_step: 0.5 °C
     current_temp:
       name: "Current temp room 2"
 ```
@@ -64,6 +74,8 @@ Example with both battery level and current temperature sensor:
   - platform: wavinAhc9000
     channel: 3
     name: "Floor room 3"
+    visual:
+      temperature_step: 0.5 °C
     battery_level:
       name: "Battery room 3"
     current_temp:
