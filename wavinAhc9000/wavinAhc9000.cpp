@@ -78,7 +78,7 @@ void WavinAhc9000::handle_channel_data_(const std::vector<uint8_t> &data) {
     ESP_LOGD(TAG, "All TP lost for channel %d", channel_ + 1);
     state_++; // skip temp and bat data
   }
-  bool output_on = data[0] & CHANNEL_OUTP_ON;
+  bool output_on = data[1] & CHANNEL_OUTP_ON;
   ESP_LOGD(TAG, "Status channel %i: %s",channel_ + 1, ONOFF(output_on));
   output_callbacks_[channel_].call(output_on);
 }
