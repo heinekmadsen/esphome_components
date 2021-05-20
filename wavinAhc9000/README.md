@@ -1,4 +1,4 @@
-# Genvex air circulation modbus interface
+# Wavin AHC 9000 floot heating modbus interface
 
 A configured uart component and a modbus component is required.
 
@@ -72,7 +72,7 @@ Example with both battery level and current temperature sensor:
 
 
 TO-DO:
-1. .....
+1. It's currently not possible to write back the temperature to the Wavin unit, this is a work in progress...
 
 Kudos:
 A bit thanks to ssieb from the ESPHome Discord community for assisting i making this happen! https://github.com/ssieb
