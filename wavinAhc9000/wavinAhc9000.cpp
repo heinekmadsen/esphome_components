@@ -155,13 +155,13 @@ void WavinAhc9000::loop() {
     channel_ = temp_channel_.front();
     temp_channel_.erase(temp_channel_.begin());
     ESP_LOGV(TAG, "Setting temperature for channel %d: %d", channel_ + 1, temperature);
-    uint8_t data[9] = {MODBUS_WRITE_REGISTER, CATEGORY_PACKED_DATA, PACKED_DATA_MANUAL_TEMPERATURE, (uint8_t)channel_,
-                       1, (uint8_t)(temperature >> 8), (uint8_t)(temperature & 0xff), 0, 0};
-    uint16_t crc = crc16(data, 7);
-    data[7] = crc & 0xff;
-    data[8] = crc >> 8;
+    uint8_t data[10] = {address_, MODBUS_WRITE_REGISTER, CATEGORY_PACKED_DATA, PACKED_DATA_MANUAL_TEMPERATURE,
+                       (uint8_t)channel_, 1, (uint8_t)(temperature >> 8), (uint8_t)(temperature & 0xff), 0, 0};
+    uint16_t crc = crc16(data, 8);
+    data[8] = crc & 0xff;
+    data[9] = crc >> 8;
     rw_pin_->digital_write(true);
-    parent_->write_array(data, 9);
+    parent_->write_array(data, sizeof(data));
     parent_->flush();
     delay(1);
     rw_pin_->digital_write(false);
