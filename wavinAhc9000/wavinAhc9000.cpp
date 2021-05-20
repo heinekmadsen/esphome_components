@@ -115,6 +115,22 @@ void WavinAhc9000::handle_mode_data_(const std::vector<uint8_t> &data) {
   mode_callbacks_[channel_].call(mode);
 }
 
+uint16_t crc16(const uint8_t *data, uint8_t len) {
+  uint16_t crc = 0xFFFF;
+  while (len--) {
+    crc ^= *data++;
+    for (uint8_t i = 0; i < 8; i++) {
+      if ((crc & 0x01) != 0) {
+        crc >>= 1;
+        crc ^= 0xA001;
+      } else {
+        crc >>= 1;
+      }
+    }
+  }
+  return crc;
+}
+
 void WavinAhc9000::loop() {
   static long last_update_time = 0;
   long now = millis();
@@ -139,10 +155,13 @@ void WavinAhc9000::loop() {
     channel_ = temp_channel_.front();
     temp_channel_.erase(temp_channel_.begin());
     ESP_LOGV(TAG, "Setting temperature for channel %d: %d", channel_ + 1, temperature);
-    uint8_t data[7] = {MODBUS_WRITE_REGISTER, CATEGORY_PACKED_DATA, PACKED_DATA_MANUAL_TEMPERATURE, (uint8_t)channel_,
-                       1, (uint8_t)(temperature >> 8), (uint8_t)(temperature & 0xff)};
+    uint8_t data[9] = {MODBUS_WRITE_REGISTER, CATEGORY_PACKED_DATA, PACKED_DATA_MANUAL_TEMPERATURE, (uint8_t)channel_,
+                       1, (uint8_t)(temperature >> 8), (uint8_t)(temperature & 0xff), 0, 0};
+    uint16_t crc = crc16(data, 7);
+    data[7] = crc & 0xff;
+    data[8] = crc >> 8;
     rw_pin_->digital_write(true);
-    parent_->write_array(data, 7);
+    parent_->write_array(data, 9);
     parent_->flush();
     delay(1);
     rw_pin_->digital_write(false);
