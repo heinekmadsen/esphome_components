@@ -48,9 +48,20 @@ void WavinAhc9000::add_output_callback(int channel, std::function<void(bool)> &&
   output_callbacks_[channel].add(std::move(callback));
 }
 
+void WavinAhc9000::set_target_temp(int channel, float temperature) {
+  set_temp_.push_back(temperature);
+  temp_channel_.push_back(channel);
+}
+
 void WavinAhc9000::on_modbus_data(const std::vector<uint8_t> &data) {
   ESP_LOGV(TAG, "Channel %d, state %d, Data: %s", channel_ + 1, state_, hexencode(data).c_str());
+  float temperature;
   switch (state_) {
+    case 0:
+      temperature = ((data[0] << 8) + data[1]) / 10.0;
+      ESP_LOGD(TAG, "Confirmed target temperature channel %i: %.1f", channel_ + 1, temperature);
+      channel_ = -1;
+      break;
     case 1:
       handle_channel_data_(data);
       break;
@@ -86,7 +97,7 @@ void WavinAhc9000::handle_channel_data_(const std::vector<uint8_t> &data) {
 void WavinAhc9000::handle_element_data_(const std::vector<uint8_t> &data) {
   float temperature = ((data[0] << 8) + data[1]) / 10.0;
   int battery = data[13] * 10;
-  ESP_LOGD(TAG, "Temperature channel %i: %f", channel_ + 1, temperature);
+  ESP_LOGD(TAG, "Temperature channel %i: %.1f", channel_ + 1, temperature);
   ESP_LOGD(TAG, "Battery channel %i: %i", channel_ + 1, battery);
   temp_callbacks_[channel_].call(temperature);
   bat_level_callbacks_[channel_].call(battery);
@@ -94,7 +105,7 @@ void WavinAhc9000::handle_element_data_(const std::vector<uint8_t> &data) {
 
 void WavinAhc9000::handle_target_temp_data_(const std::vector<uint8_t> &data) {
   float temperature = ((data[0] << 8) + data[1]) / 10.0;
-  ESP_LOGD(TAG, "Target temperature channel %i: %f", channel_ + 1, temperature);
+  ESP_LOGD(TAG, "Target temperature channel %i: %.1f", channel_ + 1, temperature);
   target_temp_callbacks_[channel_].call(temperature);
 }
 
@@ -106,15 +117,45 @@ void WavinAhc9000::handle_mode_data_(const std::vector<uint8_t> &data) {
 
 void WavinAhc9000::loop() {
   static long last_update_time = 0;
-  if (channel_ < 0)
-    return;
   long now = millis();
-  if (waiting_ && (last_update_time + 1000 < now)) {
-    ESP_LOGD(TAG, "Timeout on channel %d, state %d", channel_ + 1, state_);
-    state_ = 4;
-    waiting_ = false;
+  if (waiting_) {
+    if (last_update_time + 1000 < now) {
+      if (state_ == 0) {
+        ESP_LOGD(TAG, "Timeout on set temperature on channel %d", channel_ + 1);
+        channel_ = -1;
+      } else {
+        ESP_LOGD(TAG, "Timeout on channel %d, state %d", channel_ + 1, state_);
+        state_ = 4;
+      }
+      waiting_ = false;
+    } else {
+      return;
+    }
   }
-  if (waiting_)
+
+  if (set_temp_.size() && (channel_ < 0)) {
+    int temperature = roundf(set_temp_.front() * 10);
+    set_temp_.erase(set_temp_.begin());
+    channel_ = temp_channel_.front();
+    temp_channel_.erase(temp_channel_.begin());
+    ESP_LOGV(TAG, "Setting temperature for channel %d: %d", channel_ + 1, temperature);
+    uint8_t data[7] = {MODBUS_WRITE_REGISTER, CATEGORY_PACKED_DATA, PACKED_DATA_MANUAL_TEMPERATURE, (uint8_t)channel_,
+                       1, (uint8_t)(temperature >> 8), (uint8_t)(temperature & 0xff)};
+    rw_pin_->digital_write(true);
+    parent_->write_array(data, 7);
+    parent_->flush();
+    delay(1);
+    rw_pin_->digital_write(false);
+    waiting_ = true;
+    last_update_time = now;
+    return;
+  }
+
+  if (start_scan_) {
+    start_scan_ = false;
+    channel_ = 0;
+  }
+  if (channel_ < 0)
     return;
   if (++state_ > 4) {
     if (++channel_ > 15) {
@@ -150,12 +191,7 @@ void WavinAhc9000::loop() {
 }
 
 void WavinAhc9000::update() {
-  if (waiting_) {
-    ESP_LOGW(TAG, "Update interval overrun");
-    return;
-  }
-  channel_ = 0;
-  state_ = 0;
+  start_scan_ = true;
 }
 
 /*

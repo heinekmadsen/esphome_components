@@ -19,6 +19,7 @@ class WavinAhc9000 : public PollingComponent, public modbus::ModbusDevice {
     void add_target_temp_callback(int channel, std::function<void(float)> &&callback);
     void add_mode_callback(int channel, std::function<void(int)> &&callback);
     void add_output_callback(int channel, std::function<void(bool)> &&callback);
+    void set_target_temp(int channel, float temperature);
 
   private:
     void handle_channel_data_(const std::vector<uint8_t> &data);
@@ -30,7 +31,10 @@ class WavinAhc9000 : public PollingComponent, public modbus::ModbusDevice {
     int channel_ = -1;
     int state_ = 0;
     int element_ = 0;
+    bool start_scan_ = false;
     bool waiting_ = false;
+    std::vector<int> set_temp_;
+    std::vector<int> temp_channel_;
 
     CallbackManager<void(float)> temp_callbacks_[16];
     CallbackManager<void(float)> bat_level_callbacks_[16];
