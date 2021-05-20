@@ -6,3 +6,4 @@ wavinAhc9000/__pycache__/climate.cpython-36.pyc
 wavinAhc9000/__pycache__/sensor.cpython-36.pyc
 wavinAhc9000/__pycache__
 
+*.pyc

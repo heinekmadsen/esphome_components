@@ -7,12 +7,17 @@ from esphome.const import (
     CONF_CHANNEL,
     CONF_BATTERY_LEVEL,
     UNIT_PERCENT,
+    UNIT_CELSIUS,
     ICON_PERCENT,
+    ICON_THERMOMETER,
     DEVICE_CLASS_BATTERY,
+    DEVICE_CLASS_TEMPERATURE,
 )
 
 AUTO_LOAD = ['sensor']
- 
+
+CONF_CURRENT_TEMP = "current_temp"
+
 WavinAhc9000Climate = wavinAhc9000_ns.class_('WavinAhc9000Climate', climate.Climate, cg.Component)
  
 CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
@@ -20,6 +25,7 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.GenerateID(CONF_WAVINAHC9000_ID): cv.use_id(WavinAhc9000),
     cv.Required(CONF_CHANNEL): cv.int_range(min=1, max=16),
     cv.Optional(CONF_BATTERY_LEVEL): sensor.sensor_schema(UNIT_PERCENT, ICON_PERCENT, 0, DEVICE_CLASS_BATTERY),
+    cv.Optional(CONF_CURRENT_TEMP): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1, DEVICE_CLASS_TEMPERATURE),
 }).extend(cv.COMPONENT_SCHEMA)
  
 def to_code(config):
@@ -32,3 +38,6 @@ def to_code(config):
     if CONF_BATTERY_LEVEL in config:
         sens = yield sensor.new_sensor(config[CONF_BATTERY_LEVEL])
         cg.add(var.set_battery_level_sensor(sens))
+    if CONF_CURRENT_TEMP in config:
+        sens = yield sensor.new_sensor(config[CONF_CURRENT_TEMP])
+        cg.add(var.set_current_temp_sensor(sens))

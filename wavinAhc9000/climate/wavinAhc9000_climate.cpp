@@ -33,6 +33,11 @@ void WavinAhc9000Climate::setup() {
       battery_level_sensor_->publish_state(level);
     });
   }
+  if (current_temp_sensor_ != nullptr) {
+    wavin_->add_temp_callback(channel_, [this](float state) {
+      current_temp_sensor_->publish_state(state);
+    });
+  }  
 }
 
 void WavinAhc9000Climate::control(const climate::ClimateCall &call) {

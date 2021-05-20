@@ -16,6 +16,7 @@ class WavinAhc9000Climate : public climate::Climate, public Component {
 
   void set_channel(int channel) { channel_ = channel; }
   void set_battery_level_sensor(sensor::Sensor *battery_level_sensor) { battery_level_sensor_ = battery_level_sensor; }
+  void set_current_temp_sensor(sensor::Sensor *current_temp_sensor) { current_temp_sensor_ = current_temp_sensor; }
 
  protected:
   WavinAhc9000 *wavin_;
@@ -24,6 +25,7 @@ class WavinAhc9000Climate : public climate::Climate, public Component {
 
   int channel_;
   sensor::Sensor *battery_level_sensor_{nullptr};
+  sensor::Sensor *current_temp_sensor_{nullptr};
 };
 
 }  // namespace wavinAhc9000
