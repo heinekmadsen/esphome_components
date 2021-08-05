@@ -26,7 +26,7 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(WavinAhc9000Climate),
     cv.GenerateID(CONF_WAVINAHC9000_ID): cv.use_id(WavinAhc9000),
     cv.Required(CONF_CHANNEL): cv.int_range(min=1, max=16),
-    cv.Optional(CONF_BATTERY_LEVEL): sensor.sensor_schema(UNIT_PERCENT, ICON_PERCENT, 0, DEVICE_CLASS_BATTERY, CONF_STATE_CLASS),
+    cv.Optional(CONF_BATTERY_LEVEL): sensor.sensor_schema(UNIT_PERCENT, ICON_PERCENT, 0, DEVICE_CLASS_BATTERY),
     cv.Optional(CONF_CURRENT_TEMP): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1, DEVICE_CLASS_TEMPERATURE, CONF_STATE_CLASS),
 }).extend(cv.COMPONENT_SCHEMA)
  
