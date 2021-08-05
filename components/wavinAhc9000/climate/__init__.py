@@ -6,6 +6,7 @@ from esphome.const import (
     CONF_ID,
     CONF_CHANNEL,
     CONF_BATTERY_LEVEL,
+    CONF_STATE_CLASS,
     UNIT_PERCENT,
     UNIT_CELSIUS,
     ICON_PERCENT,
@@ -17,6 +18,7 @@ from esphome.const import (
 AUTO_LOAD = ['sensor']
 
 CONF_CURRENT_TEMP = "current_temp"
+CONF_STATE_CLASS = "measurement"
 
 WavinAhc9000Climate = wavinAhc9000_ns.class_('WavinAhc9000Climate', climate.Climate, cg.Component)
  
@@ -24,8 +26,8 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(WavinAhc9000Climate),
     cv.GenerateID(CONF_WAVINAHC9000_ID): cv.use_id(WavinAhc9000),
     cv.Required(CONF_CHANNEL): cv.int_range(min=1, max=16),
-    cv.Optional(CONF_BATTERY_LEVEL): sensor.sensor_schema(UNIT_PERCENT, ICON_PERCENT, 0, DEVICE_CLASS_BATTERY),
-    cv.Optional(CONF_CURRENT_TEMP): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1, DEVICE_CLASS_TEMPERATURE),
+    cv.Optional(CONF_BATTERY_LEVEL): sensor.sensor_schema(UNIT_PERCENT, ICON_PERCENT, 0, DEVICE_CLASS_BATTERY, CONF_STATE_CLASS),
+    cv.Optional(CONF_CURRENT_TEMP): sensor.sensor_schema(UNIT_CELSIUS, ICON_THERMOMETER, 1, DEVICE_CLASS_TEMPERATURE, CONF_STATE_CLASS),
 }).extend(cv.COMPONENT_SCHEMA)
  
 def to_code(config):
