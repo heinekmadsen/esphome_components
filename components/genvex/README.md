@@ -1,7 +1,5 @@
 # Genvex air circulation modbus interface
 
-!!! Currently this compononet will only compile wit DEV version of ESPHome !!!
-
 A configured uart component and a modbus component is required.
 
 Example minimal required config:
@@ -60,4 +58,4 @@ TO-DO:
 1. .....
 
 Kudos:
-A bit thanks to ssieb from the ESPHome Discord community for assisting i making this happen! https://github.com/ssieb
+A big thanks to ssieb from the ESPHome Discord community for assisting i making this happen! https://github.com/ssieb
