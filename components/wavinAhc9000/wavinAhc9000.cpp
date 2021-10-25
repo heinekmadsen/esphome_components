@@ -24,7 +24,7 @@ static const uint8_t CHANNEL_OUTP_ON = 0x10;
 static const uint8_t MODE_MASK = 0x07;
 
 void WavinAhc9000::setup() {
-  rw_pin_->pin_mode(OUTPUT);
+  rw_pin_->pin_mode(gpio::FLAG_OUTPUT);
   rw_pin_->digital_write(false);
 }
 
