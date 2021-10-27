@@ -52,6 +52,7 @@ class Genvex : public PollingComponent, public modbus::ModbusDevice {
   uint8_t CMD_FUNCTION_REG{0x04};
   bool waiting_{false};
   long last_send_{0};
+  bool waiting_for_write_ack_{false};
   
   sensor::Sensor *temp_t1_sensor_; 
   sensor::Sensor *temp_t2_sensor_; 

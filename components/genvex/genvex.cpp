@@ -26,11 +26,22 @@ void Genvex::on_modbus_data(const std::vector<uint8_t> &data) {
 	};
   
 	this->waiting_ = false;
-	if (data.size() < REGISTER_COUNT[this->state_ - 1] * 2) {
+	if (!waiting_for_write_ack_ && data.size() < REGISTER_COUNT[this->state_ - 1] * 2) {
 		ESP_LOGW(TAG, "Invalid data packet size (%d) for state %d", data.size(), this->state_);
 		return;
 	}
 	ESP_LOGD(TAG, "Data: %s", hexencode(data).c_str());
+
+	//  Command response is 4 bytes echoing the write command
+	if (waiting_for_write_ack_ )  {
+		waiting_for_write_ack_ = false ; 
+		if (data.size() == 4) {
+			ESP_LOGD(TAG, "Write command succeeded");
+		} else {
+			ESP_LOGW(TAG, "Invalid data packet size (%d) while waiting for write command response", data.size());
+		}
+		return ; 
+	}
 
 	if (this->state_ == 1) {
 		this->state_ = 2;
@@ -197,18 +208,20 @@ void Genvex::writeTargetTemperature(float new_target_temp)
 	
 	uint8_t payload[2];
 	uint16_t new_temp = new_target_temp * 10 - 100;
-    	payload[0] = (new_temp / 256) & 0xFF;
-    	payload[1] = new_temp & 0xFF);	
-	this->send(CMD_WRITE_SINGLE_REG, 0, 1,sizeof(payload),&payload);
+	payload[0] = (new_temp / 256) & 0xFF;
+	payload[1] = new_temp & 0xFF;
+	waiting_for_write_ack_= true;
+	this->send(CMD_WRITE_SINGLE_REG, 0, 1,sizeof(payload),payload);
 }
 
 void Genvex::writeFanMode(int new_fan_speed)
 {
 	uint8_t payload[2];
 	ESP_LOGD(TAG, "Writing new fan speed to system.... (%i)",new_fan_speed);
-    	payload[0] = (new_fan_speed / 256) & 0xFF;
-    	payload[1] = new_fan_speed & 0xFF;		
-	this->send(CMD_WRITE_SINGLE_REG, 100, 1,sizeof(payload),&payload);
+	payload[0] = (new_fan_speed / 256) & 0xFF;
+	payload[1] = new_fan_speed & 0xFF;
+	waiting_for_write_ack_ = true ;
+	this->send(CMD_WRITE_SINGLE_REG, 100, 1,sizeof(payload),payload);
 }
 
 
