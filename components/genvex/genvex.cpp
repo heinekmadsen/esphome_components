@@ -198,7 +198,7 @@ void Genvex::writeTargetTemperature(float new_target_temp)
 	uint16_t new_temp = new_target_temp * 10 - 100;
     	payload.push_back((new_temp / 256) & 0xFF);
     	payload.push_back(new_temp & 0xFF);	
-	this->send(CMD_WRITE_SINGLE_REG, 0, 1,payload.size(),payload);
+	this->send(CMD_WRITE_SINGLE_REG, 0, 1,payload.size(),&payload[0]);
 }
 
 void Genvex::writeFanMode(int new_fan_speed)
@@ -207,7 +207,7 @@ void Genvex::writeFanMode(int new_fan_speed)
 	ESP_LOGD(TAG, "Writing new fan speed to system.... (%i)",new_fan_speed);
     	payload.push_back((new_fan_speed / 256) & 0xFF);
     	payload.push_back(new_fan_speed & 0xFF);		
-	this->send(CMD_WRITE_SINGLE_REG, 100, 1,payload.size(),payload);
+	this->send(CMD_WRITE_SINGLE_REG, 100, 1,payload.size(),&payload[0]);
 }
 
 
