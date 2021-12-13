@@ -33,8 +33,8 @@ class WavinAhc9000 : public PollingComponent, public modbus::ModbusDevice {
     int element_ = 0;
     bool start_scan_ = false;
     bool waiting_ = false;
-    std::vector<int> set_temp_;
-    std::vector<int> temp_channel_;
+    std::vector<float> set_temp_;
+    std::vector<float> temp_channel_;
 
     CallbackManager<void(float)> temp_callbacks_[16];
     CallbackManager<void(float)> bat_level_callbacks_[16];
