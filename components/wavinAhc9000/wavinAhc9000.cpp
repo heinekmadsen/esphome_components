@@ -150,13 +150,14 @@ void WavinAhc9000::loop() {
   }
 
   if (set_temp_.size() && (channel_ < 0)) {
-    int temperature = roundf(set_temp_.front() * 10);
+    int temperature = ((roundf(set_temp_.front() * 2.0) / 2) * 10);
+    ESP_LOGV(TAG, "Rounded to nearest half for channel %d: %d", channel_ + 1, temperature);
     set_temp_.erase(set_temp_.begin());
     channel_ = temp_channel_.front();
     temp_channel_.erase(temp_channel_.begin());
     ESP_LOGV(TAG, "Setting temperature for channel %d: %d", channel_ + 1, temperature);
     uint8_t data[10] = {address_, MODBUS_WRITE_REGISTER, CATEGORY_PACKED_DATA, PACKED_DATA_MANUAL_TEMPERATURE,
-                       (uint8_t)channel_, 1, (uint8_t)(temperature >> 8), (uint8_t)(temperature & 0xff), 0, 0};
+                        (uint8_t)channel_, 1, (uint8_t)(temperature >> 8), (uint8_t)(temperature & 0xff), 0, 0};
     uint16_t crc = crc16(data, 8);
     data[8] = crc & 0xff;
     data[9] = crc >> 8;
