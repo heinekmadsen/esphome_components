@@ -22,7 +22,8 @@ uart:
 
 external_components:
   - source: github://heinekmadsen/esphome_components
-
+    refresh: 0s
+    
 modbus:
   uart_id: uart_modbus
  
@@ -107,16 +108,7 @@ interval:
 
 external_components:
   - source: github://heinekmadsen/esphome_components
-  
-# Temporary fix for modbus component error in ESPHome 2021.10.0
-# https://github.com/esphome/issues/issues/2630
-# Might not be nessesary in future builds, but for now it is
-  - source:
-      type: git
-      url: https://github.com/martgras/esphome
-      ref: modbus-fix
-    components: [ modbus ]
-
+    refresh: 0s
 
 uart:
   - id: uart_1
