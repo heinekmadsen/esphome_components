@@ -110,7 +110,11 @@ modbus_controller:
   address: 1
   modbus_id: modbus_id
   update_interval: ${update_interval}
-  
+
+external_components:
+  - source: github://nic6911/esphome_components@Wavin_Sentio
+    refresh: 0s  
+      
 sentio:
 
 sensor:
