@@ -1,0 +1,296 @@
+substitude:
+  ${name}_READ_FUNCTION: 0x43
+
+
+uart:
+  - id: ${name}_uart
+    rx_pin: ${rx_pin}
+    tx_pin: ${tx_pin}
+    baud_rate: 38400
+    stop_bits: 1
+    
+modbus:
+    - id: ${name}_modbus
+      uart_id: ${name}_uart
+      #send_wait_time: 10ms
+
+ 
+modbus_controller:
+  id: ${name}_ahc9000_modbus_controller
+  address: 1
+  modbus_id: ${name}_modbus
+  update_interval: 60s
+  command_throttle: 10ms
+  
+# ---------------------------------------- #
+#          Anchors for components          #
+# ---------------------------------------- #
+#             Anchor for temp              #
+.sensor_temp: &sensor_temp
+    platform:               ${name}_ahc9000_modbus_controller
+    modbus_controller_id:   wavin_ahc9000_modbus_controller
+    name:                   substitutename
+    id:                     substituteid
+    custom_command:         overwritewithanchor
+    value_type:             U_WORD
+    unit_of_measurement:    "°C"
+    accuracy_decimals:      1
+    device_class:           temperature
+    filters:
+      - multiply:           0.1
+#             Anchor for number              #
+.number_target_temp: &number_target_temp
+    platform: ${name}_ahc9000_modbus_controller
+    modbus_controller_id: wavin_ahc9000_modbus_controller
+    name: substitutename
+    id: substituteid
+    custom_command: overwritewithanchor
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    min_value: 6
+    max_value: 40
+    step: 0.5
+    write_lambda: |-
+      ESP_LOGD("main", "Trying to write new target temp: %f",x);
+      uint16_t targettemp = x;
+      payload.push_back(0x01);
+      payload.push_back(0x44);
+      payload.push_back(0x02);
+      payload.push_back(0x00);
+      payload.push_back(0x08);
+      payload.push_back(0x01);
+      payload.push_back(0x00);
+      payload.push_back(0xD7);
+      return {};
+    lambda: "return x*0.1;"
+    
+# ---------------------------------------- #
+#        Anchors for custom_command        #
+# ---------------------------------------- #
+#     Anchors for current temp command    #
+.channel_01_current_temp_custom_command: &channel_01_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x0
+  - 0x7
+.channel_02_current_temp_custom_command: &channel_02_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x1
+  - 0x7
+.channel_03_current_temp_custom_command: &channel_03_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x2
+  - 0x7
+.channel_04_current_temp_custom_command: &channel_04_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x3
+  - 0x7
+.channel_05_current_temp_custom_command: &channel_05_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x4
+  - 0x7
+.channel_06_current_temp_custom_command: &channel_06_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x5
+  - 0x7
+.channel_07_current_temp_custom_command: &channel_07_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x6
+  - 0x7
+.channel_08_current_temp_custom_command: &channel_08_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x7
+  - 0x7
+.channel_09_current_temp_custom_command: &channel_09_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x8
+  - 0x7
+.channel_10_current_temp_custom_command: &channel_10_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x9
+  - 0x7
+.channel_11_current_temp_custom_command: &channel_11_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x0A
+  - 0x7
+.channel_12_current_temp_custom_command: &channel_12_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x0B
+  - 0x7
+.channel_13_current_temp_custom_command: &channel_13_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x0C
+  - 0x7
+.channel_14_current_temp_custom_command: &channel_14_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x0D
+  - 0x7
+.channel_15_current_temp_custom_command: &channel_15_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x0E
+  - 0x7
+.channel_16_current_temp_custom_command: &channel_16_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x0F
+  - 0x7
+  
+#     Anchors for target temp command      #
+.channel_01_target_temp_read_custom_command: &channel_01_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x0
+  - 0x1
+.channel_02_target_temp_read_custom_command: &channel_02_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x1
+  - 0x1
+.channel_03_target_temp_read_custom_command: &channel_03_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x2
+  - 0x7
+.channel_04_target_temp_read_custom_command: &channel_04_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x3
+  - 0x7
+.channel_05_target_temp_read_custom_command: &channel_05_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x4
+  - 0x7
+.channel_06_target_temp_read_custom_command: &channel_06_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x5
+  - 0x7
+.channel_07_target_temp_read_custom_command: &channel_07_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x6
+  - 0x7
+.channel_08_target_temp_read_custom_command: &channel_08_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x7
+  - 0x7
+.channel_09_target_temp_read_custom_command: &channel_09_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x8
+  - 0x7
+.channel_10_target_temp_read_custom_command: &channel_10_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x9
+  - 0x7
+.channel_11_target_temp_read_custom_command: &channel_11_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x0A
+  - 0x7
+.channel_12_target_temp_read_custom_command: &channel_12_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x0B
+  - 0x7
+.channel_13_target_temp_read_custom_command: &channel_13_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x0C
+  - 0x7
+.channel_14_target_temp_read_custom_command: &channel_14_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x0D
+  - 0x7
+.channel_15_target_temp_read_custom_command: &channel_15_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x0E
+  - 0x7
+.channel_16_target_temp_read_custom_command: &channel_16_target_temp_read_custom_command
+  - 0x1
+  - 0x43
+  - 0x2
+  - 0x0
+  - 0x0F
+  - 0x7
