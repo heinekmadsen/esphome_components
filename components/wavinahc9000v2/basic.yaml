@@ -1,5 +1,5 @@
-substitude:
-  MODBUS_READ_FUNCTION: 0x43
+substitutions:
+  MODBUS_READ_FUNCTION: "0x43"
 
 
 uart:
