@@ -1,5 +1,31 @@
 substitutions:
-  MODBUS_READ_FUNCTION: "0x43"
+  MODBUS_HEX_READ_FUNCTION:         "0x43"
+  MODBUS_HEX_WRITE_FUNCTION:        "0x44"
+  
+  MODBUS_HEX_CURRENT_TEMP_1:        "0x01"
+  MODBUS_HEX_CURRENT_TEMP_2:        "0x04"
+  MODBUS_HEX_CURRENT_TEMP_REGISTER: "0x07"
+  
+  MODBUS_HEX_TARGET_TEMP_1:         "0x02"
+  MODBUS_HEX_TARGET_TEMP_2:         "0x00"
+  MODBUS_HEX_TARGET_TEMP_REGISTER:  "0x07"
+  
+  MODBUS_HEX_CHANNEL_01:            "0x00"
+  MODBUS_HEX_CHANNEL_02:            "0x01"
+  MODBUS_HEX_CHANNEL_03:            "0x02"
+  MODBUS_HEX_CHANNEL_04:            "0x03"
+  MODBUS_HEX_CHANNEL_05:            "0x04"
+  MODBUS_HEX_CHANNEL_06:            "0x05"
+  MODBUS_HEX_CHANNEL_07:            "0x06"
+  MODBUS_HEX_CHANNEL_08:            "0x07"
+  MODBUS_HEX_CHANNEL_09:            "0x08"
+  MODBUS_HEX_CHANNEL_10:            "0x09"
+  MODBUS_HEX_CHANNEL_11:            "0x0A"
+  MODBUS_HEX_CHANNEL_12:            "0x0B"
+  MODBUS_HEX_CHANNEL_13:            "0x0C"
+  MODBUS_HEX_CHANNEL_14:            "0x0D"
+  MODBUS_HEX_CHANNEL_15:            "0x0E"
+  MODBUS_HEX_CHANNEL_16:            "0x0F"
 
 
 uart:
