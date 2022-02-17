@@ -22,3 +22,10 @@ modbus_controller:
   update_interval: 60s
   command_throttle: 10ms
   
+.channel_02_current_temp_custom_command: &channel_02_current_temp_custom_command
+  - 0x1
+  - 0x43
+  - 0x1
+  - 0x4
+  - 0x1
+  - 0x7
