@@ -10,6 +10,10 @@ substitutions:
   MODBUS_HEX_TARGET_TEMP_2:         "0x00"
   MODBUS_HEX_TARGET_TEMP_REGISTER:  "0x07"
   
+  MODBUS_HEX_BATTERY_1:             "0x01"
+  MODBUS_HEX_BATTERY_2:             "0x0A"
+  MODBUS_HEX_BATTERY_REGISTER:      "0x01"
+  
   MODBUS_HEX_CHANNEL_01:            "0x00"
   MODBUS_HEX_CHANNEL_02:            "0x01"
   MODBUS_HEX_CHANNEL_03:            "0x02"
