@@ -8,7 +8,7 @@ My creation of custom components fro ESP home.
 ### Installation
 
 ## V2 - Genvex
-```
+```yaml
 packages:
   remote_package:
     url: https://github.com/heinekmadsen/esphome_components
