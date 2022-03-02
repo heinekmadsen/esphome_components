@@ -2,7 +2,48 @@
 
 My creation of custom components fro ESP home.
 
+### Recent updates
+02-03-2022 - Genvexv2 - Inspired by Jopand's work on the nilan custom component I have created an updated version for Genvex, utilizing the esphome modbus_controller
+
 ### Installation
+
+## V2 - Genvex
+```
+packages:
+  remote_package:
+    url: https://github.com/heinekmadsen/esphome_components
+    ref: main
+    files: [components/genvexv2/optima250.yaml]
+    refresh: 0s
+
+uart:
+  - id: uart_genvex
+    rx_pin: GPIO16
+    tx_pin: GPIO17
+    parity: EVEN
+    baud_rate: 19200
+    stop_bits: 1
+  
+modbus:
+    - id: genvex_modbus
+      uart_id: uart_genvex
+ 
+modbus_controller:
+  id: genvex_modbus_controller
+  address: 1
+  modbus_id: genvex_modbus
+  update_interval: 60s
+  command_throttle: 10ms
+```
+
+
+
+
+
+
+
+## Legacy
+Follow the instructions below for the old genvex and wavin components
 Add this repository to your ESPHome config yaml:
 
 ```yaml
