@@ -1,3 +1,4 @@
+switch:
   - platform: modbus_controller
     name:                   ${name} Standby ${channel_09_friendly_name}
     id:                     ${device}_standby_${channel_09_id}
