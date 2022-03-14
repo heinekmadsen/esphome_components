@@ -1,5 +1,5 @@
 switch:
-- platform: modbus_controller
+  - platform: modbus_controller
     name:                   ${name} Standby ${channel_10_friendly_name}
     id:                     ${device}_standby_${channel_10_id}
     modbus_controller_id:   ${device}_modbus_controller
