@@ -1,0 +1,55 @@
+  - platform: modbus_controller
+    name:                   ${name} Standby ${channel_09_friendly_name}
+    id:                     ${device}_standby_${channel_09_id}
+    modbus_controller_id:   ${device}_modbus_controller
+    custom_command:
+      - 0x01
+      - 0x43
+      - 0x02
+      - 0x07
+      - 0x08 #channel
+      - 0x01
+    write_lambda: |-
+      ESP_LOGD("main","Modbus Switch incoming state = %s",ONOFF(x));
+      bool state = ONOFF(x);
+      uint8_t MODE_MASK = 0x07;
+      //uint16_t MODE_MASK_16 = ~MODE_MASK;
+      //ESP_LOGD("main",id(${device}_standby_${channel_09_id}).state));
+      payload.push_back(0x01);
+      payload.push_back(0x45);
+      payload.push_back(0x02);
+      payload.push_back(0x07); 
+      payload.push_back(0x08); 
+      payload.push_back(0x01); 
+      if(x)
+      {
+        ESP_LOGD("main", "In If");
+        ESP_LOGD("main","Pushing back 0x01 because state is %s",ONOFF(x));
+        payload.push_back( 0x01 >> 8);
+        payload.push_back( 0x01 & 0xFF);
+      }
+      else
+      {
+        ESP_LOGD("main","In else");
+        ESP_LOGD("main","Pushing back 0x00 because state is %s",ONOFF(x));
+        payload.push_back( 0x00 >> 8);
+        payload.push_back( 0x00 & 0xFF);
+      }
+      payload.push_back((~MODE_MASK) >> 8);
+      payload.push_back((~MODE_MASK) & 0xFF);
+      return true;
+    lambda: |-
+      ESP_LOGD("main","Received raw data %s",hexencode(data).c_str());
+      int maskedoff = data[1] & 0x07;
+      int mode = data[1];
+      ESP_LOGI("main","MODE for kontor is: %i",mode);
+      ESP_LOGI("main","maskedoff %i",maskedoff);
+      if(mode == 1)
+      {
+        ESP_LOGD("main","In mode == 1 - Mode bit is %i",mode);
+      }
+      else if(mode == 0)
+      {
+        ESP_LOGD("main","In mode == 0 - Mode bit is %i",mode);
+      }      
+      return mode;
