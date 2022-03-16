@@ -95,14 +95,14 @@ packages:
       - components/wavinahc9000v2/configs/channel_02.yaml 
       - components/wavinahc9000v2/configs/channel_03.yaml 
       - components/wavinahc9000v2/configs/channel_04.yaml 
-      - components/wavinahc9000v2/configs/channel_05.yaml 
-      - components/wavinahc9000v2/configs/channel_06.yaml 
-      - components/wavinahc9000v2/configs/channel_07.yaml 
-      - components/wavinahc9000v2/configs/channel_08.yaml 
-      - components/wavinahc9000v2/configs/channel_09.yaml 
-      - components/wavinahc9000v2/configs/channel_10.yaml 
-      - components/wavinahc9000v2/configs/channel_11.yaml 
-      - components/wavinahc9000v2/configs/channel_12.yaml
+      #- components/wavinahc9000v2/configs/channel_05.yaml 
+      #- components/wavinahc9000v2/configs/channel_06.yaml 
+      #- components/wavinahc9000v2/configs/channel_07.yaml 
+      #- components/wavinahc9000v2/configs/channel_08.yaml 
+      #- components/wavinahc9000v2/configs/channel_09.yaml 
+      #- components/wavinahc9000v2/configs/channel_10.yaml 
+      #- components/wavinahc9000v2/configs/channel_11.yaml 
+      #- components/wavinahc9000v2/configs/channel_12.yaml
       #- components/wavinahc9000v2/configs/channel_13.yaml 
       #- components/wavinahc9000v2/configs/channel_14.yaml
       #- components/wavinahc9000v2/configs/channel_15.yaml 
