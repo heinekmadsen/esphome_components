@@ -3,6 +3,7 @@
 My creation of custom components fro ESP home.
 
 ### Recent updates
+16-03-2022 - WavinAhc9000v2 - Inspired by Jopand's work on the nilan custom component I have created an updated version for Wavin Ahc 9000, utilizing the esphome modbus_controller and alot of esphome lambda (Thank you for not using standard modbus function Wavin!)
 02-03-2022 - Genvexv2 - Inspired by Jopand's work on the nilan custom component I have created an updated version for Genvex, utilizing the esphome modbus_controller
 
 ### Installation
@@ -36,8 +37,96 @@ modbus_controller:
   command_throttle: 10ms
 ```
 
+## V2 - Wavin
+To use the Wavin V2 you need to be running the ESPHome dev version in Home Assistant (https://esphome.io/guides/faq.html#how-do-i-use-the-latest-bleeding-edge-version)
+To make it easy to name the entities we make use of substitutions in ESPHome. Add this at the top of your yaml file and edit to your needs:
+```yaml
+substitutions:
+  # UNIQUE NAME FOR THE DEVICE
+  device: wavin # Case sensitive!!!
+  name: Wavin   # "Friendly name" - not case sensitive!!!
+  
+  # CHANNEL friendly names (If using spaces remember to add ")
+  channel_01_friendly_name: Livingroom
+  channel_02_friendly_name: Kitchen
+  channel_03_friendly_name: Toilet
+  channel_04_friendly_name: "Big room 1"
+  channel_05_friendly_name: "Channel 05"
+  channel_06_friendly_name: "Channel 06"
+  channel_07_friendly_name: "Channel 07"
+  channel_08_friendly_name: "Channel 08"
+  channel_09_friendly_name: "Channel 09"
+  channel_10_friendly_name: "Channel 10"
+  channel_11_friendly_name: "Channel 11"
+  channel_12_friendly_name: "Channel 12"
+  channel_13_friendly_name: "Channel 13"
+  channel_14_friendly_name: "Channel 14"
+  channel_15_friendly_name: "Channel 15"
+  channel_16_friendly_name: "Channel 16"
+  
+  # CHANNEL ID´S (ONLY LOWER CASE LETTERS, NO SPACES) used for entity ids
+  channel_01_id: livingroom
+  channel_02_id: kitchen
+  channel_03_id: toilet
+  channel_04_id: big_room_1
+  channel_05_id: channel_05
+  channel_06_id: channel_06
+  channel_07_id: channel_07
+  channel_08_id: channel_08
+  channel_09_id: channel_09
+  channel_10_id: channel_10
+  channel_11_id: channel_11
+  channel_12_id: channel_12
+  channel_13_id: channel_13
+  channel_14_id: channel_14
+  channel_15_id: channel_15
+  channel_16_id: channel_16
+```
 
+Add this after your normal ESPhome config (wifi, ota, api, etc....) and uncomment the config lines for the active channels on your Wavin Ahc 9000
+```yaml
+# Uncomment the active channels on your Wavin Ahc 9000
+packages:
+  remote_package:
+    url: https://github.com/heinekmadsen/esphome_components
+    ref: main
+    files: 
+      - components/wavinahc9000v2/configs/channel_01.yaml 
+      - components/wavinahc9000v2/configs/channel_02.yaml 
+      - components/wavinahc9000v2/configs/channel_03.yaml 
+      - components/wavinahc9000v2/configs/channel_04.yaml 
+      - components/wavinahc9000v2/configs/channel_05.yaml 
+      - components/wavinahc9000v2/configs/channel_06.yaml 
+      - components/wavinahc9000v2/configs/channel_07.yaml 
+      - components/wavinahc9000v2/configs/channel_08.yaml 
+      - components/wavinahc9000v2/configs/channel_09.yaml 
+      - components/wavinahc9000v2/configs/channel_10.yaml 
+      - components/wavinahc9000v2/configs/channel_11.yaml 
+      - components/wavinahc9000v2/configs/channel_12.yaml
+      #- components/wavinahc9000v2/configs/channel_13.yaml 
+      #- components/wavinahc9000v2/configs/channel_14.yaml
+      #- components/wavinahc9000v2/configs/channel_15.yaml 
+      #- components/wavinahc9000v2/configs/channel_16.yaml 
+    refresh: 0s
 
+uart:
+  - id: uart_${device}
+    rx_pin: GPIO16
+    tx_pin: GPIO17
+    baud_rate: 38400
+    stop_bits: 1
+    parity: NONE
+    
+modbus:
+    - id: ${device}_modbus
+      uart_id: uart_${device}
+
+modbus_controller:
+  id: ${device}_modbus_controller
+  address: 1
+  modbus_id: wavin_modbus
+  update_interval: 5s
+```
 
 
 
