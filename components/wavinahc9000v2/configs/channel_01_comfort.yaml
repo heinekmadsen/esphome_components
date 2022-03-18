@@ -1,5 +1,3 @@
-# !!!ONLY FOR THE BAVE FOR TESTING!!! #
-
 external_components:
   - source: github://heinekmadsen/esphome_components
     refresh: 0s
@@ -62,8 +60,8 @@ number:
 # ----------- Switch ----------- #
 switch:
   - platform:               modbus_controller
-    name:                   ${name} Standby ${channel_01_friendly_name}
-    id:                     ${device}_standby_${channel_01_id}
+    name:                   ${name} Comfort Standby ${channel_01_friendly_name}
+    id:                     ${device}_comfort_standby_${channel_01_id}
     modbus_controller_id:   ${device}_modbus_controller
     custom_command:
       - 0x01
@@ -105,7 +103,7 @@ switch:
 # ----------- Climate ----------- #
 climate:
   - platform:               wavinahc9000v2
-    name:                   ${name} ${channel_01_friendly_name}
+    name:                   ${name} Comfort ${channel_01_friendly_name}
     current_temp_sensor_id: ${device}_comfort_temp_${channel_01_id}
     target_temp_number_id:  ${device}_comfort_target_temp_${channel_01_id}
     mode_switch_sensor_id:  ${device}_comfort_standby_${channel_01_id}
