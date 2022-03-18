@@ -3,9 +3,9 @@
 My creation of custom components fro ESP home.
 
 ### Recent updates
-18-03-2022 - WavinAhc9000v2 - Added a file for comfort temperature for channel 1. Only for testing. HAVENT TESTED MY SELF AS I DONT HAVE A THERMOSTAT WITH IR. Please report back if working or not
-16-03-2022 - WavinAhc9000v2 - Inspired by Jopand's work on the nilan custom component I have created an updated version for Wavin Ahc 9000, utilizing the esphome modbus_controller and alot of esphome lambda (Thank you for not using standard modbus function Wavin!)
-02-03-2022 - Genvexv2 - Inspired by Jopand's work on the nilan custom component I have created an updated version for Genvex, utilizing the esphome modbus_controller
+18-03-2022 - WavinAhc9000v2 - Added a file for comfort temperature for channel 1. Only for testing. HAVENT TESTED MY SELF AS I DONT HAVE A THERMOSTAT WITH IR. Please report back if working or not.
+16-03-2022 - WavinAhc9000v2 - Inspired by Jopand's work on the nilan custom component I have created an updated version for Wavin Ahc 9000, utilizing the esphome modbus_controller and alot of esphome lambda (Thank you for not using standard modbus function Wavin!).
+02-03-2022 - Genvexv2 - Inspired by Jopand's work on the nilan custom component I have created an updated version for Genvex, utilizing the esphome modbus_controller.
 
 ### Installation
 
