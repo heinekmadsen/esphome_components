@@ -33,7 +33,7 @@ void Wavinahc9000v2Climate::setup() {
       this->action = climate::CLIMATE_ACTION_HEATING;
     }
     else if (!state) {
-      this->action = climate::CLIMATE_ACTION_OFF;
+      this->action = climate::CLIMATE_ACTION_IDLE;
     }
     publish_state();
   });
