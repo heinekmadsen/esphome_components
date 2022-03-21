@@ -3,6 +3,8 @@
 My creation of custom components fro ESP home.
 
 ### Recent updates
+21-03-2022 - WavinAhc9000v2 - A big thanks to nic6911 https://github.com/nic6911 for testing the comfort temperature config file and providing config files for confort for all the channels
+
 18-03-2022 - WavinAhc9000v2 - Added a file for comfort temperature for channel 1. Only for testing. HAVENT TESTED MY SELF AS I DONT HAVE A THERMOSTAT WITH IR. Please report back if working or not.
 
 16-03-2022 - WavinAhc9000v2 - Inspired by Jopand's work on the nilan custom component I have created an updated version for Wavin Ahc 9000, utilizing the esphome modbus_controller and alot of esphome lambda (Thank you for not using standard modbus function Wavin!).
@@ -94,22 +96,38 @@ packages:
     url: https://github.com/heinekmadsen/esphome_components
     ref: main
     files: 
-      - components/wavinahc9000v2/configs/channel_01.yaml 
-      - components/wavinahc9000v2/configs/channel_02.yaml 
-      - components/wavinahc9000v2/configs/channel_03.yaml 
+      - components/wavinahc9000v2/configs/channel_01.yaml
+      - components/wavinahc9000v2/configs/channel_01_comfort.yaml # Only for channels with thermostat with IR sensor
+      - components/wavinahc9000v2/configs/channel_02.yaml
+      - components/wavinahc9000v2/configs/channel_02_comfort.yaml # Only for channels with thermostat with IR sensor
+      - components/wavinahc9000v2/configs/channel_03.yaml
+      - components/wavinahc9000v2/configs/channel_03_comfort.yaml # Only for channels with thermostat with IR sensor
       - components/wavinahc9000v2/configs/channel_04.yaml 
+      - components/wavinahc9000v2/configs/channel_04_comfort.yaml # Only for channels with thermostat with IR sensor
       #- components/wavinahc9000v2/configs/channel_05.yaml 
+      #- components/wavinahc9000v2/configs/channel_05_comfort.yaml # Only for channels with thermostat with IR sensor
       #- components/wavinahc9000v2/configs/channel_06.yaml 
+      #- components/wavinahc9000v2/configs/channel_06_comfort.yaml # Only for channels with thermostat with IR sensor
       #- components/wavinahc9000v2/configs/channel_07.yaml 
+      #- components/wavinahc9000v2/configs/channel_07_comfort.yaml # Only for channels with thermostat with IR sensor
       #- components/wavinahc9000v2/configs/channel_08.yaml 
+      #- components/wavinahc9000v2/configs/channel_08_comfort.yaml # Only for channels with thermostat with IR sensor
       #- components/wavinahc9000v2/configs/channel_09.yaml 
+      #- components/wavinahc9000v2/configs/channel_09_comfort.yaml # Only for channels with thermostat with IR sensor
       #- components/wavinahc9000v2/configs/channel_10.yaml 
+      #- components/wavinahc9000v2/configs/channel_10_comfort.yaml # Only for channels with thermostat with IR sensor
       #- components/wavinahc9000v2/configs/channel_11.yaml 
+      #- components/wavinahc9000v2/configs/channel_11_comfort.yaml # Only for channels with thermostat with IR sensor
       #- components/wavinahc9000v2/configs/channel_12.yaml
+      #- components/wavinahc9000v2/configs/channel_12_comfort.yaml # Only for channels with thermostat with IR sensor
       #- components/wavinahc9000v2/configs/channel_13.yaml 
+      #- components/wavinahc9000v2/configs/channel_13_comfort.yaml # Only for channels with thermostat with IR sensor
       #- components/wavinahc9000v2/configs/channel_14.yaml
+      #- components/wavinahc9000v2/configs/channel_14_comfort.yaml # Only for channels with thermostat with IR sensor
       #- components/wavinahc9000v2/configs/channel_15.yaml 
+      #- components/wavinahc9000v2/configs/channel_15_comfort.yaml # Only for channels with thermostat with IR sensor
       #- components/wavinahc9000v2/configs/channel_16.yaml 
+      #- components/wavinahc9000v2/configs/channel_16_comfort.yaml # Only for channels with thermostat with IR sensor
     refresh: 0s
 
 uart:
