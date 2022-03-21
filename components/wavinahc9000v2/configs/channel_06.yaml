@@ -51,21 +51,6 @@ binary_sensor:
       - 0x01
     bitmask: 0x0010
 
-# ----------- Binary ----------- #
-binary_sensor:
-  - platform:               modbus_controller
-    name:                   ${name} Output ${channel_06_friendly_name}
-    id:                     ${device}_output_${channel_06_id}
-    modbus_controller_id:   ${device}_modbus_controller
-    custom_command:
-      - 0x01
-      - 0x43
-      - 0x03
-      - 0x00
-      - 0x05 # channel 06 (05)
-      - 0x01
-    bitmask: 0x0010
-
 # ----------- Number ----------- #
 number:
   - platform:               modbus_controller
