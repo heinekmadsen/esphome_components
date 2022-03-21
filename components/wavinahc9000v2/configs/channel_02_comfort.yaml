@@ -1,0 +1,109 @@
+external_components:
+  - source: github://heinekmadsen/esphome_components
+    refresh: 0s
+    components: [wavinahc9000v2]
+
+  # PR required until merged into main
+  - source: github://pr#3295
+    components: [modbus_controller]
+    refresh: 0s
+
+wavinahc9000v2:
+# ----------- Sensor ----------- #
+sensor:
+  - platform:               modbus_controller
+    name:                   ${name} Comfort Temperature ${channel_02_friendly_name}
+    id:                     ${device}_comfort_temp_${channel_02_id}
+    modbus_controller_id:   ${device}_modbus_controller
+    custom_command: 
+      - 0x01
+      - 0x43
+      - 0x01
+      - 0x05 # 05 = Floor temp
+      - 0x00 # channel 01 (00)
+      - 0x01
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    device_class: temperature
+    filters:
+      - multiply: 0.1
+
+# ----------- Number ----------- #
+number:
+  - platform:               modbus_controller
+    name:                   ${name} Comfort Target Temperature ${channel_02_friendly_name}
+    id:                     ${device}_comfort_target_temp_${channel_02_id}
+    modbus_controller_id:   ${device}_modbus_controller
+    custom_command: 
+      - 0x01
+      - 0x43
+      - 0x02
+      - 0x01 # 01 = comfort
+      - 0x00 # channel 01 (00)
+      - 0x01
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    min_value: 6
+    max_value: 40
+    step: .5
+    write_lambda: |-
+      ESP_LOGD("main", "Trying to write new target temp: %f",x);
+      uint16_t targettemp = x * 10;
+      payload.push_back(0x0144);
+      payload.push_back(0x0201);  // 01 = comfort
+      payload.push_back(0x0001); //0x0001 = channel 01 (00)
+      payload.push_back(targettemp);
+      return true;
+    lambda: "return x*0.1;"
+
+# ----------- Switch ----------- #
+switch:
+  - platform:               modbus_controller
+    name:                   ${name} Comfort Standby ${channel_02_friendly_name}
+    id:                     ${device}_comfort_standby_${channel_02_id}
+    modbus_controller_id:   ${device}_modbus_controller
+    custom_command:
+      - 0x01
+      - 0x43
+      - 0x02
+      - 0x07
+      - 0x00 # channel 01 (00)
+      - 0x03
+    write_lambda: |-
+      ESP_LOGD("main","Modbus Switch incoming state for channel 01 = %s",ONOFF(x));
+      bool state = ONOFF(x);
+      uint8_t MODE_MASK = 0x07;
+      payload.push_back(0x01);
+      payload.push_back(0x45);
+      payload.push_back(0x02);
+      payload.push_back(0x07); 
+      payload.push_back(0x00); // channel 01 (00)
+      payload.push_back(0x03); 
+      if(x)
+      {
+        ESP_LOGD("main","Pushing back 0x01 because state is %s",ONOFF(x));
+        payload.push_back( 0x01 >> 8);
+        payload.push_back( 0x01 & 0xFF);
+      }
+      else
+      {
+        ESP_LOGD("main","Pushing back 0x00 because state is %s",ONOFF(x));
+        payload.push_back( 0x00 >> 8);
+        payload.push_back( 0x00 & 0xFF);
+      }
+      payload.push_back((~MODE_MASK) >> 8);
+      payload.push_back((~MODE_MASK) & 0xFF);
+      return true;
+    lambda: |-
+      int mode = data[1];
+      ESP_LOGD("main","MODE for Channel 01 is: %i",mode);    
+      return mode;
+
+# ----------- Climate ----------- #
+climate:
+  - platform:               wavinahc9000v2
+    name:                   ${name} Comfort ${channel_02_friendly_name}
+    current_temp_sensor_id: ${device}_comfort_temp_${channel_02_id}
+    target_temp_number_id:  ${device}_comfort_target_temp_${channel_02_id}
+    mode_switch_sensor_id:  ${device}_comfort_standby_${channel_02_id}
