@@ -1,0 +1,10 @@
+external_components:
+  - source: github://heinekmadsen/esphome_components
+    refresh: 0s
+    ref: dev
+    components: [wavinahc9000v2]
+
+  # PR required until merged into main
+  - source: github://pr#3295
+    components: [modbus_controller]
+    refresh: 0s
