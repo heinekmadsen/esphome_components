@@ -36,6 +36,21 @@ sensor:
     filters:
       - multiply: 10 
 
+# ----------- Binary ----------- #
+binary_sensor:
+  - platform:               modbus_controller
+    name:                   ${name} Output ${channel_01_friendly_name}
+    id:                     ${device}_output_${channel_01_id}
+    modbus_controller_id:   ${device}_modbus_controller
+    custom_command:
+      - 0x01
+      - 0x43
+      - 0x03
+      - 0x00
+      - 0x00 # channel 01 (00)
+      - 0x01
+    bitmask: 0x0010
+
 # ----------- Number ----------- #
 number:
   - platform:               modbus_controller
@@ -114,3 +129,4 @@ climate:
     current_temp_sensor_id: ${device}_temp_${channel_01_id}
     target_temp_number_id:  ${device}_target_temp_${channel_01_id}
     mode_switch_sensor_id:  ${device}_standby_${channel_01_id}
+    action_sensor_id:       ${device}_output_${channel_01_id}
