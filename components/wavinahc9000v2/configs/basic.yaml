@@ -3,7 +3,7 @@ external_components:
       type: git
       url: https://heinekmadsen/esphome_components
       ref: dev
-      refresh: 0s
+    refresh: 0s
     components: [wavinahc9000v2]
 
   # PR required until merged into main
