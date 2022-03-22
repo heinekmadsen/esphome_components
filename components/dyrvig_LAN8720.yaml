@@ -1,0 +1,39 @@
+ethernet:
+  type: LAN8720
+  mdc_pin: GPIO23
+  mdio_pin: GPIO18
+  clk_mode: GPIO0_IN
+  phy_addr: 1
+  power_pin: GPIO14
+  
+status_led:
+  pin: GPIO15
+
+output:
+  - platform: ledc
+    pin: GPIO2
+    id: gpio_2
+    
+    
+# Example usage in a light
+light:
+  - platform: monochromatic
+    output: gpio_2
+    name: "network Light"
+    
+interval:
+  - interval: 1s
+    then:
+      if:
+        condition:
+          api.connected 
+        then:
+          - output.turn_on: gpio_2
+          - output.ledc.set_frequency:
+              id: gpio_2
+              frequency: "1000Hz"
+          - output.set_level:
+              id: gpio_2
+              level: "10%"    
+        else:
+          - output.turn_off: gpio_2 

@@ -1,0 +1,372 @@
+external_components:
+  - source: github://heinekmadsen/esphome_components
+    refresh: 0s
+    components: [genvexv2]
+
+genvexv2:
+
+select:
+  - platform: genvexv2
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex speed mode"
+    id: genvex_speed_mode    
+    address: 100
+    options:
+      - "Off"
+      - "1"
+      - "2"
+      - "3"
+      - "4"
+      
+  - platform: genvexv2
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex timer"
+    id: genvex_timer    
+    address: 106
+    options:
+      - "Off"
+      - "1"
+      - "2"
+      - "3"
+      - "4"
+      - "5"
+      - "6"
+      - "7"
+      - "8"
+      - "9"
+      
+    
+sensor:
+  - platform: template
+    name: "Genvex Virkningsgrad"
+    lambda: |-
+      float genvex_temp_t1_inlet = (id(genvex_temp_t1).state);
+      float genvex_temp_t3_outdoor = (id(genvex_temp_t3).state);
+      float genvex_temp_t7_extract = (id(genvex_temp_t7).state);
+      float x = (100 * (genvex_temp_t1_inlet - genvex_temp_t3_outdoor) / (genvex_temp_t7_extract - genvex_temp_t3_outdoor));
+      return x;
+    update_interval: 60s
+    state_class: measurement
+    
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex temp t1"
+    id: genvex_temp_t1
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    device_class: temperature
+    value_type: U_WORD
+    register_type: read
+    address: 0
+    lambda: |-
+      ESP_LOGD("T1", "Processing T1 using lambda");
+      return ((x - 300) / 10);
+      
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex temp t3"
+    id: genvex_temp_t3
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    device_class: temperature
+    value_type: U_WORD
+    register_type: read
+    address: 2
+    lambda: |-
+      ESP_LOGD("T3", "Processing T3 using lambda");
+      return ((x - 300) / 10);
+      
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex temp t4"
+    id: genvex_temp_t4
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    device_class: temperature
+    value_type: U_WORD
+    register_type: read
+    address: 3
+    lambda: |-
+      ESP_LOGD("T4", "Processing T4 using lambda");
+      return ((x - 300) / 10);
+      
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex temp t7"
+    id: genvex_temp_t7
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    device_class: temperature
+    value_type: U_WORD
+    register_type: read
+    address: 6
+    lambda: |-
+      ESP_LOGD("T7", "Processing T7 using lambda");
+      return ((x - 300) / 10);    
+      
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex temp t2 panel"
+    id: genvex_temp_t2_panel
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    device_class: temperature
+    value_type: U_WORD
+    register_type: read
+    address: 9
+    lambda: |-
+      ESP_LOGD("T2_Panel", "Processing T2 panel using lambda");
+      return ((x - 300) / 10);
+
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex Messured Humidity"
+    id: genvex_messured_humidity
+    unit_of_measurement: '%'
+    accuracy_decimals: 1
+    device_class: humidity
+    register_type: read
+    address: 10
+    #filters:
+    #  - multiply: 0.01
+    on_value: 
+      - lambda: !lambda |-
+          id(aqi_humidity).publish_state( (x < 35) ? "Too Dry" : 
+                                          (x < 65) ? "Perfect" : 
+                                          "Too Humid");
+
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex inlet fan"
+    id: genvex_inlet_fan
+    unit_of_measurement: "%"
+    value_type: U_WORD
+    register_type: read
+    address: 102
+
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex extract fan"
+    id: genvex_extract_fan
+    unit_of_measurement: "%"
+    value_type: U_WORD
+    register_type: read
+    address: 103
+
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex bypass"
+    id: genvex_bypass
+    unit_of_measurement: "%"
+    value_type: U_WORD
+    register_type: read
+    address: 104
+    
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex watervalve"
+    id: genvex_watervalve
+    unit_of_measurement: "%"
+    value_type: U_WORD
+    register_type: read
+    address: 105    
+    
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex humidity fan control"
+    id: genvex_humidity_fan_control
+    unit_of_measurement: "%"
+    value_type: U_WORD
+    register_type: read
+    address: 106        
+
+text_sensor:
+  - platform: template
+    name: "Genvex Air Quality Index Humidity (AQI)"
+    id: aqi_humidity
+    icon: mdi:water-percent 
+
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex Alarm"
+    id: genvex_alarm
+    register_type: read
+    address: 101
+    lambda: !lambda |-
+      uint16_t int_mode = (data[item->offset] << 8) + data[item->offset+1];
+      ESP_LOGD("main","Parsed operation mode int : %d", int_mode);
+      std::string mode_str;
+      switch (int_mode) {
+        case 0:  mode_str = "Off"; break;
+        case 1:  mode_str = "External Stop"; break;
+        case 2:  mode_str = "Main Filter"; break;
+        case 3:  mode_str = "External Stop & Main Filter"; break;
+        case 4:  mode_str = "High Pressure"; break;
+        case 5:  mode_str = "High Pressure & External Stop"; break;
+        case 6:  mode_str = "High Pressure & Main Filter"; break;
+        case 7:  mode_str = "High Pressure & External Stop & Main Filter"; break;
+        case 8:  mode_str = "Frost"; break;
+        case 9:  mode_str = "Frost & External Stop"; break;
+        case 10: mode_str = "Frost & Main Filter"; break;
+        case 11: mode_str = "Frost & External Stop & Main Filter"; break;
+        case 12: mode_str = "Frost & High Pressure"; break;
+        case 13: mode_str = "Frost & High Pressure & External Stop"; break;
+        case 14: mode_str = "Frost & High Pressure & Main Filter"; break;
+        case 15: mode_str = "Frost & High Pressure & Main Filter & External Stop"; break;
+        case 16: mode_str = "CommError Panel->Controller"; break;
+        case 17: mode_str = "CommError Panel->Controller & External Stop"; break;
+        case 18: mode_str = "CommError Panel->Controller & Main Filter"; break;
+        case 19: mode_str = "CommError Panel->Controller & External Stop & Main Filter"; break;
+        case 20: mode_str = "CommError Panel->Controller & High Pressure"; break;
+        case 21: mode_str = "CommError Panel->Controller & High Pressure & External Stop"; break;
+        case 22: mode_str = "CommError Panel->Controller & High Pressure & Main Filter"; break;
+        case 23: mode_str = "CommError Panel->Controller & High Pressure & External Stop & Main Filter"; break;
+        case 24: mode_str = "CommError Panel->Controller & Frost"; break;
+        case 25: mode_str = "CommError Panel->Controller & Frost & External Stop"; break;
+        case 26: mode_str = "CommError Panel->Controller & Frost & Main Filter"; break;
+        case 27: mode_str = "CommError Panel->Controller & Frost & External Stop & Main Filter"; break;
+        case 28: mode_str = "CommError Panel->Controller & Frost & High Pressure"; break;
+        case 29: mode_str = "CommError Panel->Controller & Frost & High Pressure & External Stop"; break;
+        case 30: mode_str = "CommError Panel->Controller & Frost & High Pressure & Main Filter"; break;
+        case 31: mode_str = "CommError Panel->Controller & Frost & High Pressure & External Stop & Main Filter"; break;
+        case 32: mode_str = "External Filter"; break;
+        case 33: mode_str = "External Filter & External Stop"; break;
+        case 34: mode_str = "External Filter & Main Filter"; break;
+        case 35: mode_str = "External Filter & External Stop & Main Filter"; break;
+        case 36: mode_str = "External Filter & High Pressure"; break;
+        case 37: mode_str = "External Filter & High Pressure & External Stop"; break;
+        case 38: mode_str = "External Filter & High Pressure & Main Filter"; break;
+        case 39: mode_str = "External Filter & High Pressure & External Stop & Main Filter"; break;
+        case 40: mode_str = "External Filter & Frost"; break;
+        case 41: mode_str = "External Filter & Frost & External Stop"; break;
+        case 42: mode_str = "External Filter & Frost & Main Filter"; break;
+        case 43: mode_str = "External Filter & Frost & External Stop & Main Filter"; break;
+        case 44: mode_str = "External Filter & Frost & High Pressure"; break;
+        case 45: mode_str = "External Filter & Frost & High Pressure & External Stop"; break;
+        case 46: mode_str = "External Filter & Frost & High Pressure & Main Filter"; break;
+        case 47: mode_str = "External Filter & Frost & High Pressure & External Stop & Main Filter"; break;
+        case 48: mode_str = "External Filter & CommError Panel->Controller"; break;
+        case 49: mode_str = "External Filter & CommError Panel->Controller & External Stop"; break;
+        case 50: mode_str = "External Filter & CommError Panel->Controller & Main Filter"; break;
+        case 51: mode_str = "External Filter & CommError Panel->Controller & External Stop & Main Filter"; break;
+        case 52: mode_str = "External Filter & CommError Panel->Controller & High Pressure"; break;
+        case 53: mode_str = "External Filter & CommError Panel->Controller & High Pressure & External Stop"; break;
+        case 54: mode_str = "External Filter & CommError Panel->Controller & High Pressure & Main Filter"; break;
+        case 55: mode_str = "External Filter & CommError Panel->Controller & High Pressure & External Stop & Main Filter"; break;
+        case 56: mode_str = "External Filter & CommError Panel->Controller & Frost"; break;
+        case 57: mode_str = "External Filter & CommError Panel->Controller & Frost & External Stop"; break;
+        case 58: mode_str = "External Filter & CommError Panel->Controller & Frost & Main Filter"; break;
+        case 59: mode_str = "External Filter & CommError Panel->Controller & Frost & External Stop & Main Filter"; break;
+        case 60: mode_str = "External Filter & CommError Panel->Controller & Frost & High Pressure"; break;
+        case 61: mode_str = "External Filter & CommError Panel->Controller & Frost & High Pressure & External Stop"; break;
+        case 62: mode_str = "External Filter & CommError Panel->Controller & Frost & High Pressure & Main Filter"; break;
+        case 63: mode_str = "External Filter & CommError Panel->Controller & Frost & High Pressure & External Stop & Main Filter"; break;
+        case 64: mode_str = "Fan Speed"; break;
+        case 65: mode_str = "Fan Speed & External Stop"; break;
+        case 66: mode_str = "Fan Speed & Main Filter"; break;
+        case 67: mode_str = "Fan Speed & External Stop & Main Filter"; break;
+        case 68: mode_str = "Fan Speed & High Pressure"; break;
+        case 69: mode_str = "Fan Speed & High Pressure & External Stop"; break;
+        case 70: mode_str = "Fan Speed & High Pressure & Main Filter"; break;
+        case 71: mode_str = "Fan Speed & High Pressure & External Stop & Main Filter"; break;
+        case 72: mode_str = "Fan Speed & Frost"; break;
+        case 73: mode_str = "Fan Speed & Frost & External Stop"; break;
+        case 74: mode_str = "Fan Speed & Frost & Main Filter"; break;
+        case 75: mode_str = "Fan Speed & Frost & External Stop & Main Filter"; break;
+        case 76: mode_str = "Fan Speed & Frost & High Pressure"; break;
+        case 77: mode_str = "Fan Speed & Frost & High Pressure & External Stop"; break;
+        case 78: mode_str = "Fan Speed & Frost & High Pressure & Main Filter"; break;
+        case 79: mode_str = "Fan Speed & Frost & High Pressure & External Stop & Main Filter"; break;
+        case 80: mode_str = "Fan Speed & CommError Panel->Controller"; break;
+        case 81: mode_str = "Fan Speed & CommError Panel->Controller & External Stop"; break;
+        case 82: mode_str = "Fan Speed & CommError Panel->Controller & Main Filter"; break;
+        case 83: mode_str = "Fan Speed & CommError Panel->Controller & External Stop & Main Filter"; break;
+        case 84: mode_str = "Fan Speed & CommError Panel->Controller & High Pressure"; break;
+        case 85: mode_str = "Fan Speed & CommError Panel->Controller & High Pressure & External Stop"; break;
+        case 86: mode_str = "Fan Speed & CommError Panel->Controller & High Pressure & Main Filter"; break;
+        case 87: mode_str = "Fan Speed & CommError Panel->Controller & High Pressure & External Stop & Main Filter"; break;
+        case 88: mode_str = "Fan Speed & CommError Panel->Controller & Frost"; break;
+        case 89: mode_str = "Fan Speed & CommError Panel->Controller & Frost & External Stop"; break;
+        case 90: mode_str = "Fan Speed & CommError Panel->Controller & Frost & Main Filter"; break;
+        case 91: mode_str = "Fan Speed & CommError Panel->Controller & Frost & External Stop & Main Filter"; break;
+        case 92: mode_str = "Fan Speed & CommError Panel->Controller & Frost & High Pressure"; break;
+        case 93: mode_str = "Fan Speed & CommError Panel->Controller & Frost & High Pressure & External Stop"; break;
+        case 94: mode_str = "Fan Speed & CommError Panel->Controller & Frost & High Pressure & Main Filter"; break;
+        case 95: mode_str = "Fan Speed & CommError Panel->Controller & Frost & High Pressure & External Stop & Main Filter"; break;    
+        case 96: mode_str = "Fan Speed & External Filter"; break;
+        case 97: mode_str = "Fan Speed & External Filter & External Stop"; break;
+        case 98: mode_str = "Fan Speed & External Filter & Main Filter"; break;
+        case 99: mode_str = "Fan Speed & External Filter & External Stop & Main Filter"; break;
+        case 100: mode_str = "Fan Speed & External Filter & High Pressure"; break;
+        case 101: mode_str = "Fan Speed & External Filter & High Pressure & External Stop"; break;
+        case 102: mode_str = "Fan Speed & External Filter & High Pressure & Main Filter"; break;
+        case 103: mode_str = "Fan Speed & External Filter & High Pressure & External Stop & Main Filter"; break;
+        case 104: mode_str = "Fan Speed & External Filter & Frost"; break;
+        case 105: mode_str = "Fan Speed & External Filter & Frost & External Stop"; break;
+        case 106: mode_str = "Fan Speed & External Filter & Frost & Main Filter"; break;
+        case 107: mode_str = "Fan Speed & External Filter & Frost & External Stop & Main Filter"; break;
+        case 108: mode_str = "Fan Speed & External Filter & Frost & High Pressure"; break;
+        case 109: mode_str = "Fan Speed & External Filter & Frost & High Pressure & External Stop"; break;
+        case 110: mode_str = "Fan Speed & External Filter & Frost & High Pressure & Main Filter"; break;
+        case 111: mode_str = "Fan Speed & External Filter & Frost & High Pressure & External Stop & Main Filter"; break;
+        case 112: mode_str = "Fan Speed & External Filter & CommError Panel->Controller"; break;
+        case 113: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & External Stop"; break;
+        case 114: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & Main Filter"; break;
+        case 115: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & External Stop & Main Filter"; break;
+        case 116: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & High Pressure"; break;
+        case 117: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & High Pressure & External Stop"; break;
+        case 118: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & High Pressure & Main Filter"; break;
+        case 119: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & High Pressure & External Stop & Main Filter"; break;
+        case 120: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & Frost"; break;
+        case 121: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & Frost & External Stop"; break;
+        case 122: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & Frost & Main Filter"; break;
+        case 123: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & Frost & External Stop & Main Filter"; break;
+        case 124: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & Frost & High Pressure"; break;
+        case 125: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & Frost & High Pressure & External Stop"; break;
+        case 126: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & Frost & High Pressure & Main Filter"; break;
+        case 127: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & Frost & High Pressure & External Stop & Main Filter"; break;  
+        default: mode_str = "Unknown"; break;
+      }
+      return mode_str;
+
+number:
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex target temp"
+    id: genvex_target_temp
+    min_value: 10
+    max_value: 30
+    step: 0.1
+    address: 0
+    lambda: "return ((x+100)/10);"
+    write_lambda: |-
+      ESP_LOGD("main","Processing new target temp");
+      uint16_t new_temp = x * 10 - 100;
+      return new_temp;
+      
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex Ventilation speed"
+    id: genvex_ventilation_speed
+    min_value: 0
+    max_value: 4
+    step: 1.0
+    address: 100
+
+binary_sensor:
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex bypass onoff"
+    id: genvex_bypass_on_off
+    register_type: read
+    address: 107        
+
+  - platform: status
+    name: "Genvex Controller Status"
+
+climate:
+  - platform: genvexv2
+    name: Genvex
+    current_temp_sensor_id: genvex_temp_t1
+    target_temp_sensor_id: genvex_target_temp
+    fan_speed_sensor_id: genvex_ventilation_speed
