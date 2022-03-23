@@ -3,6 +3,7 @@
 My creation of custom components fro ESP home.
 
 ### Recent updates
+23-03-2022 - Wavin Sentio - Added support for Wavin Sentio. nic6911 https://github.com/nic6911 have worked hard on a Wavin Sentio component and it has now beed added to this repo.
 23-03-2022 - WavinAhc9000v2 - BREAKING CHANGE!!! Add the basic.yaml to the list of packages, see example below. Added support for comfort temperature (seperate climate entity). Added mode action to reflect the current output state of the channel. Idle = not heating, Heat = Heating
 23-03-2022 - Genvexv2 - Changed current temp from T1 to T7 as T1 drops when bypass is open. Changed climate entity to .1 decimals.
 
