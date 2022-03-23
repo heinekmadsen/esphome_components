@@ -3,6 +3,9 @@
 My creation of custom components fro ESP home.
 
 ### Recent updates
+23-03-2022 - WavinAhc9000v2 - BREAKING CHANGE!!! Add the basic.yaml to the list of packages, see example below. Added support for comfort temperature (seperate climate entity). Added mode action to reflect the current output state of the channel. Idle = not heating, Heat = Heating
+23-03-2022 - Genvexv2 - Changed current temp from T1 to T7 as T1 drops when bypass is open. Changed climate entity to .1 decimals.
+
 21-03-2022 - WavinAhc9000v2 - A big thanks to nic6911 https://github.com/nic6911 for testing the comfort temperature config file and providing config files for confort for all the channels
 
 18-03-2022 - WavinAhc9000v2 - Added a file for comfort temperature for channel 1. Only for testing. HAVENT TESTED MY SELF AS I DONT HAVE A THERMOSTAT WITH IR. Please report back if working or not.
@@ -96,7 +99,7 @@ packages:
     url: https://github.com/heinekmadsen/esphome_components
     ref: main
     files: 
-      - components/wavinahc9000v2/configs/channel_01.yaml
+      - components/wavinahc9000v2/configs/basic.yaml # REQUIRED FOR WAVIN AHC 9000
       - components/wavinahc9000v2/configs/channel_01_comfort.yaml # Only for channels with thermostat with IR sensor
       - components/wavinahc9000v2/configs/channel_02.yaml
       - components/wavinahc9000v2/configs/channel_02_comfort.yaml # Only for channels with thermostat with IR sensor
