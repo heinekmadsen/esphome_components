@@ -1,14 +1,3 @@
-external_components:
-  - source: github://heinekmadsen/esphome_components
-    refresh: 0s
-    components: [wavinahc9000v2]
-
-  # PR required until merged into main
-  - source: github://pr#3295
-    components: [modbus_controller]
-    refresh: 0s
-
-wavinahc9000v2:
 # ----------- Sensor ----------- #
 sensor:
   - platform:               modbus_controller
@@ -46,6 +35,21 @@ sensor:
     device_class: battery
     filters:
       - multiply: 10 
+
+# ----------- Binary ----------- #
+binary_sensor:
+  - platform:               modbus_controller
+    name:                   ${name} Output ${channel_13_friendly_name}
+    id:                     ${device}_output_${channel_13_id}
+    modbus_controller_id:   ${device}_modbus_controller
+    custom_command:
+      - 0x01
+      - 0x43
+      - 0x03
+      - 0x00
+      - 0x0C # channel 13 (0C)
+      - 0x01
+    bitmask: 0x0010
 
 # ----------- Number ----------- #
 number:
@@ -125,3 +129,4 @@ climate:
     current_temp_sensor_id: ${device}_temp_${channel_13_id}
     target_temp_number_id:  ${device}_target_temp_${channel_13_id}
     mode_switch_sensor_id:  ${device}_standby_${channel_13_id}
+    action_sensor_id:       ${device}_output_${channel_13_id}
