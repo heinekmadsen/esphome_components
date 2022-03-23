@@ -367,6 +367,6 @@ binary_sensor:
 climate:
   - platform: genvexv2
     name: Genvex
-    current_temp_sensor_id: genvex_temp_t1
+    current_temp_sensor_id: genvex_temp_t7
     target_temp_sensor_id: genvex_target_temp
     fan_speed_sensor_id: genvex_ventilation_speed
