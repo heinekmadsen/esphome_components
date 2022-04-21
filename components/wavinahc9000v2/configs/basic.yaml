@@ -7,8 +7,8 @@ external_components:
     components: [wavinahc9000v2]
 
   # PR required until merged into main
-  - source: github://pr#3295
-    components: [modbus_controller]
-    refresh: 0s
+  #- source: github://pr#3295
+  #  components: [modbus_controller]
+  #  refresh: 0s
 
 wavinahc9000v2:
