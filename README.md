@@ -47,7 +47,7 @@ modbus_controller:
 ```
 
 ## V2 - Wavin
-To use the Wavin V2 you need to be running the ESPHome dev version in Home Assistant (https://esphome.io/guides/faq.html#how-do-i-use-the-latest-bleeding-edge-version)
+~~To use the Wavin V2 you need to be running the ESPHome dev version in Home Assistant (https://esphome.io/guides/faq.html#how-do-i-use-the-latest-bleeding-edge-version)~~
 To make it easy to name the entities we make use of substitutions in ESPHome. Add this at the top of your yaml file and edit to your needs:
 ```yaml
 substitutions:
