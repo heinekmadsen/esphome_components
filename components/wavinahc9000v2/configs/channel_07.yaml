@@ -9,7 +9,7 @@ sensor:
       - 0x43
       - 0x01
       - 0x04
-      - 0x06 # channel 07 (06)
+      - 0x07 # channel 07 (06) Offset 1 by kitchen
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "°C"
@@ -27,7 +27,7 @@ sensor:
       - 0x43
       - 0x01
       - 0x0A
-      - 0x06 # channel 07 (06)
+      - 0x07 # channel 07 (06) Offset 1 by kitchen
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "%"
