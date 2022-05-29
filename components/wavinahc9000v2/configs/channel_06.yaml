@@ -83,11 +83,3 @@ switch:
       int mode = data[1];
       ESP_LOGD("main","MODE for Channel 01 is: %i",mode);    
       return mode;
-
-# ----------- Climate ----------- #
-climate:
-  - platform:               wavinahc9000v2
-    name:                   ${name} ${channel_06_friendly_name}
-    target_temp_number_id:  ${device}_target_temp_${channel_06_id}
-    mode_switch_sensor_id:  ${device}_standby_${channel_06_id}
-    action_sensor_id:       ${device}_output_${channel_06_id}
