@@ -71,10 +71,13 @@ number:
     step: .5
     write_lambda: |-
       ESP_LOGD("main", "Trying to write new target temp: %f",x);
-      uint16_t targettemp = x * 10;
-      payload.push_back(0x0144);
-      payload.push_back(0x0200);
-      payload.push_back(0x0001); //0x0001 = channel 01 (00)
+      uint8_t targettemp = x * 10;
+      payload.push_back(0x01);
+      payload.push_back(0x44);
+      payload.push_back(0x02);
+      payload.push_back(0x00);
+      payload.push_back(0x00); //0x0001 = channel 01 (00)
+      payload.push_back(0x01); //0x0001 = channel 01 (00)
       payload.push_back(targettemp);
       return true;
     lambda: "return x*0.1;"
