@@ -35,7 +35,8 @@ void SentioClimate::control(const climate::ClimateCall& call) {
     this->target_temperature = *call.get_target_temperature();
     float target = target_temperature;
     ESP_LOGD(TAG, "Target temperature changed to: %f", target);
-    temp_setpoint_number_->make_call().set_value(target).perform();//set(target);
+    temp_setpoint_number_->set(target);
+    //temp_setpoint_number_->make_call().set_value(target).perform();//set(target);
   }
 }
 
