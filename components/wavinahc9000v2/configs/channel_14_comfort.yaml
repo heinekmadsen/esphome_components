@@ -96,4 +96,3 @@ climate:
     current_temp_sensor_id: ${device}_comfort_temp_${channel_14_id}
     target_temp_number_id:  ${device}_comfort_target_temp_${channel_14_id}
     mode_switch_sensor_id:  ${device}_comfort_standby_${channel_14_id}
-    action_sensor_id:       ${device}_comfort_output_${channel_14_id}
