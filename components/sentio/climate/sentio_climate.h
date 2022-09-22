@@ -3,22 +3,19 @@
 #include "esphome/core/component.h"
 #include "esphome/components/climate/climate.h"
 #include "esphome/components/sensor/sensor.h"
-#include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/number/number.h"
-#include "esphome/components/switch/switch.h"
-#include "esphome/components/modbus_controller/modbus_controller.h"
 
 namespace esphome {
-namespace wavinahc9000v2 {
-class Wavinahc9000v2Climate : public climate::Climate, public Component {
+namespace sentio {
+class SentioClimate : public climate::Climate, public Component {
 public:
 
-  Wavinahc9000v2Climate() {}
+  SentioClimate() {}
 
   void setup() override;
   void dump_config() override;
 
-  void set_current_temp_sensor(sensor::Sensor *sensor) {
+  void current_temp_sensor(sensor::Sensor *sensor) {
     this->current_temp_sensor_ = sensor;
   }
 
@@ -26,14 +23,9 @@ public:
     this->temp_setpoint_number_ = number;
   }
 
-  void set_mode_switch(switch_::Switch *switch_) {
-    this->mode_switch_ = switch_;
-  }
-
-  void set_hvac_action(binary_sensor::BinarySensor *binary_sensor) {
-    this->hvac_action_ = binary_sensor;
-  }
-
+   void mode_select(sensor::Sensor *sensor) {
+    this->mode_select_ = sensor;
+  } 
 
 protected:
   /// Override control to change settings of the climate device.
@@ -48,13 +40,11 @@ protected:
   /// The number component used for getting the temperature setpoint
   number::Number *temp_setpoint_number_{ nullptr };
 
-  /// The select component used for getting the operation mode
-  switch_::Switch *mode_switch_{ nullptr };
-
-  /// The select component used for getting the current action
-  binary_sensor::BinarySensor *hvac_action_{ nullptr };
+  sensor::Sensor *mode_select_{ nullptr };
 
 private:
+  void sentio_mode_to_climatemode(const int state);
+  
 };
-} // namespace wavinahc9000v2
+} // namespace sentio
 } // namespace esphome

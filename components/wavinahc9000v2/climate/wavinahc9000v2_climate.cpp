@@ -27,6 +27,16 @@ void Wavinahc9000v2Climate::setup() {
     }
     publish_state();
   });
+  hvac_action_->add_on_state_callback([this](bool state) {
+    ESP_LOGD(TAG, "Current action is : %s", ONOFF(state));
+    if (state) {
+      this->action = climate::CLIMATE_ACTION_HEATING;
+    }
+    else if (!state) {
+      this->action = climate::CLIMATE_ACTION_IDLE;
+    }
+    publish_state();
+  });
 
   current_temperature = current_temp_sensor_->state;
   target_temperature  = temp_setpoint_number_->state;
@@ -39,7 +49,7 @@ void Wavinahc9000v2Climate::control(const climate::ClimateCall& call) {
     float target = ((roundf(target_temperature * 2.0) / 2));
     ESP_LOGV(TAG, "Rounded to nearest half: %f", target);
     ESP_LOGD(TAG, "Target temperature changed to: %f", target);
-    temp_setpoint_number_->set(target);
+    temp_setpoint_number_->make_call().set_value(target).perform();//set(target);
   }
 
   if (call.get_mode().has_value())
@@ -69,6 +79,8 @@ climate::ClimateTraits Wavinahc9000v2Climate::traits() {
     climate::ClimateMode::CLIMATE_MODE_OFF,
     climate::ClimateMode::CLIMATE_MODE_AUTO,
   });
+
+  traits.set_supports_action(true);
 
   traits.set_supports_current_temperature(true);
   traits.set_visual_temperature_step(0.1);

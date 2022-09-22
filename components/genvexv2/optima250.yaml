@@ -1,5 +1,8 @@
 external_components:
-  - source: github://heinekmadsen/esphome_components
+  - source: 
+      type: git
+      url: https://github.com/heinekmadsen/esphome_components
+      ref: main
     refresh: 0s
     components: [genvexv2]
 
@@ -367,6 +370,6 @@ binary_sensor:
 climate:
   - platform: genvexv2
     name: Genvex
-    current_temp_sensor_id: genvex_temp_t1
+    current_temp_sensor_id: genvex_temp_t7
     target_temp_sensor_id: genvex_target_temp
     fan_speed_sensor_id: genvex_ventilation_speed
