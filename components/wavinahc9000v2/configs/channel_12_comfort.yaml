@@ -1,14 +1,3 @@
-external_components:
-  - source: github://heinekmadsen/esphome_components
-    refresh: 0s
-    components: [wavinahc9000v2]
-
-  # PR required until merged into main
-  - source: github://pr#3295
-    components: [modbus_controller]
-    refresh: 0s
-
-wavinahc9000v2:
 # ----------- Sensor ----------- #
 sensor:
   - platform:               modbus_controller
@@ -107,3 +96,4 @@ climate:
     current_temp_sensor_id: ${device}_comfort_temp_${channel_12_id}
     target_temp_number_id:  ${device}_comfort_target_temp_${channel_12_id}
     mode_switch_sensor_id:  ${device}_comfort_standby_${channel_12_id}
+    action_sensor_id:       ${device}_comfort_output_${channel_12_id}
