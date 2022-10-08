@@ -606,18 +606,18 @@ number:
     use_write_multiple: true 
     multiply: 100
  
-## Channel 10    
-	- platform: modbus_controller
-	modbus_controller_id: sentio_modbus_controller
-	name: "${channel_10} temperatur setpunkt"
-	id: temperatur_setpunkt_channel_10
-	min_value: 10.0
-	max_value: 30.0
-	step: 0.5
-	address: 1019
-	force_new_range: true
-	use_write_multiple: true 
-	multiply: 100
+## Channel 10   
+  - platform: modbus_controller
+    modbus_controller_id: sentio_modbus_controller
+    name: "${channel_10} temperatur setpunkt"
+    id: temperatur_setpunkt_channel_10
+    min_value: 10.0
+    max_value: 30.0
+    step: 0.5
+    address: 1019
+    force_new_range: true
+    use_write_multiple: true 
+    multiply: 100  
  
 ## Channel 11   
   - platform: modbus_controller
