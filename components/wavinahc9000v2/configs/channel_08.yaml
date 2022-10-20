@@ -78,7 +78,7 @@ number:
       uint16_t targettemp = x * 10;
       payload.push_back(0x0144);
       payload.push_back(0x0200);
-      payload.push_back(0x0701); //0x0701 = channel 08 (07)
+      payload.push_back(${channel_08}01); //0x0701 = channel 08 (07)
       payload.push_back(targettemp);
       return true;
     lambda: "return x*0.1;"
