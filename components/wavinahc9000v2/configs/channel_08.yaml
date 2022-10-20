@@ -9,7 +9,8 @@ sensor:
       - 0x43
       - 0x01
       - 0x04
-      - 0x07 # channel 08 (07)
+      - $channel_08
+      #- 0x07 # channel 08 (07)
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "°C"
@@ -27,7 +28,8 @@ sensor:
       - 0x43
       - 0x01
       - 0x0A
-      - 0x07 # channel 08 (07)
+      - $channel_08
+      #- 0x07 # channel 08 (07)
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "%"
@@ -47,7 +49,8 @@ binary_sensor:
       - 0x43
       - 0x03
       - 0x00
-      - 0x07 # channel 08 (07)
+      - $channel_08
+      #- 0x07 # channel 08 (07)
       - 0x01
     bitmask: 0x0010
 
@@ -62,7 +65,8 @@ number:
       - 0x43
       - 0x02
       - 0x00
-      - 0x07 # channel 08 (07)
+      - $channel_08
+      #- 0x07 # channel 08 (07)
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "°C"
