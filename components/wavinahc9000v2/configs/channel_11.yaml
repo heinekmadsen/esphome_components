@@ -9,7 +9,7 @@ sensor:
       - 0x43
       - 0x01
       - 0x04
-      - 0x0A # channel 11 (0A)
+      - $channel_11
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "°C"
@@ -27,7 +27,7 @@ sensor:
       - 0x43
       - 0x01
       - 0x0A
-      - 0x0A # channel 11 (0A)
+      - $channel_11
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "%"
@@ -47,7 +47,7 @@ binary_sensor:
       - 0x43
       - 0x03
       - 0x00
-      - 0x0A # channel 11 (0A)
+      - $channel_11
       - 0x01
     bitmask: 0x0010
 
@@ -62,7 +62,7 @@ number:
       - 0x43
       - 0x02
       - 0x00
-      - 0x0A # channel 11 (0A)
+      - $channel_11
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "°C"
@@ -74,7 +74,7 @@ number:
       uint16_t targettemp = x * 10;
       payload.push_back(0x0144);
       payload.push_back(0x0200);
-      payload.push_back(0x0A01); //0x0A01 = channel 11 (0A)
+      payload.push_back(${channel_11}01);
       payload.push_back(targettemp);
       return true;
     lambda: "return x*0.1;"
@@ -90,7 +90,7 @@ switch:
       - 0x43
       - 0x02
       - 0x07
-      - 0x0A # channel 11 (0A)
+      - $channel_11
       - 0x01
     write_lambda: |-
       ESP_LOGD("main","Modbus Switch incoming state for channel 01 = %s",ONOFF(x));
@@ -100,7 +100,7 @@ switch:
       payload.push_back(0x45);
       payload.push_back(0x02);
       payload.push_back(0x07); 
-      payload.push_back(0x0A); // channel 11 (0A)
+      payload.push_back(${channel_11});       
       payload.push_back(0x01); 
       if(x)
       {
