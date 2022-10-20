@@ -94,7 +94,8 @@ switch:
       - 0x43
       - 0x02
       - 0x07
-      - 0x07 # channel 08 (07)
+      - $channel_08
+      #- 0x07 # channel 08 (07)
       - 0x01
     write_lambda: |-
       ESP_LOGD("main","Modbus Switch incoming state for channel 01 = %s",ONOFF(x));
@@ -104,7 +105,8 @@ switch:
       payload.push_back(0x45);
       payload.push_back(0x02);
       payload.push_back(0x07); 
-      payload.push_back(0x07); // channel 08 (07)
+      payload.push_back("${channel_08}");       
+      #payload.push_back(0x07); // channel 08 (07)
       payload.push_back(0x01); 
       if(x)
       {
