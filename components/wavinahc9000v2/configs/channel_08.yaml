@@ -105,7 +105,7 @@ switch:
       payload.push_back(0x45);
       payload.push_back(0x02);
       payload.push_back(0x07); 
-      payload.push_back("${channel_08}");       
+      payload.push_back(${channel_08});       
       payload.push_back(0x01); 
       if(x)
       {
