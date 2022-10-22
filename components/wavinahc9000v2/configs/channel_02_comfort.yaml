@@ -97,3 +97,4 @@ climate:
     current_temp_sensor_id: ${device}_comfort_temp_${channel_02_id}
     target_temp_number_id:  ${device}_comfort_target_temp_${channel_02_id}
     mode_switch_sensor_id:  ${device}_comfort_standby_${channel_02_id}
+    action_sensor_id:       ${device}_output_${channel_02_id}
