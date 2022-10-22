@@ -15,6 +15,7 @@ sensor:
     unit_of_measurement: "°C"
     accuracy_decimals: 1
     device_class: temperature
+    force_update: True
     filters:
       - multiply: 0.1
   # Battery
