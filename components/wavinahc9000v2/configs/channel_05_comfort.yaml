@@ -9,7 +9,7 @@ sensor:
       - 0x43
       - 0x01
       - 0x05 # 05 = Floor temp
-      - 0x04 # channel 05 (04)
+      - $channel_05
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "°C"
@@ -29,7 +29,7 @@ number:
       - 0x43
       - 0x02
       - 0x01 # 01 = comfort
-      - 0x04 # channel 05 (04)
+      - $channel_05
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "°C"
@@ -41,7 +41,7 @@ number:
       uint16_t targettemp = x * 10;
       payload.push_back(0x0144);
       payload.push_back(0x0201);  // 01 = comfort
-      payload.push_back(0x0401); //0x0401 = channel 05 (04)
+      payload.push_back(${channel_05}01);
       payload.push_back(targettemp);
       return true;
     lambda: "return x*0.1;"
@@ -57,7 +57,7 @@ switch:
       - 0x43
       - 0x02
       - 0x07
-      - 0x04 # channel 05 (04)
+      - $channel_05
       - 0x03
     write_lambda: |-
       ESP_LOGD("main","Modbus Switch incoming state for channel 01 = %s",ONOFF(x));
@@ -67,7 +67,7 @@ switch:
       payload.push_back(0x45);
       payload.push_back(0x02);
       payload.push_back(0x07); 
-      payload.push_back(0x04); // channel 05 (04)
+      payload.push_back(${channel_05});       
       payload.push_back(0x03); 
       if(x)
       {
@@ -96,3 +96,4 @@ climate:
     current_temp_sensor_id: ${device}_comfort_temp_${channel_05_id}
     target_temp_number_id:  ${device}_comfort_target_temp_${channel_05_id}
     mode_switch_sensor_id:  ${device}_comfort_standby_${channel_05_id}
+    action_sensor_id:       ${device}_output_${channel_05_id}
