@@ -9,7 +9,7 @@ sensor:
       - 0x43
       - 0x01
       - 0x04
-      - $channel_12
+      - $channel_12_sensor
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "°C"
@@ -27,7 +27,7 @@ sensor:
       - 0x43
       - 0x01
       - 0x0A
-      - $channel_12
+      - $channel_12_sensor
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "%"

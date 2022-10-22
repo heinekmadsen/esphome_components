@@ -1,68 +1,30 @@
-# ----------- Sensor ----------- #
-sensor:
-  - platform:               modbus_controller
-    name:                   ${name} Temperature ${channel_08_friendly_name}
-    id:                     ${device}_temp_${channel_08_id}
-    modbus_controller_id:   ${device}_modbus_controller
-    custom_command: 
-      - 0x01
-      - 0x43
-      - 0x01
-      - 0x04
-      - $channel_08_sensor
-      - 0x01
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    device_class: temperature
-    filters:
-      - multiply: 0.1
-  # Battery
-  - platform:               modbus_controller
-    name:                   ${name} Battery ${channel_08_friendly_name}
-    id:                     ${device}_battery_${channel_08_id}
-    modbus_controller_id:   ${device}_modbus_controller
-    custom_command: 
-      - 0x01
-      - 0x43
-      - 0x01
-      - 0x0A
-      - $channel_08_sensor
-      - 0x01
-    value_type: U_WORD
-    unit_of_measurement: "%"
-    accuracy_decimals: 1
-    device_class: battery
-    filters:
-      - multiply: 10 
-
 # ----------- Binary ----------- #
 binary_sensor:
   - platform:               modbus_controller
-    name:                   ${name} Output ${channel_08_friendly_name}
-    id:                     ${device}_output_${channel_08_id}
+    name:                   ${name} Output ${channel_01_friendly_name}
+    id:                     ${device}_output_${channel_01_id}
     modbus_controller_id:   ${device}_modbus_controller
     custom_command:
       - 0x01
       - 0x43
       - 0x03
       - 0x00
-      - $channel_08
+      - $channel_01
       - 0x01
     bitmask: 0x0010
 
 # ----------- Number ----------- #
 number:
   - platform:               modbus_controller
-    name:                   ${name} Target Temperature ${channel_08_friendly_name}
-    id:                     ${device}_target_temp_${channel_08_id}
+    name:                   ${name} Target Temperature ${channel_01_friendly_name}
+    id:                     ${device}_target_temp_${channel_01_id}
     modbus_controller_id:   ${device}_modbus_controller
     custom_command: 
       - 0x01
       - 0x43
       - 0x02
       - 0x00
-      - $channel_08
+      - $channel_01
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "°C"
@@ -74,7 +36,7 @@ number:
       uint16_t targettemp = x * 10;
       payload.push_back(0x0144);
       payload.push_back(0x0200);
-      payload.push_back(${channel_08}01);
+      payload.push_back(${channel_01}01);
       payload.push_back(targettemp);
       return true;
     lambda: "return x*0.1;"
@@ -82,15 +44,15 @@ number:
 # ----------- Switch ----------- #
 switch:
   - platform:               modbus_controller
-    name:                   ${name} Standby ${channel_08_friendly_name}
-    id:                     ${device}_standby_${channel_08_id}
+    name:                   ${name} Standby ${channel_01_friendly_name}
+    id:                     ${device}_standby_${channel_01_id}
     modbus_controller_id:   ${device}_modbus_controller
     custom_command:
       - 0x01
       - 0x43
       - 0x02
       - 0x07
-      - $channel_08
+      - $channel_01
       - 0x01
     write_lambda: |-
       ESP_LOGD("main","Modbus Switch incoming state for channel 01 = %s",ONOFF(x));
@@ -100,7 +62,7 @@ switch:
       payload.push_back(0x45);
       payload.push_back(0x02);
       payload.push_back(0x07); 
-      payload.push_back(${channel_08});       
+      payload.push_back(${channel_01});       
       payload.push_back(0x01); 
       if(x)
       {
@@ -121,12 +83,3 @@ switch:
       int mode = data[1];
       ESP_LOGD("main","MODE for Channel 01 is: %i",mode);    
       return mode;
-
-# ----------- Climate ----------- #
-climate:
-  - platform:               wavinahc9000v2
-    name:                   ${name} ${channel_08_friendly_name}
-    current_temp_sensor_id: ${device}_temp_${channel_08_id}
-    target_temp_number_id:  ${device}_target_temp_${channel_08_id}
-    mode_switch_sensor_id:  ${device}_standby_${channel_08_id}
-    action_sensor_id:       ${device}_output_${channel_08_id}

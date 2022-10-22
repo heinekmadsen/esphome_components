@@ -1,41 +1,3 @@
-# ----------- Sensor ----------- #
-sensor:
-  - platform:               modbus_controller
-    name:                   ${name} Temperature ${channel_08_friendly_name}
-    id:                     ${device}_temp_${channel_08_id}
-    modbus_controller_id:   ${device}_modbus_controller
-    custom_command: 
-      - 0x01
-      - 0x43
-      - 0x01
-      - 0x04
-      - $channel_08_sensor
-      - 0x01
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    device_class: temperature
-    filters:
-      - multiply: 0.1
-  # Battery
-  - platform:               modbus_controller
-    name:                   ${name} Battery ${channel_08_friendly_name}
-    id:                     ${device}_battery_${channel_08_id}
-    modbus_controller_id:   ${device}_modbus_controller
-    custom_command: 
-      - 0x01
-      - 0x43
-      - 0x01
-      - 0x0A
-      - $channel_08_sensor
-      - 0x01
-    value_type: U_WORD
-    unit_of_measurement: "%"
-    accuracy_decimals: 1
-    device_class: battery
-    filters:
-      - multiply: 10 
-
 # ----------- Binary ----------- #
 binary_sensor:
   - platform:               modbus_controller
@@ -121,12 +83,3 @@ switch:
       int mode = data[1];
       ESP_LOGD("main","MODE for Channel 01 is: %i",mode);    
       return mode;
-
-# ----------- Climate ----------- #
-climate:
-  - platform:               wavinahc9000v2
-    name:                   ${name} ${channel_08_friendly_name}
-    current_temp_sensor_id: ${device}_temp_${channel_08_id}
-    target_temp_number_id:  ${device}_target_temp_${channel_08_id}
-    mode_switch_sensor_id:  ${device}_standby_${channel_08_id}
-    action_sensor_id:       ${device}_output_${channel_08_id}
