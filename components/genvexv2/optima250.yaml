@@ -362,7 +362,14 @@ binary_sensor:
     name: "Genvex bypass onoff"
     id: genvex_bypass_on_off
     register_type: read
-    address: 107        
+    address: 107
+    
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex preheat onoff"
+    id: genvex_preheat_on_off
+    register_type: holding
+    address: 1        
 
   - platform: status
     name: "Genvex Controller Status"
