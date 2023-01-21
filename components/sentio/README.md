@@ -12,9 +12,9 @@ For details on the hardware look here: https://github.com/nic6911/Wavin-AHC-9000
 #                                                                                      #   
 #        Code developed by : Mogens Groth Nicolaisen                                   #
 #                                                                                      #
-# https://github.com/heinekmadsen/esphome_components/tree/main/components/wavinAhc9000 #    
+# https://github.com/nic6911/esphome_components/tree/main/components/sentio            #    
 #                                                                                      #
-# Hardware by : Mogens Groth Nicolaisen https://github.com/nic6911/Wavin-AHC-9000-mqtt #                                                                                       
+# Hardware by : Mogens Groth Nicolaisen https://github.com/nic6911/ESP32_Modus_Module  #                                                                                       
 #                                                                                      #
 ########################################################################################
 
