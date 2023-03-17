@@ -9,13 +9,12 @@ sensor:
       - 0x43
       - 0x01
       - 0x04
-      - $channel_04_sensor
+      - 0x03 # channel 04 (03)
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "°C"
     accuracy_decimals: 1
     device_class: temperature
-    force_update: True
     filters:
       - multiply: 0.1
   # Battery
@@ -28,7 +27,7 @@ sensor:
       - 0x43
       - 0x01
       - 0x0A
-      - $channel_04_sensor
+      - 0x03 # channel 04 (03)
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "%"
@@ -48,7 +47,7 @@ binary_sensor:
       - 0x43
       - 0x03
       - 0x00
-      - $channel_04
+      - 0x03 # channel 04 (03)
       - 0x01
     bitmask: 0x0010
 
@@ -63,7 +62,7 @@ number:
       - 0x43
       - 0x02
       - 0x00
-      - $channel_04
+      - 0x03 # channel 04 (03)
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "°C"
@@ -75,7 +74,7 @@ number:
       uint16_t targettemp = x * 10;
       payload.push_back(0x0144);
       payload.push_back(0x0200);
-      payload.push_back(${channel_04}01);
+      payload.push_back(0x0301); //0x0301 = channel 04 (03)
       payload.push_back(targettemp);
       return true;
     lambda: "return x*0.1;"
@@ -91,7 +90,7 @@ switch:
       - 0x43
       - 0x02
       - 0x07
-      - $channel_04
+      - 0x03 # channel 04 (03)
       - 0x01
     write_lambda: |-
       ESP_LOGD("main","Modbus Switch incoming state for channel 01 = %s",ONOFF(x));
@@ -101,7 +100,7 @@ switch:
       payload.push_back(0x45);
       payload.push_back(0x02);
       payload.push_back(0x07); 
-      payload.push_back(${channel_04});       
+      payload.push_back(0x03); // channel 04 (03)
       payload.push_back(0x01); 
       if(x)
       {
