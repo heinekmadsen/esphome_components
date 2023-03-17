@@ -9,12 +9,13 @@ sensor:
       - 0x43
       - 0x01
       - 0x04
-      - $channel_09
+      - $channel_09_sensor
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "°C"
     accuracy_decimals: 1
     device_class: temperature
+    force_update: True
     filters:
       - multiply: 0.1
   # Battery
@@ -27,7 +28,7 @@ sensor:
       - 0x43
       - 0x01
       - 0x0A
-      - $channel_09
+      - $channel_09_sensor
       - 0x01
     value_type: U_WORD
     unit_of_measurement: "%"
