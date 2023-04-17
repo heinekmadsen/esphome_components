@@ -459,7 +459,7 @@ binary_sensor:
     name: "Genvex On/Off Possible On K1"
     id: genvex_on_off_possible
     register_type: holding
-    value_type: U_WORD
+    #value_type: U_WORD
     address: 0x0025
 
   - platform: status
