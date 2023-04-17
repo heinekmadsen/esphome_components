@@ -446,10 +446,10 @@ number:
     value_type: U_WORD
     address: 0x0018
     step: 0.1
-    lambda: "return x;"
+    lambda: "return x/;"
     write_lambda: |-
       ESP_LOGD("Genvex target temp","Processing new bypass max open temp %d", x);
-      uint16_t new_temp = x * 100;
+      uint16_t new_temp = (x * 100)/10;
       ESP_LOGD("Genvex target temp","New value %d", new_temp);
       return new_temp;
 
@@ -461,6 +461,17 @@ binary_sensor:
     register_type: holding
     #value_type: U_WORD
     address: 0x0025
+
+  # - platform: template
+  #   name: "Genvex Efficiency"
+  #   lambda: |-
+  #     float genvex_temp_t1_inlet = (id(genvex_temp_t1).state);
+  #     float genvex_temp_t3_outdoor = (id(genvex_temp_t3).state);
+  #     float genvex_temp_t7_extract = (id(genvex_temp_t7).state);
+  #     float x = (100 * (genvex_temp_t1_inlet - genvex_temp_t3_outdoor) / (genvex_temp_t7_extract - genvex_temp_t3_outdoor));
+  #     return x;
+  #   update_interval: 60s
+  #   state_class: measurement
 
   # - platform: modbus_controller
   #   modbus_controller_id: genvex_modbus_controller
