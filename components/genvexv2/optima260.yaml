@@ -13,7 +13,7 @@ select:
     modbus_controller_id: genvex_modbus_controller
     name: "Genvex speed mode"
     id: genvex_speed_mode    
-    address: 100
+    address: 0x0000
     options:
       - "Off"
       - "1"
@@ -21,22 +21,22 @@ select:
       - "3"
       - "4"
       
-  - platform: genvexv2
-    modbus_controller_id: genvex_modbus_controller
-    name: "Genvex timer"
-    id: genvex_timer    
-    address: 106
-    options:
-      - "Off"
-      - "1"
-      - "2"
-      - "3"
-      - "4"
-      - "5"
-      - "6"
-      - "7"
-      - "8"
-      - "9"
+  # - platform: genvexv2
+  #   modbus_controller_id: genvex_modbus_controller
+  #   name: "Genvex timer"
+  #   id: genvex_timer    
+  #   address: 106
+  #   options:
+  #     - "Off"
+  #     - "1"
+  #     - "2"
+  #     - "3"
+  #     - "4"
+  #     - "5"
+  #     - "6"
+  #     - "7"
+  #     - "8"
+  #     - "9"
       
     
 sensor:
@@ -60,7 +60,7 @@ sensor:
     device_class: temperature
     value_type: U_WORD
     register_type: read
-    address: 0
+    address: 0x0000
     lambda: |-
       ESP_LOGD("T1", "Processing T1 using lambda");
       return ((x - 300) / 10);
@@ -74,7 +74,7 @@ sensor:
     device_class: temperature
     value_type: U_WORD
     register_type: read
-    address: 2
+    address: 0x0002
     lambda: |-
       ESP_LOGD("T3", "Processing T3 using lambda");
       return ((x - 300) / 10);
@@ -88,7 +88,7 @@ sensor:
     device_class: temperature
     value_type: U_WORD
     register_type: read
-    address: 3
+    address: 0x0003
     lambda: |-
       ESP_LOGD("T4", "Processing T4 using lambda");
       return ((x - 300) / 10);
@@ -102,24 +102,25 @@ sensor:
     device_class: temperature
     value_type: U_WORD
     register_type: read
-    address: 6
+    address: 0x0006
     lambda: |-
       ESP_LOGD("T7", "Processing T7 using lambda");
       return ((x - 300) / 10);    
-      
-  - platform: modbus_controller
-    modbus_controller_id: genvex_modbus_controller
-    name: "Genvex temp t2 panel"
-    id: genvex_temp_t2_panel
-    unit_of_measurement: °C
-    accuracy_decimals: 1
-    device_class: temperature
-    value_type: U_WORD
-    register_type: read
-    address: 9
-    lambda: |-
-      ESP_LOGD("T2_Panel", "Processing T2 panel using lambda");
-      return ((x - 300) / 10);
+
+  # Disabled not mapped on 260 unit      
+  # - platform: modbus_controller
+  #   modbus_controller_id: genvex_modbus_controller
+  #   name: "Genvex temp t2 panel"
+  #   id: genvex_temp_t2_panel
+  #   unit_of_measurement: °C
+  #   accuracy_decimals: 1
+  #   device_class: temperature
+  #   value_type: U_WORD
+  #   register_type: read
+  #   address: 9
+  #   lambda: |-
+  #     ESP_LOGD("T2_Panel", "Processing T2 panel using lambda");
+  #     return ((x - 300) / 10);
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -129,7 +130,7 @@ sensor:
     accuracy_decimals: 1
     device_class: humidity
     register_type: read
-    address: 10
+    address: 0x0013
     #filters:
     #  - multiply: 0.01
     on_value: 
@@ -140,12 +141,24 @@ sensor:
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
+    name: "Genvex Humidity Calculated Setpoint"
+    id: genvex_humidity_calculated_setpoint
+    unit_of_measurement: '%'
+    accuracy_decimals: 1
+    device_class: humidity
+    register_type: read
+    address: 0x0014
+    #filters:
+    #  - multiply: 0.01
+
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
     name: "Genvex inlet fan"
     id: genvex_inlet_fan
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
-    address: 102
+    address: 0x0009
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -154,7 +167,7 @@ sensor:
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
-    address: 103
+    address: 0x0010
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -163,7 +176,7 @@ sensor:
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
-    address: 104
+    address: 0x0011
     
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -172,7 +185,7 @@ sensor:
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
-    address: 105    
+    address: 0x0012  
     
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -181,7 +194,7 @@ sensor:
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
-    address: 106        
+    address: 0x0106        
 
 text_sensor:
   - platform: template
@@ -194,16 +207,17 @@ text_sensor:
     name: "Genvex Alarm"
     id: genvex_alarm
     register_type: read
-    address: 101
+    address: 0x0015
     lambda: !lambda |-
       uint16_t int_mode = (data[item->offset] << 8) + data[item->offset+1];
       ESP_LOGD("main","Parsed operation mode int : %d", int_mode);
       std::string mode_str;
       switch (int_mode) {
         case 0:  mode_str = "Off"; break;
-        case 1:  mode_str = "External Stop"; break;
-        case 2:  mode_str = "Main Filter"; break;
-        case 3:  mode_str = "External Stop & Main Filter"; break;
+        case 1:  mode_str = "Sensor Error"; break;
+        case 2:  mode_str = "Bypass On/Off"; break;
+        case 3:  mode_str = "Sensor Error & Bypass On/Off"; break;
+        /*
         case 4:  mode_str = "High Pressure"; break;
         case 5:  mode_str = "High Pressure & External Stop"; break;
         case 6:  mode_str = "High Pressure & Main Filter"; break;
@@ -328,6 +342,7 @@ text_sensor:
         case 125: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & Frost & High Pressure & External Stop"; break;
         case 126: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & Frost & High Pressure & Main Filter"; break;
         case 127: mode_str = "Fan Speed & External Filter & CommError Panel->Controller & Frost & High Pressure & External Stop & Main Filter"; break;  
+        */
         default: mode_str = "Unknown"; break;
       }
       return mode_str;
@@ -340,11 +355,14 @@ number:
     min_value: 10
     max_value: 30
     step: 0.1
-    address: 0
+    address: 0x0002
+    register_type: holding
+    value_type: U_WORD
     lambda: "return ((x+100)/10);"
     write_lambda: |-
-      ESP_LOGD("main","Processing new target temp");
+      ESP_LOGD("Genvex target temp","Processing new target temp");
       uint16_t new_temp = x * 10 - 100;
+      ESP_LOGD("Genvex target temp","New value %d", new_temp);
       return new_temp;
       
   - platform: modbus_controller
@@ -354,7 +372,9 @@ number:
     min_value: 0
     max_value: 4
     step: 1.0
-    address: 100
+    register_type: holding
+    value_type: U_WORD
+    address: 0x0000
 
 binary_sensor:
   - platform: modbus_controller
@@ -362,6 +382,7 @@ binary_sensor:
     name: "Genvex bypass onoff"
     id: genvex_bypass_on_off
     register_type: read
+    value_type: U_WORD
     address: 107        
 
   - platform: status
