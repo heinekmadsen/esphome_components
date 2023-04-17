@@ -376,65 +376,65 @@ number:
     value_type: U_WORD
     address: 0x0000
 
-  - platform: modbus_controller
-    modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Step 1 inlet speed"
-    id: genvex_step1_inlet_speed
-    min_value: 0
-    max_value: 100
-    register_type: read
-    value_type: U_WORD
-    address: 0x0007
+  # - platform: modbus_controller
+  #   modbus_controller_id: genvex_modbus_controller
+  #   name: "Genvex Step 1 inlet speed"
+  #   id: genvex_step1_inlet_speed
+  #   min_value: 0
+  #   max_value: 100
+  #   register_type: read
+  #   value_type: U_WORD
+  #   address: 0x0007
 
-  - platform: modbus_controller
-    modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Step 2 inlet speed"
-    id: genvex_step2_inlet_speed
-    min_value: 0
-    max_value: 100
-    register_type: read
-    value_type: U_WORD
-    address: 0x0008
+  # - platform: modbus_controller
+  #   modbus_controller_id: genvex_modbus_controller
+  #   name: "Genvex Step 2 inlet speed"
+  #   id: genvex_step2_inlet_speed
+  #   min_value: 0
+  #   max_value: 100
+  #   register_type: read
+  #   value_type: U_WORD
+  #   address: 0x0008
 
-  - platform: modbus_controller
-    modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Step 3 inlet speed"
-    id: genvex_step3_inlet_speed
-    min_value: 0
-    max_value: 100
-    register_type: read
-    value_type: U_WORD
-    address: 0x0009
+  # - platform: modbus_controller
+  #   modbus_controller_id: genvex_modbus_controller
+  #   name: "Genvex Step 3 inlet speed"
+  #   id: genvex_step3_inlet_speed
+  #   min_value: 0
+  #   max_value: 100
+  #   register_type: read
+  #   value_type: U_WORD
+  #   address: 0x0009
 
-  - platform: modbus_controller
-    modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Step 1 outlet speed"
-    id: genvex_step1_outlet_speed
-    min_value: 0
-    max_value: 100
-    register_type: read
-    value_type: U_WORD
-    address: 0x0010
+  # - platform: modbus_controller
+  #   modbus_controller_id: genvex_modbus_controller
+  #   name: "Genvex Step 1 outlet speed"
+  #   id: genvex_step1_outlet_speed
+  #   min_value: 0
+  #   max_value: 100
+  #   register_type: read
+  #   value_type: U_WORD
+  #   address: 0x0010
 
-  - platform: modbus_controller
-    modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Step 2 outlet speed"
-    id: genvex_step2_outlet_speed
-    min_value: 0
-    max_value: 100
-    register_type: read
-    value_type: U_WORD
-    address: 0x0011
+  # - platform: modbus_controller
+  #   modbus_controller_id: genvex_modbus_controller
+  #   name: "Genvex Step 2 outlet speed"
+  #   id: genvex_step2_outlet_speed
+  #   min_value: 0
+  #   max_value: 100
+  #   register_type: read
+  #   value_type: U_WORD
+  #   address: 0x0011
 
-  - platform: modbus_controller
-    modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Step 3 outlet speed"
-    id: genvex_step3_outlet_speed
-    min_value: 0
-    max_value: 100
-    register_type: read
-    value_type: U_WORD
-    address: 0x0012
+  # - platform: modbus_controller
+  #   modbus_controller_id: genvex_modbus_controller
+  #   name: "Genvex Step 3 outlet speed"
+  #   id: genvex_step3_outlet_speed
+  #   min_value: 0
+  #   max_value: 100
+  #   register_type: read
+  #   value_type: U_WORD
+  #   address: 0x0012
 
 binary_sensor:
   - platform: modbus_controller
