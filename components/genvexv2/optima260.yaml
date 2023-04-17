@@ -41,7 +41,7 @@ select:
     
 sensor:
   - platform: template
-    name: "Genvex Virkningsgrad"
+    name: "Genvex Efficiency"
     lambda: |-
       float genvex_temp_t1_inlet = (id(genvex_temp_t1).state);
       float genvex_temp_t3_outdoor = (id(genvex_temp_t3).state);
