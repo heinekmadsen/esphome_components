@@ -446,10 +446,10 @@ number:
     value_type: U_WORD
     address: 0x0018
     step: 0.1
-    lambda: "return x;"
+    lambda: "return x/10;"
     write_lambda: |-
       ESP_LOGD("Genvex target temp","Processing new bypass max open temp %d", x);
-      uint16_t new_temp = (x * 100)/10;
+      uint16_t new_temp = (x * 100);
       ESP_LOGD("Genvex target temp","New value %d", new_temp);
       return new_temp;
 
