@@ -382,7 +382,7 @@ binary_sensor:
     name: "Genvex bypass onoff"
     id: genvex_bypass_on_off
     register_type: read
-    value_type: U_WORD
+    #value_type: U_WORD
     address: 107        
 
   - platform: status
