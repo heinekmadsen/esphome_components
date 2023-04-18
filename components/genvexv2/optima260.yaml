@@ -166,8 +166,6 @@ sensor:
     device_class: humidity
     register_type: read
     address: 0x000D
-    #filters:
-    #  - multiply: 0.01
     on_value: 
       - lambda: !lambda |-
           id(aqi_humidity).publish_state( (x < 35) ? "Too Dry" : 
@@ -334,6 +332,13 @@ binary_sensor:
     lambda: |-
       uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
       bool bActive = alarmcode & 0x0008;
+      return bActive;
+
+  - platform: template
+    name: "Water Freeze Error"
+    lambda: |-
+      uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
+      bool bActive = alarmcode & 0x000F;
       return bActive;
 
   - platform: template
