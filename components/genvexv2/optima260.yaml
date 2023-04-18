@@ -59,7 +59,7 @@ sensor:
     device_class: temperature
     value_type: U_WORD
     register_type: read
-    address: 0x0000
+    address: 0
     lambda: |-
       ESP_LOGD("T1", "Processing T1 using lambda");
       return ((x - 300) / 10);
@@ -73,7 +73,7 @@ sensor:
     device_class: temperature
     value_type: U_WORD
     register_type: read
-    address: 0x0002
+    address: 2
     lambda: |-
       ESP_LOGD("T3", "Processing T3 using lambda");
       return ((x - 300) / 10);
@@ -87,7 +87,7 @@ sensor:
     device_class: temperature
     value_type: U_WORD
     register_type: read
-    address: 0x0003
+    address: 3
     lambda: |-
       ESP_LOGD("T4", "Processing T4 using lambda");
       return ((x - 300) / 10);
@@ -101,7 +101,7 @@ sensor:
     device_class: temperature
     value_type: U_WORD
     register_type: read
-    address: 0x0006
+    address: 6
     lambda: |-
       ESP_LOGD("T7", "Processing T7 using lambda");
       return ((x - 300) / 10);
@@ -304,7 +304,7 @@ binary_sensor:
     name: "Genvex On/Off Possible On K1"
     id: genvex_on_off_possible
     register_type: holding
-    address: 0x0025
+    address: 25
 
   - platform: template
     name: "Sensor Error"
