@@ -137,7 +137,7 @@ sensor:
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
-    address: 0x000A
+    address: 10
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -146,7 +146,7 @@ sensor:
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
-    address: 0x000B
+    address: 11
     
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -155,7 +155,7 @@ sensor:
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
-    address: 0x000C  
+    address: 12 
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -165,7 +165,7 @@ sensor:
     accuracy_decimals: 1
     device_class: humidity
     register_type: read
-    address: 0x000D
+    address: 13
     on_value: 
       - lambda: !lambda |-
           id(aqi_humidity).publish_state( (x < 35) ? "Too Dry" : 
@@ -178,7 +178,7 @@ sensor:
     id: genvex_alarm_bitfield
     # device_class: None
     register_type: read
-    address: 0x000F
+    address: 15
     lambda: !lambda |-
       uint16_t int_mode = (data[item->offset] << 8) + data[item->offset+1];
       ESP_LOGD("main","Parsed operation mode int : %d", int_mode);
@@ -200,7 +200,7 @@ number:
     min_value: 10
     max_value: 30
     step: 0.1
-    address: 0x0002
+    address: 2
     register_type: holding
     value_type: U_WORD
     lambda: "return ((x+100)/10);"
@@ -219,7 +219,7 @@ number:
     step: 1.0
     register_type: holding
     value_type: U_WORD
-    address: 0x0000
+    address: 0
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -229,7 +229,7 @@ number:
     max_value: 100
     register_type: holding
     value_type: U_WORD
-    address: 0x0007
+    address: 7
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -239,7 +239,7 @@ number:
     max_value: 100
     register_type: holding
     value_type: U_WORD
-    address: 0x0008
+    address: 8
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -249,7 +249,7 @@ number:
     max_value: 100
     register_type: holding
     value_type: U_WORD
-    address: 0x0009
+    address: 9
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -259,7 +259,7 @@ number:
     max_value: 100
     register_type: holding
     value_type: U_WORD
-    address: 0x000A     # In documentation this shoud be on add 0x0010 but it's verifyed to be located 0xA on my unit :)
+    address: 10     # In documentation this shoud be on add 0x0010 but it's verifyed to be located 0xA on my unit :)
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -269,7 +269,7 @@ number:
     max_value: 100
     register_type: holding
     value_type: U_WORD
-    address: 0x0011
+    address: 11
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -279,7 +279,7 @@ number:
     max_value: 100
     register_type: holding
     value_type: U_WORD
-    address: 0x0012
+    address: 12
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -289,7 +289,7 @@ number:
     max_value: 10
     register_type: holding
     value_type: U_WORD
-    address: 0x0018
+    address: 18
     step: 0.1
     lambda: "return x/10;"
     write_lambda: |-
