@@ -198,7 +198,7 @@ number:
     name: "Genvex Target Temp"
     id: genvex_target_temp
     device_class: temperature
-    icon: mdi:fan
+    icon: mdi:thermometer
     min_value: 10
     max_value: 30
     step: 0.1
@@ -216,6 +216,7 @@ number:
     modbus_controller_id: genvex_modbus_controller
     name: "Genvex Ventilation speed"
     id: genvex_ventilation_speed
+    icon: mdi:fan
     min_value: 0
     max_value: 4
     step: 1.0
