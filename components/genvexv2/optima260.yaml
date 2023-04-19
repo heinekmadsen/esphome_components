@@ -41,6 +41,8 @@ select:
 sensor:
   - platform: template
     name: "Genvex Efficiency"
+    icon: mdi:air-filter
+    unit_of_measurement: "%"
     lambda: |-
       float genvex_temp_t1_inlet = (id(genvex_temp_t1).state);
       float genvex_temp_t3_outdoor = (id(genvex_temp_t3).state);
@@ -125,6 +127,7 @@ sensor:
     modbus_controller_id: genvex_modbus_controller
     name: "Genvex inlet fan"
     id: genvex_inlet_fan
+    icon: mdi:fan
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
@@ -134,6 +137,7 @@ sensor:
     modbus_controller_id: genvex_modbus_controller
     name: "Genvex extract fan"
     id: genvex_extract_fan
+    icon: mdi:fan
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
@@ -199,6 +203,7 @@ number:
     id: genvex_target_temp
     device_class: temperature
     icon: mdi:thermometer
+    unit_of_measurement: °C
     min_value: 10
     max_value: 30
     step: 0.1
@@ -301,6 +306,7 @@ number:
     name: "Genvex Bypass Open Max Temp"
     id: genvex_bypass_open_max_temp
     icon: mdi:thermometer
+    unit_of_measurement: °C
     min_value: 1
     max_value: 10
     register_type: holding
@@ -319,6 +325,7 @@ number:
     name: "Bypass Close on Low Inlet Temp (Diff From Target Temp)"
     id: bypass_close_on_low_inlet_temp
     icon: mdi:thermometer
+    unit_of_measurement: °C
     min_value: 0
     max_value: 20
     register_type: holding
