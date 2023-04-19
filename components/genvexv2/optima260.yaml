@@ -197,6 +197,7 @@ number:
     modbus_controller_id: genvex_modbus_controller
     name: "Genvex target temp"
     id: genvex_target_temp
+    device_class: temperature
     min_value: 10
     max_value: 30
     step: 0.1
@@ -302,8 +303,8 @@ number:
     modbus_controller_id: genvex_modbus_controller
     name: "Bypass Close on Low Inlet Temp (Diff From Target Temp)"
     id: bypass_close_on_low_inlet_temp
-    min_value: 0
-    max_value: 100
+    min_value: 1
+    max_value: 20
     register_type: holding
     value_type: U_WORD
     address: 29
