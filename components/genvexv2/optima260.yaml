@@ -372,7 +372,7 @@ binary_sensor:
     name: "Water Freeze Error"
     lambda: |-
       uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
-      bool bActive = alarmcode & 0x000F;
+      bool bActive = alarmcode & 0x0010;
       return bActive;
 
   - platform: template
