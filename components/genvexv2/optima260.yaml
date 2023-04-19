@@ -195,9 +195,10 @@ text_sensor:
 number:
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
-    name: "Genvex target temp"
+    name: "Genvex Target Temp"
     id: genvex_target_temp
     device_class: temperature
+    icon: mdi:fan
     min_value: 10
     max_value: 30
     step: 0.1
@@ -224,60 +225,72 @@ number:
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Step 1 inlet speed"
+    name: "Genvex Step 1 Inlet Speed"
     id: genvex_step1_inlet_speed
+    icon: mdi:fan-speed-1
     min_value: 0
     max_value: 100
+    unit_of_measurement: '%'
     register_type: holding
     value_type: U_WORD
     address: 7
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Step 2 inlet speed"
+    name: "Genvex Step 2 Inlet Speed"
     id: genvex_step2_inlet_speed
+    icon: mdi:fan-speed-2
     min_value: 0
     max_value: 100
+    unit_of_measurement: '%'
     register_type: holding
     value_type: U_WORD
     address: 8
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Step 3 inlet speed"
+    name: "Genvex Step 3 Inlet Speed"
     id: genvex_step3_inlet_speed
+    icon: mdi:fan-speed-3
     min_value: 0
     max_value: 100
+    unit_of_measurement: '%'
     register_type: holding
     value_type: U_WORD
     address: 9
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Step 1 outlet speed"
+    name: "Genvex Step 1 Outlet Speed"
     id: genvex_step1_outlet_speed
+    icon: mdi:fan-speed-1
     min_value: 0
     max_value: 100
+    unit_of_measurement: '%'
     register_type: holding
     value_type: U_WORD
     address: 10     # In documentation this shoud be on add 0x0010 but it's verifyed to be located 0xA on my unit :)
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Step 2 outlet speed"
+    name: "Genvex Step 2 Outlet Speed"
     id: genvex_step2_outlet_speed
+    icon: mdi:fan-speed-2
     min_value: 0
     max_value: 100
+    unit_of_measurement: '%'
     register_type: holding
     value_type: U_WORD
     address: 11
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Step 3 outlet speed"
+    name: "Genvex Step 3 Outlet Speed"
     id: genvex_step3_outlet_speed
+    icon: mdi:fan-speed-3
     min_value: 0
     max_value: 100
+    unit_of_measurement: '%'
     register_type: holding
     value_type: U_WORD
     address: 12
@@ -286,6 +299,7 @@ number:
     modbus_controller_id: genvex_modbus_controller
     name: "Genvex Bypass Open Max Temp"
     id: genvex_bypass_open_max_temp
+    icon: mdi:thermometer
     min_value: 1
     max_value: 10
     register_type: holding
@@ -303,7 +317,8 @@ number:
     modbus_controller_id: genvex_modbus_controller
     name: "Bypass Close on Low Inlet Temp (Diff From Target Temp)"
     id: bypass_close_on_low_inlet_temp
-    min_value: 1
+    icon: mdi:thermometer
+    min_value: 0
     max_value: 20
     register_type: holding
     value_type: U_WORD
