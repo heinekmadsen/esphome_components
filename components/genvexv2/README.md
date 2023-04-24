@@ -1,6 +1,6 @@
 ## Genvexv2
 
-Updated version of Genvex modbus controller for 
+Updated version of Genvex modbus controller  
 
 Supported Genvex Control units
 
