@@ -92,4 +92,4 @@ modbus_controller:
   modbus_id: genvex_modbus
   update_interval: 60s
   command_throttle: 10ms
-'''
+```
