@@ -19,7 +19,7 @@ Supported Genvex Control units
 Guide on how to setup you ESP32 to Genvex unit via modbus
 
 You will need a ESP32 and a board to convert from UART on RS485 used to communicate wiht Genvex over modbus
-- [ESP-32 Development Board](https://www.aliexpress.com/item/32834130422.html?spm=a2g0o.order_list.order_list_main.5.21ef1802NUOVTF)
+- [ESP32 Development Board](https://www.aliexpress.com/item/32834130422.html?spm=a2g0o.order_list.order_list_main.5.21ef1802NUOVTF)
 - [TTL to RS485 Converter 3.3V/5.0V](https://www.aliexpress.com/item/32846149743.html?spm=a2g0o.order_list.order_list_main.28.21ef1802NUOVTF)
 
 <b>Connection diagram</b>
@@ -29,4 +29,4 @@ Connect the components as shown on the diagram below.
 
 **Note:**
 Don't connect the ESP32 to Genvex 10V Power supply on <em>L16.1</em> and a USB device at the samt time!!!
-If you do so Genvex 10V and your USB device will be connected and properly just blow a fuse or have a USB port not working :|
+If you do so Genvex 10V and your USB device will be connected and properly just blow a fuse in Genvex unit or have a USB port not working :|
