@@ -330,7 +330,7 @@ number:
     max_value: 20
     register_type: holding
     value_type: U_WORD
-    address: 29
+    address: 26
 
 binary_sensor:
   - platform: modbus_controller
