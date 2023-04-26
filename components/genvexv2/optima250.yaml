@@ -108,20 +108,19 @@ sensor:
       ESP_LOGD("T7", "Processing T7 using lambda");
       return ((x - 300) / 10);
 
-  # Disabled not mapped on 260 unit      
-  # - platform: modbus_controller
-  #   modbus_controller_id: genvex_modbus_controller
-  #   name: "Genvex temp t2 panel"
-  #   id: genvex_temp_t2_panel
-  #   unit_of_measurement: °C
-  #   accuracy_decimals: 1
-  #   device_class: temperature
-  #   value_type: U_WORD
-  #   register_type: read
-  #   address: 9
-  #   lambda: |-
-  #     ESP_LOGD("T2_Panel", "Processing T2 panel using lambda");
-  #     return ((x - 300) / 10);
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex temp t2 panel"
+    id: genvex_temp_t2_panel
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    device_class: temperature
+    value_type: U_WORD
+    register_type: read
+    address: 9
+    lambda: |-
+      ESP_LOGD("T2_Panel", "Processing T2 panel using lambda");
+      return ((x - 300) / 10);
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
