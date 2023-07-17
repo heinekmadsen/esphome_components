@@ -8,7 +8,7 @@ external_components:
 
 genvexv2:
 
-select:
+fan:
   - platform: genvexv2
     modbus_controller_id: genvex_modbus_controller
     device_class: fan
