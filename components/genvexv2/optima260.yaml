@@ -195,6 +195,20 @@ text_sensor:
     id: aqi_humidity
     icon: mdi:water-percent 
      
+fan:
+  - platform: modbus_controller
+    modbus_controller_id: genvex_modbus_controller
+    name: "Genvex Ventilation speed"
+    id: genvex_ventilation_speed
+    device_class: fan
+    icon: mdi:fan
+    min_value: 0
+    max_value: 4
+    step: 1.0
+    register_type: holding
+    value_type: U_WORD
+    address: 0
+
 
 number:
   - platform: modbus_controller
@@ -221,7 +235,6 @@ number:
     modbus_controller_id: genvex_modbus_controller
     name: "Genvex Ventilation speed"
     id: genvex_ventilation_speed
-    device_class: fan
     icon: mdi:fan
     min_value: 0
     max_value: 4
