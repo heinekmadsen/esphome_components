@@ -221,6 +221,7 @@ number:
     modbus_controller_id: genvex_modbus_controller
     name: "Genvex Ventilation speed"
     id: genvex_ventilation_speed
+    device_class: fan
     icon: mdi:fan
     min_value: 0
     max_value: 4
