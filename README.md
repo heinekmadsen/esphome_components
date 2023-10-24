@@ -3,7 +3,7 @@
 My creation of custom components fro ESP home.
 
 ### Recent updates
-23-10-2022 - BREAKING CHANGE!!!
+23-10-2023 - BREAKING CHANGE!!!
 Added the ability to use substitutions for channel offset/alignment
 
 The following lines needs to be added to yaml.
