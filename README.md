@@ -179,6 +179,7 @@ packages:
     ref: main
     files: 
       - components/wavinahc9000v2/configs/basic.yaml # REQUIRED FOR WAVIN AHC 9000
+      - components/wavinahc9000v2/configs/channel_01.yaml
       - components/wavinahc9000v2/configs/channel_01_comfort.yaml # Only for channels with thermostat with IR sensor
       - components/wavinahc9000v2/configs/channel_02.yaml
       - components/wavinahc9000v2/configs/channel_02_comfort.yaml # Only for channels with thermostat with IR sensor
