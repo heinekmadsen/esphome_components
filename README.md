@@ -232,6 +232,10 @@ modbus_controller:
   update_interval: 5s
 ```
 
+## Tips an Tricks
+Depending on the hw you use, you may need to add "flow_control_pin: xx" to your yaml under modbus. Replace xx with the GPIO you use for flow control.
+
+
 
 
 
