@@ -3,6 +3,8 @@
 My creation of custom components fro ESP home.
 
 ### Recent updates
+04-07-2022 - Wavin v2 has issues with ESPhome 2022.6. It fails writing a number back to the Wavin device. Added yaml to basic.yaml to ensure it uses the modbus and modbus_controller component from ESPhome 2022.5.1. Please to a clean and update your ESPhome device to make it work with ESPhome 2022.6.
+
 23-03-2022 - Wavin Sentio - Added support for Wavin Sentio. nic6911 https://github.com/nic6911 have worked hard on a Wavin Sentio component and it has now beed added to this repo.
 23-03-2022 - WavinAhc9000v2 - BREAKING CHANGE!!! Add the basic.yaml to the list of packages, see example below. Added support for comfort temperature (seperate climate entity). Added mode action to reflect the current output state of the channel. Idle = not heating, Heat = Heating
 23-03-2022 - Genvexv2 - Changed current temp from T1 to T7 as T1 drops when bypass is open. Changed climate entity to .1 decimals.
