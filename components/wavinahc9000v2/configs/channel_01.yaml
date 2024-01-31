@@ -126,8 +126,13 @@ switch:
 # ----------- Climate ----------- #
 climate:
   - platform:               wavinahc9000v2
+    id:                     ${device}_climate_${channel_01_id}
     name:                   ${name} ${channel_01_friendly_name}
     current_temp_sensor_id: ${device}_temp_${channel_01_id}
     target_temp_number_id:  ${device}_target_temp_${channel_01_id}
     mode_switch_sensor_id:  ${device}_standby_${channel_01_id}
     action_sensor_id:       ${device}_output_${channel_01_id}
+    visual:
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
