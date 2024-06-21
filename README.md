@@ -302,7 +302,7 @@ logger:
 api:
 
 ota:
- 
+  - platform: esphome
  
 ethernet:
   type: LAN8720
