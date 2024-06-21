@@ -82,7 +82,8 @@ logger:
 api:
   
 ota:
-  password: "945ac67ddcae11048f6a488672b6aadb"
+  - platform: esphome
+    password: "945ac67ddcae11048f6a488672b6aadb"
 
 wifi:
   ssid: ${ssid_set}
