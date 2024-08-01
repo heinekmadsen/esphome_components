@@ -13,7 +13,7 @@ select:
     modbus_controller_id: genvex_modbus_controller
     name: "Genvex speed mode"
     id: genvex_speed_mode    
-    address: 100
+    address: 0x0000
     options:
       - "Off"
       - "1"
@@ -21,22 +21,22 @@ select:
       - "3"
       - "4"
       
-  - platform: genvexv2
-    modbus_controller_id: genvex_modbus_controller
-    name: "Genvex timer"
-    id: genvex_timer    
-    address: 106
-    options:
-      - "Off"
-      - "1"
-      - "2"
-      - "3"
-      - "4"
-      - "5"
-      - "6"
-      - "7"
-      - "8"
-      - "9"
+  # - platform: genvexv2
+  #   modbus_controller_id: genvex_modbus_controller
+  #   name: "Genvex timer"
+  #   id: genvex_timer    
+  #   address: 106
+  #   options:
+  #     - "Off"
+  #     - "1"
+  #     - "2"
+  #     - "3"
+  #     - "4"
+  #     - "5"
+  #     - "6"
+  #     - "7"
+  #     - "8"
+  #     - "9"
 
 sensor:
   - platform: template
@@ -108,19 +108,20 @@ sensor:
       ESP_LOGD("T7", "Processing T7 using lambda");
       return ((x - 300) / 10);
 
-  - platform: modbus_controller
-    modbus_controller_id: genvex_modbus_controller
-    name: "Genvex temp t2 panel"
-    id: genvex_temp_t2_panel
-    unit_of_measurement: °C
-    accuracy_decimals: 1
-    device_class: temperature
-    value_type: U_WORD
-    register_type: read
-    address: 9
-    lambda: |-
-      ESP_LOGD("T2_Panel", "Processing T2 panel using lambda");
-      return ((x - 300) / 10);
+  # Disabled not mapped on 260 unit      
+  # - platform: modbus_controller
+  #   modbus_controller_id: genvex_modbus_controller
+  #   name: "Genvex temp t2 panel"
+  #   id: genvex_temp_t2_panel
+  #   unit_of_measurement: °C
+  #   accuracy_decimals: 1
+  #   device_class: temperature
+  #   value_type: U_WORD
+  #   register_type: read
+  #   address: 9
+  #   lambda: |-
+  #     ESP_LOGD("T2_Panel", "Processing T2 panel using lambda");
+  #     return ((x - 300) / 10);
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -130,7 +131,7 @@ sensor:
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
-    address: 102
+    address: 0x0009
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -140,7 +141,7 @@ sensor:
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
-    address: 103
+    address: 10
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -149,7 +150,7 @@ sensor:
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
-    address: 104
+    address: 11
     
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -158,27 +159,7 @@ sensor:
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
-    address: 105
-
-  - platform: modbus_controller
-    modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Inlet Fan"
-    id: genvex_inlet_fan_rpm
-    icon: mdi:fan
-    unit_of_measurement: "RPM"
-    value_type: U_WORD
-    register_type: read
-    address: 108
-
-  - platform: modbus_controller
-    modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Outlet Fan"
-    id: genvex_outlet_fan_rpm
-    icon: mdi:fan
-    unit_of_measurement: "RPM"
-    value_type: U_WORD
-    register_type: read
-    address: 109
+    address: 12 
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -188,21 +169,12 @@ sensor:
     accuracy_decimals: 1
     device_class: humidity
     register_type: read
-    address: 10
+    address: 13
     on_value: 
       - lambda: !lambda |-
           id(aqi_humidity).publish_state( (x < 35) ? "Too Dry" : 
                                           (x < 65) ? "Perfect" : 
                                           "Too Humid");
-  - platform: modbus_controller
-    modbus_controller_id: genvex_modbus_controller
-    name: "Genvex Humidity Fan Control"
-    id: genvex_humidity_fan_control
-    icon: mdi:water-percent
-    unit_of_measurement: "%"
-    value_type: U_WORD
-    register_type: read
-    address: 106        
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -210,19 +182,17 @@ sensor:
     id: genvex_alarm_bitfield
     # device_class: None
     register_type: read
-    address: 101
+    address: 15
     lambda: !lambda |-
       uint16_t int_mode = (data[item->offset] << 8) + data[item->offset+1];
       ESP_LOGD("main","Parsed operation mode int : %d", int_mode);
       return int_mode;
-
 
 text_sensor:
   - platform: template
     name: "Genvex Air Quality Index Humidity (AQI)"
     id: aqi_humidity
     icon: mdi:water-percent 
-     
 
 number:
   - platform: modbus_controller
@@ -235,7 +205,7 @@ number:
     min_value: 10
     max_value: 30
     step: 0.1
-    address: 0
+    address: 2
     register_type: holding
     value_type: U_WORD
     lambda: "return ((x+100)/10);"
@@ -255,7 +225,7 @@ number:
     step: 1.0
     register_type: holding
     value_type: U_WORD
-    address: 100
+    address: 0
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -267,7 +237,7 @@ number:
     unit_of_measurement: '%'
     register_type: holding
     value_type: U_WORD
-    address: 6
+    address: 7
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -279,7 +249,7 @@ number:
     unit_of_measurement: '%'
     register_type: holding
     value_type: U_WORD
-    address: 7
+    address: 8
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -291,7 +261,7 @@ number:
     unit_of_measurement: '%'
     register_type: holding
     value_type: U_WORD
-    address: 8
+    address: 9
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -303,7 +273,7 @@ number:
     unit_of_measurement: '%'
     register_type: holding
     value_type: U_WORD
-    address: 9
+    address: 10     # In documentation this shoud be on add 0x0010 but it's verifyed to be located 0xA on my unit :)
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -315,7 +285,7 @@ number:
     unit_of_measurement: '%'
     register_type: holding
     value_type: U_WORD
-    address: 10
+    address: 11
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -327,7 +297,7 @@ number:
     unit_of_measurement: '%'
     register_type: holding
     value_type: U_WORD
-    address: 11
+    address: 12
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -339,7 +309,7 @@ number:
     max_value: 10
     register_type: holding
     value_type: U_WORD
-    address: 17
+    address: 18
     step: 0.1
     lambda: "return x/10;"
     write_lambda: |-
@@ -358,7 +328,7 @@ number:
     max_value: 20
     register_type: holding
     value_type: U_WORD
-    address: 25
+    address: 26
 
 binary_sensor:
   - platform: modbus_controller
@@ -366,14 +336,35 @@ binary_sensor:
     name: "Genvex On/Off Possible On K1"
     id: genvex_on_off_possible
     register_type: holding
-    address: 24
+    address: 25
 
-  - platform: modbus_controller
-    modbus_controller_id: genvex_modbus_controller
+  - platform: template
+    name: "Sensor Error"
+    lambda: |-
+      uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
+      bool bActive = alarmcode & 0x0001;
+      return bActive;
+
+  - platform: template
     name: "Bypass On"
-    id: genvex_bypass_on_off
-    register_type: read
-    address: 107      
+    lambda: |-
+      uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
+      bool bActive = alarmcode & 0x0002;
+      return bActive;
+
+  - platform: template
+    name: "Relay R9"
+    lambda: |-
+      uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
+      bool bActive = alarmcode & 0x0004;
+      return bActive;
+
+  - platform: template
+    name: "Filter Error"
+    lambda: |-
+      uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
+      bool bActive = alarmcode & 0x0008;
+      return bActive;
 
   - platform: template
     name: "Water Freeze Error"
@@ -390,28 +381,28 @@ binary_sensor:
       return bActive;
 
   - platform: template
-    name: "Reset Filter"
+    name: "Unit Stopped"
     lambda: |-
       uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
       bool bActive = alarmcode & 0x0080;
       return bActive;
 
   - platform: template
-    name: "Operation"
+    name: "Operation R8"
     lambda: |-
       uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
       bool bActive = alarmcode & 0x1000;
       return bActive;
 
   - platform: template
-    name: "Electric post-heating"
+    name: "Electric post-heating R2"
     lambda: |-
       uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
       bool bActive = alarmcode & 0x2000;
       return bActive;
 
   - platform: template
-    name: "Extra cooling"
+    name: "Electric pre-heating R3"
     lambda: |-
       uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
       bool bActive = alarmcode & 0x4000;

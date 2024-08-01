@@ -3,47 +3,8 @@
 My creation of custom components fro ESP home.
 
 ### Recent updates
-23-10-2023 - BREAKING CHANGE!!!
-Added the ability to use substitutions for channel offset/alignment
+20-04-2023 - Genvexv2 added support for Optima260 control unit. Chengad the way controlbits are mapped en yaml file masked out as bool vars for home assistant. 
 
-The following lines needs to be added to yaml.
-```yaml
-  # CHANNEL Alignments (ONLY change if you have offsets in channel vs temperature. Some have reported this if using multiple strings pr. room thermostat)
-  channel_01_sensor: "0x00"
-  channel_02_sensor: "0x01"
-  channel_03_sensor: "0x02"
-  channel_04_sensor: "0x03"
-  channel_05_sensor: "0x04"
-  channel_06_sensor: "0x05"
-  channel_07_sensor: "0x06"
-  channel_08_sensor: "0x07"
-  channel_09_sensor: "0x08"
-  channel_10_sensor: "0x09"
-  channel_11_sensor: "0x0A"
-  channel_12_sensor: "0x0B"
-  channel_13_sensor: "0x0C"
-  channel_14_sensor: "0x0D"
-  channel_15_sensor: "0x0E"
-  channel_16_sensor: "0x0F"
-
-  channel_01: "0x00"
-  channel_02: "0x01"
-  channel_03: "0x02"
-  channel_04: "0x03"
-  channel_05: "0x04"
-  channel_06: "0x05"
-  channel_07: "0x06"
-  channel_08: "0x07"
-  channel_09: "0x08"
-  channel_10: "0x09"
-  channel_11: "0x0A"
-  channel_12: "0x0B"
-  channel_13: "0x0C"
-  channel_14: "0x0D"
-  channel_15: "0x0E"
-  channel_16: "0x0F"
-```
-  
 04-07-2022 - Wavin v2 has issues with ESPhome 2022.6. It fails writing a number back to the Wavin device. Added yaml to basic.yaml to ensure it uses the modbus and modbus_controller component from ESPhome 2022.5.1. Please to a clean and update your ESPhome device to make it work with ESPhome 2022.6.
 
 23-03-2022 - Wavin Sentio - Added support for Wavin Sentio. nic6911 https://github.com/nic6911 have worked hard on a Wavin Sentio component and it has now beed added to this repo.
