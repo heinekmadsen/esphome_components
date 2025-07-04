@@ -42,7 +42,7 @@ sensor:
     lambda: |-
       uint16_t raw_battery = (data[2] << 8) | data[3];
       ESP_LOGD("DEBUG", "Battery raw value: %d", raw_battery);
-      return raw_batt * 10;
+      return raw_battery * 10.0;
 # ----------- Binary ----------- #
 binary_sensor:
   - platform:               modbus_controller
