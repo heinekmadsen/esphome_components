@@ -25,7 +25,7 @@ DEPENDENCIES = ["modbus_controller"]
 genvexv2_ns = cg.esphome_ns.namespace('genvexv2')
 Genvexv2Select = genvexv2_ns.class_('Genvexv2Select', select.Select, cg.Component)
  
-CONFIG_SCHEMA = select.SELECT_SCHEMA.extend({
+CONFIG_SCHEMA = select.select_schema(Genvexv2Select).extend({
     cv.GenerateID(): cv.declare_id(Genvexv2Select),
     cv.GenerateID(CONF_GENVEXV2_ID): cv.use_id(Genvexv2),
     cv.Required(CONF_ADDRESS): cv.positive_int,
