@@ -14,7 +14,7 @@ CONF_ACTION = "action_sensor_id"
 wavinahc9000v2_ns = cg.esphome_ns.namespace('wavinahc9000v2')
 Wavinahc9000v2Climate = wavinahc9000v2_ns.class_('Wavinahc9000v2Climate', climate.Climate, cg.Component)
 
-CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
+CONFIG_SCHEMA = climate.climate_schema(Wavinahc9000v2Climate).extend({
     cv.GenerateID(): cv.declare_id(Wavinahc9000v2Climate),
     cv.GenerateID(CONF_WAVINAHC9000v2_ID): cv.use_id(Wavinahc9000v2),
     cv.Required(CONF_TARGET_TEMP): cv.use_id(number.Number),

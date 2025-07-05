@@ -16,9 +16,14 @@ sensor:
     accuracy_decimals: 1
     device_class: temperature
     force_update: True
-    filters:
-      - multiply: 0.1
-  # Battery
+    lambda: |-
+      for (int i = 0; i < data.size(); i++) {
+        ESP_LOGD("DEBUG", "data[%d] = 0x%02X", i, data[i]);
+      }
+      uint16_t raw_temp = (data[2] << 8) | data[3];
+      ESP_LOGD("DEBUG", "Correct raw_temp assembled: %d", raw_temp);
+      return raw_temp * 0.1;
+# ----------- Battery ----------- #
   - platform:               modbus_controller
     name:                   ${name} Battery ${channel_08_friendly_name}
     id:                     ${device}_battery_${channel_08_id}
@@ -34,9 +39,10 @@ sensor:
     unit_of_measurement: "%"
     accuracy_decimals: 1
     device_class: battery
-    filters:
-      - multiply: 10 
-
+    lambda: |-
+      uint16_t raw_battery = (data[2] << 8) | data[3];
+      ESP_LOGD("DEBUG", "Battery raw value: %d", raw_battery);
+      return raw_battery * 10.0;
 # ----------- Binary ----------- #
 binary_sensor:
   - platform:               modbus_controller
@@ -51,7 +57,6 @@ binary_sensor:
       - $channel_08
       - 0x01
     bitmask: 0x0010
-
 # ----------- Number ----------- #
 number:
   - platform:               modbus_controller
@@ -71,15 +76,17 @@ number:
     max_value: 40
     step: .5
     write_lambda: |-
-      ESP_LOGD("main", "Trying to write new target temp: %f",x);
+      ESP_LOGD("DEBUG", "Trying to write new target temp: %f", x);
       uint16_t targettemp = x * 10;
       payload.push_back(0x0144);
       payload.push_back(0x0200);
       payload.push_back(${channel_08}01);
       payload.push_back(targettemp);
       return true;
-    lambda: "return x*0.1;"
-
+    lambda: |-
+      uint16_t raw_temp = (data[2] << 8) | data[3];
+      ESP_LOGD("DEBUG", "Target temp raw value: %d", raw_temp);
+      return raw_temp * 0.1;
 # ----------- Switch ----------- #
 switch:
   - platform:               modbus_controller
@@ -122,7 +129,6 @@ switch:
       int mode = data[1];
       ESP_LOGD("main","MODE for Channel 01 is: %i",mode);    
       return mode;
-
 # ----------- Climate ----------- #
 climate:
   - platform:               wavinahc9000v2
