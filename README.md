@@ -3,6 +3,9 @@
 My creation of custom components fro ESP home.
 
 ### Recent updates
+05-07-2025 - Updated for ESPHome 2025.6.5+ Compatibility
+A big thanks to ricobach for the PR on this.
+
 23-10-2023 - BREAKING CHANGE!!!
 Added the ability to use substitutions for channel offset/alignment
 
