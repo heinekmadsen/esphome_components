@@ -9,12 +9,12 @@ static const char *TAG = "genvexv2.climate";
 void Genvexv2Climate::setup() {
   current_temp_sensor_->add_on_state_callback([this](float state) {
     ESP_LOGD(TAG, "CURRENT TEMP SENSOR CALLBACK: %f", state);
-    current_temperature = state;
+  current_temperature = roundf(state * 10.0f) / 10.0f;
     publish_state();
   });
   temp_setpoint_number_->add_on_state_callback([this](float state) {
     ESP_LOGD(TAG, "TEMP SETPOINT SENSOR CALLBACK: %f", state);
-    target_temperature = state;
+  target_temperature = roundf(state * 10.0f) / 10.0f;
     publish_state();
   });
   fan_speed_number_->add_on_state_callback([this](float state) {
@@ -23,8 +23,8 @@ void Genvexv2Climate::setup() {
     publish_state();
   });
 
-  current_temperature = current_temp_sensor_->state;
-  target_temperature  = temp_setpoint_number_->state;
+  current_temperature = roundf(current_temp_sensor_->state * 10.0f) / 10.0f;
+  target_temperature  = roundf(temp_setpoint_number_->state * 10.0f) / 10.0f;
   genvexv2fanspeed_to_fanmode(fan_speed_number_->state);
 }
 

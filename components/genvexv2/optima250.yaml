@@ -70,7 +70,8 @@ sensor:
     address: 0
     lambda: |-
       ESP_LOGD("T1", "Processing T1 using lambda");
-      return ((x - 300) / 10);
+      float v = (x - 300) / 10.0f;
+      return roundf(v * 10.0f) / 10.0f;
       
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -84,7 +85,8 @@ sensor:
     address: 2
     lambda: |-
       ESP_LOGD("T3", "Processing T3 using lambda");
-      return ((x - 300) / 10);
+      float v = (x - 300) / 10.0f;
+      return roundf(v * 10.0f) / 10.0f;
       
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -98,7 +100,8 @@ sensor:
     address: 3
     lambda: |-
       ESP_LOGD("T4", "Processing T4 using lambda");
-      return ((x - 300) / 10);
+      float v = (x - 300) / 10.0f;
+      return roundf(v * 10.0f) / 10.0f;
       
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -112,7 +115,8 @@ sensor:
     address: 6
     lambda: |-
       ESP_LOGD("T7", "Processing T7 using lambda");
-      return ((x - 300) / 10);    
+      float v = (x - 300) / 10.0f;
+      return roundf(v * 10.0f) / 10.0f;    
       
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -126,7 +130,8 @@ sensor:
     address: 9
     lambda: |-
       ESP_LOGD("T2_Panel", "Processing T2 panel using lambda");
-      return ((x - 300) / 10);
+      float v = (x - 300) / 10.0f;
+      return roundf(v * 10.0f) / 10.0f;
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
@@ -348,7 +353,9 @@ number:
     max_value: 30
     step: 0.1
     address: 0
-    lambda: "return ((x+100)/10);"
+    lambda: |-
+      float v = (x + 100) / 10.0f;
+      return roundf(v * 10.0f) / 10.0f;
     write_lambda: |-
       ESP_LOGD("main","Processing new target temp");
       uint16_t new_temp = x * 10 - 100;
