@@ -18,7 +18,7 @@ sensor:
     force_update: True
     filters:
       - multiply: 0.1
-  - lambda: 'return roundf(x * 10.0f) / 10.0f;'
+    lambda: 'return roundf(x * 10.0f) / 10.0f;'
   # Battery
   - platform:               modbus_controller
     name:                   ${name} Battery ${channel_01_friendly_name}
