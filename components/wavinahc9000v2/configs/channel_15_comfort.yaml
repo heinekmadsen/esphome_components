@@ -44,7 +44,9 @@ number:
       payload.push_back(${channel_15}01);
       payload.push_back(targettemp);
       return true;
-    lambda: "return x*0.1;"
+    lambda: |-
+      float v = x * 0.1f;
+      return roundf(v * 10.0f) / 10.0f;
 
 # ----------- Switch ----------- #
 switch:

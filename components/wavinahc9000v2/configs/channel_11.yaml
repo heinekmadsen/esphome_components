@@ -18,6 +18,7 @@ sensor:
     force_update: True
     filters:
       - multiply: 0.1
+  - lambda: 'return roundf(x * 10.0f) / 10.0f;'
   # Battery
   - platform:               modbus_controller
     name:                   ${name} Battery ${channel_11_friendly_name}
@@ -78,7 +79,9 @@ number:
       payload.push_back(${channel_11}01);
       payload.push_back(targettemp);
       return true;
-    lambda: "return x*0.1;"
+    lambda: |-
+      float v = x * 0.1f;
+      return roundf(v * 10.0f) / 10.0f;
 
 # ----------- Switch ----------- #
 switch:
