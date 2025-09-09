@@ -7,11 +7,11 @@ external_components:
     components: [wavinahc9000v2]
   # ESPHome 2022.6 has updates for modbus/modbus_controller which makes writing a number back to the wavin device fail.
   # This ensures it uses the components from 2022.5.1 instead. A work around until I figure out how to make 2022.6 work.
-  #- source:
-  #    type: git
-  #    url: https://github.com/esphome/esphome
-  #    ref: 2022.5.1
-  #  components: [ modbus, modbus_controller ]
-  #  refresh: 0s
+  - source:
+      type: git
+      url: https://github.com/esphome/esphome
+      ref: 2022.5.1
+    components: [ modbus, modbus_controller ]
+    refresh: 0s
 
 wavinahc9000v2:
