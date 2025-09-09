@@ -9,12 +9,16 @@ static const char *TAG = "wavinahc9000v2.climate";
 void Wavinahc9000v2Climate::setup() {
   current_temp_sensor_->add_on_state_callback([this](float state) {
     // ESP_LOGD(TAG, "CURRENT TEMP SENSOR CALLBACK: %f", state);
-    current_temperature = state;
+  // Round to one decimal to avoid long float tails from scaling (e.g., 24.7000007629)
+  float rounded = roundf(state * 10.0f) / 10.0f;
+  current_temperature = rounded;
     publish_state();
   });
   temp_setpoint_number_->add_on_state_callback([this](float state) {
     // ESP_LOGD(TAG, "TEMP SETPOINT SENSOR CALLBACK: %f", state);
-    target_temperature = state;
+  // Ensure target temperature is also kept at one decimal
+  float rounded = roundf(state * 10.0f) / 10.0f;
+  target_temperature = rounded;
     publish_state();
   });
   mode_switch_->add_on_state_callback([this](bool state) {
@@ -38,8 +42,9 @@ void Wavinahc9000v2Climate::setup() {
     publish_state();
   });
 
-  current_temperature = current_temp_sensor_->state;
-  target_temperature  = temp_setpoint_number_->state;
+  // Initialize with rounded values as well
+  current_temperature = roundf(current_temp_sensor_->state * 10.0f) / 10.0f;
+  target_temperature  = roundf(temp_setpoint_number_->state * 10.0f) / 10.0f;
 }
 
 void Wavinahc9000v2Climate::control(const climate::ClimateCall& call) {
