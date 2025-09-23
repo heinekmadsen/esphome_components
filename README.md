@@ -1,3 +1,7 @@
+## NEW REPO FOR Wavin AHC 9000
+There will be no more updates to the Wavin Components in this Repo.
+Please take a look at the new v3 version in this repo: https://github.com/heinekmadsen/esphome_wavinahc9000v3
+
 ## ESPHome custom components
 
 My creation of custom components fro ESP home.
