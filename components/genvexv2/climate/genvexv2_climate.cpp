@@ -26,6 +26,7 @@ void Genvexv2Climate::setup() {
   current_temperature = current_temp_sensor_->state;
   target_temperature  = temp_setpoint_number_->state;
   genvexv2fanspeed_to_fanmode(fan_speed_number_->state);
+  publish_state();
 }
 
 void Genvexv2Climate::control(const climate::ClimateCall& call) {
@@ -55,10 +56,10 @@ void Genvexv2Climate::control(const climate::ClimateCall& call) {
         fan_speed_number_->make_call().set_value(0).perform();//set(0);
         break;
       }
-      case climate::CLIMATE_MODE_AUTO: 
+      case climate::CLIMATE_MODE_HEAT_COOL:
       {
-        ESP_LOGD("TAG", "Mode changed to AUTO");
-        this->custom_fan_mode = esphome::to_string("2");
+        ESP_LOGD("TAG", "Mode changed to HEAT_COOL");
+        this->custom_fan_mode = esphome::to_string(2);
         fan_mode.reset();
         auto optional_genvexv2_fan_mode = parse_number<float>("2");
         if(optional_genvexv2_fan_mode.has_value())
@@ -118,10 +119,11 @@ climate::ClimateTraits Genvexv2Climate::traits() {
 
   traits.set_supported_modes({
     climate::ClimateMode::CLIMATE_MODE_OFF,
-    climate::ClimateMode::CLIMATE_MODE_AUTO,
+    climate::ClimateMode::CLIMATE_MODE_HEAT_COOL,
    });
 
   traits.set_supports_current_temperature(true);
+  traits.set_supports_two_point_target_temperature(false);
   traits.set_visual_temperature_step(0.1);
   traits.set_visual_min_temperature(5);
   traits.set_visual_max_temperature(30);
@@ -144,22 +146,22 @@ void Genvexv2Climate::genvexv2fanspeed_to_fanmode(const int state)
   switch (state) {
   case 1:
     ESP_LOGD("TAG", "Case 1");
-    this->mode = climate::CLIMATE_MODE_AUTO;
+    this->mode = climate::CLIMATE_MODE_HEAT_COOL;
     this->custom_fan_mode = esphome::to_string(state);
     break;
   case 2:
     ESP_LOGD("TAG", "Case 2");
-    this->mode = climate::CLIMATE_MODE_AUTO;
+    this->mode = climate::CLIMATE_MODE_HEAT_COOL;
     this->custom_fan_mode = esphome::to_string(state);
     break;
   case 3:
     ESP_LOGD("TAG", "Case 3");
-    this->mode = climate::CLIMATE_MODE_AUTO;
+    this->mode = climate::CLIMATE_MODE_HEAT_COOL;
     this->custom_fan_mode = esphome::to_string(state);
     break;
   case 4:
     ESP_LOGD("TAG", "Case 4");
-    this->mode = climate::CLIMATE_MODE_AUTO;
+    this->mode = climate::CLIMATE_MODE_HEAT_COOL;
     this->custom_fan_mode = esphome::to_string(state);
     break;
   case 0:
