@@ -15,7 +15,6 @@ genvexv2_ns = cg.esphome_ns.namespace('genvexv2')
 Genvexv2Climate = genvexv2_ns.class_('Genvexv2Climate', climate.Climate, cg.Component)
  
 CONFIG_SCHEMA = climate.climate_schema(Genvexv2Climate).extend({
-    cv.GenerateID(): cv.declare_id(Genvexv2Climate),
     cv.GenerateID(CONF_GENVEXV2_ID): cv.use_id(Genvexv2),
     cv.Required(CONF_TARGET_TEMP): cv.use_id(number.Number),
     cv.Required(CONF_CURRENT_TEMP): cv.use_id(sensor.Sensor),
