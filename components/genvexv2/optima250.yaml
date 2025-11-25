@@ -182,6 +182,7 @@ sensor:
     modbus_controller_id: genvex_modbus_controller
     name: "Genvex humidity fan control"
     id: genvex_humidity_fan_control
+    icon: mdi:water-percent
     unit_of_measurement: "%"
     value_type: U_WORD
     register_type: read
