@@ -196,10 +196,10 @@ text_sensor:
     # device_class: None
     register_type: read
     address: 101
-    lambda: !lambda |-
+    lambda: |-
       uint16_t int_mode = (data[item->offset] << 8) + data[item->offset+1];
       ESP_LOGD("main","Parsed operation mode int : %d", int_mode);
-      return int_mode;
+      return std::to_string(int_mode);
 
 number:
   - platform: modbus_controller
@@ -243,42 +243,42 @@ binary_sensor:
   - platform: template
     name: "Water Freeze Error"
     lambda: |-
-      uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
+      uint16_t alarmcode = strtoul(id(genvex_alarm_bitfield).state.c_str(), nullptr, 10);
       bool bActive = alarmcode & 0x0010;
       return bActive;
 
   - platform: template
     name: "Hygrostat"
     lambda: |-
-      uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
+      uint16_t alarmcode = strtoul(id(genvex_alarm_bitfield).state.c_str(), nullptr, 10);
       bool bActive = alarmcode & 0x0040;
       return bActive;
 
   - platform: template
     name: "Reset Filter"
     lambda: |-
-      uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
+      uint16_t alarmcode = strtoul(id(genvex_alarm_bitfield).state.c_str(), nullptr, 10);
       bool bActive = alarmcode & 0x0080;
       return bActive;
 
   - platform: template
     name: "Operation"
     lambda: |-
-      uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
+      uint16_t alarmcode = strtoul(id(genvex_alarm_bitfield).state.c_str(), nullptr, 10);
       bool bActive = alarmcode & 0x1000;
       return bActive;
 
   - platform: template
     name: "Electric post-heating"
     lambda: |-
-      uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
+      uint16_t alarmcode = strtoul(id(genvex_alarm_bitfield).state.c_str(), nullptr, 10);
       bool bActive = alarmcode & 0x2000;
       return bActive;
 
   - platform: template
     name: "Extra cooling"
     lambda: |-
-      uint16_t alarmcode = (uint16_t)(id(genvex_alarm_bitfield).state);
+      uint16_t alarmcode = strtoul(id(genvex_alarm_bitfield).state.c_str(), nullptr, 10);
       bool bActive = alarmcode & 0x4000;
       return bActive;
 
