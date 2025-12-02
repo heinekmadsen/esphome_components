@@ -121,7 +121,13 @@ climate::ClimateTraits Genvexv2Climate::traits() {
     climate::ClimateMode::CLIMATE_MODE_AUTO,
    });
 
-  traits.set_supports_current_temperature(true);
+  // Enable target temperature slider and current temperature display using feature flags
+  traits.add_feature_flags(
+    climate::ClimateFeature::FEATURE_TARGET_TEMPERATURE |
+    climate::ClimateFeature::FEATURE_CURRENT_TEMPERATURE |
+    climate::ClimateFeature::FEATURE_FAN_MODE |
+    climate::ClimateFeature::FEATURE_CUSTOM_FAN_MODE
+  );
   traits.set_visual_temperature_step(0.1);
   traits.set_visual_min_temperature(5);
   traits.set_visual_max_temperature(30);
