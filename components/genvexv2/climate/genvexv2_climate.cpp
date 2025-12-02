@@ -121,13 +121,9 @@ climate::ClimateTraits Genvexv2Climate::traits() {
     climate::ClimateMode::CLIMATE_MODE_AUTO,
    });
 
-  // Enable target temperature slider and current temperature display using feature flags
-  traits.add_feature_flags(
-    climate::ClimateFeature::TARGET_TEMPERATURE |
-    climate::ClimateFeature::CURRENT_TEMPERATURE |
-    climate::ClimateFeature::FAN_MODE |
-    climate::ClimateFeature::CUSTOM_FAN_MODE
-  );
+  // Older ESPHome: explicitly mark support for current temperature; target
+  // temperature is supported by default for single setpoint climates.
+  traits.set_supports_current_temperature(true);
   traits.set_visual_temperature_step(0.1);
   traits.set_visual_min_temperature(5);
   traits.set_visual_max_temperature(30);
