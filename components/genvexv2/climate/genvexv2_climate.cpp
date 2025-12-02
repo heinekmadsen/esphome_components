@@ -94,20 +94,6 @@ void Genvexv2Climate::control(const climate::ClimateCall& call) {
         fan_speed_number_->make_call().set_value(0).perform();//set(0);
         break;
       }
-      case climate::CLIMATE_MODE_AUTO: 
-      {
-        ESP_LOGD("TAG", "Mode changed to AUTO");
-        // Default to numeric fan level 2; UI custom mode display is handled by HA
-        fan_mode.reset();
-        auto optional_genvexv2_fan_mode = parse_number<float>("2");
-        if(optional_genvexv2_fan_mode.has_value())
-        {
-          auto genvexv2_fan_mode = optional_genvexv2_fan_mode.value();
-          ESP_LOGD(TAG, "Custom Fan mode set to: %i", static_cast<int>(genvexv2_fan_mode));
-          fan_speed_number_->make_call().set_value(genvexv2_fan_mode).perform();;//set(genvexv2_fan_mode);
-        }
-        break;
-      }
       case climate::CLIMATE_MODE_HEAT:
       {
         ESP_LOGD("TAG", "Mode changed to HEAT");
@@ -119,19 +105,20 @@ void Genvexv2Climate::control(const climate::ClimateCall& call) {
         }
         break;
       }
-      case climate::CLIMATE_MODE_COOL:
-      {
-        ESP_LOGD("TAG", "Mode changed to COOL");
-        // Indicate cooling action based on target/current comparison
-        if (std::isfinite(this->current_temperature) && std::isfinite(this->target_temperature)) {
-          this->action = (this->target_temperature < this->current_temperature)
-                           ? climate::CLIMATE_ACTION_COOLING
-                           : climate::CLIMATE_ACTION_IDLE;
-        }
-        break;
-      }
       default:
         break;
+    }
+  }
+
+  // Handle intuitive presets: "On" => active control (HEAT), "Off" => OFF
+  if (call.get_preset().has_value())
+  {
+    auto preset = *call.get_preset();
+    if (preset == "On") {
+      this->mode = climate::CLIMATE_MODE_HEAT;
+    } else if (preset == "Off") {
+      this->mode = climate::CLIMATE_MODE_OFF;
+      this->action = climate::CLIMATE_ACTION_OFF;
     }
   }
 
@@ -179,18 +166,19 @@ climate::ClimateTraits Genvexv2Climate::traits() {
 
   traits.set_supported_modes({
     climate::ClimateMode::CLIMATE_MODE_OFF,
-    climate::ClimateMode::CLIMATE_MODE_AUTO,
     climate::ClimateMode::CLIMATE_MODE_HEAT,
-    climate::ClimateMode::CLIMATE_MODE_COOL,
    });
 
   // Older ESPHome: explicitly mark support for current temperature; target
   // temperature is supported by default for single setpoint climates.
   traits.set_supports_current_temperature(true);
   traits.set_supports_action(true);
-  traits.set_visual_temperature_step(0.1);
+  traits.set_visual_temperature_step(0.5);
   traits.set_visual_min_temperature(5);
   traits.set_visual_max_temperature(30);
+
+  // Add intuitive presets for UI simplicity
+  traits.set_supported_presets({"On", "Off"});
 
   return traits;
 }
