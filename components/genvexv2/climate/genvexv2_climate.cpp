@@ -49,7 +49,7 @@ void Genvexv2Climate::control(const climate::ClimateCall& call) {
         this->fan_mode = climate::CLIMATE_FAN_OFF;
         // The only valid fan mode that is not custom is "OFF"
         auto new_fan_mode = *call.get_fan_mode();
-        custom_fan_mode.reset();
+        this->set_custom_fan_mode(nullptr);
 
         ESP_LOGD(TAG, "Custom Fan mode set to: 0");
         fan_speed_number_->make_call().set_value(0).perform();//set(0);
@@ -58,8 +58,7 @@ void Genvexv2Climate::control(const climate::ClimateCall& call) {
       case climate::CLIMATE_MODE_AUTO: 
       {
         ESP_LOGD("TAG", "Mode changed to AUTO");
-  // Set custom_fan_mode directly as string "2" to avoid to_string(const char*) overload issues
-  this->custom_fan_mode = std::string("2");
+        this->set_custom_fan_mode("2");
         fan_mode.reset();
         auto optional_genvexv2_fan_mode = parse_number<float>("2");
         if(optional_genvexv2_fan_mode.has_value())
@@ -80,19 +79,19 @@ void Genvexv2Climate::control(const climate::ClimateCall& call) {
     ESP_LOGD("TAG", "Fan mode changed to OFF from Home Assistant");
     // The only valid fan mode that is not custom is "OFF"
     auto new_fan_mode = *call.get_fan_mode();
-    custom_fan_mode.reset();
+    this->set_custom_fan_mode(nullptr);
 
     ESP_LOGD(TAG, "Fan mode set to: 0");
     fan_speed_number_->make_call().set_value(0).perform();//set(0);
   }
 
-  if (call.get_custom_fan_mode().has_value())
+  if (call.get_custom_fan_mode() != nullptr)
   {
     ESP_LOGD("TAG", "Fan mode changed to custom fan mode 1-4 from Home Assistant");
-    auto new_custom_fan_mode = *call.get_custom_fan_mode();
-    custom_fan_mode = new_custom_fan_mode;
+    const char *new_custom_fan_mode = call.get_custom_fan_mode();
+    this->set_custom_fan_mode(new_custom_fan_mode);
     fan_mode.reset();
-    auto optional_genvexv2_fan_mode = parse_number<float>(new_custom_fan_mode.c_str());
+    auto optional_genvexv2_fan_mode = parse_number<float>(new_custom_fan_mode);
     if(optional_genvexv2_fan_mode.has_value())
     {
       auto genvexv2_fan_mode = optional_genvexv2_fan_mode.value();
@@ -139,29 +138,29 @@ void Genvexv2Climate::genvexv2fanspeed_to_fanmode(const int state)
   ESP_LOGD("TAG", "In genvexv2fanspeed_to_fanmode");
   climate::ClimateFanMode return_value;
   ESP_LOGD("TAG", "State is %i", state);
-  this->custom_fan_mode.reset();
+  this->set_custom_fan_mode(nullptr);
   this->fan_mode.reset();
 
   switch (state) {
   case 1:
     ESP_LOGD("TAG", "Case 1");
     this->mode = climate::CLIMATE_MODE_AUTO;
-  this->custom_fan_mode = esphome::to_string(static_cast<int>(state));
+    this->set_custom_fan_mode("1");
     break;
   case 2:
     ESP_LOGD("TAG", "Case 2");
     this->mode = climate::CLIMATE_MODE_AUTO;
-  this->custom_fan_mode = esphome::to_string(static_cast<int>(state));
+    this->set_custom_fan_mode("2");
     break;
   case 3:
     ESP_LOGD("TAG", "Case 3");
     this->mode = climate::CLIMATE_MODE_AUTO;
-  this->custom_fan_mode = esphome::to_string(static_cast<int>(state));
+    this->set_custom_fan_mode("3");
     break;
   case 4:
     ESP_LOGD("TAG", "Case 4");
     this->mode = climate::CLIMATE_MODE_AUTO;
-  this->custom_fan_mode = esphome::to_string(static_cast<int>(state));
+    this->set_custom_fan_mode("4");
     break;
   case 0:
     ESP_LOGD("TAG", "Case 0");
