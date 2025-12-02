@@ -6,12 +6,12 @@ external_components:
     refresh: 0s
     components: [genvexv2]
   # Pin modbus and modbus_controller to a known-good version to avoid scaling issues
-  - source:
-      type: git
-      url: https://github.com/esphome/esphome
-      ref: 2022.5.1
-    components: [ modbus, modbus_controller ]
-    refresh: 0s
+#  - source:
+#      type: git
+#      url: https://github.com/esphome/esphome
+#      ref: 2022.5.1
+#    components: [ modbus, modbus_controller ]
+#    refresh: 0s
 
 genvexv2:
 
