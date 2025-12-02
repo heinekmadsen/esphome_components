@@ -9,12 +9,32 @@ static const char *TAG = "genvexv2.climate";
 void Genvexv2Climate::setup() {
   current_temp_sensor_->add_on_state_callback([this](float state) {
     ESP_LOGD(TAG, "CURRENT TEMP SENSOR CALLBACK: %f", state);
-  current_temperature = roundf(state * 10.0f) / 10.0f;
+    current_temperature = roundf(state * 10.0f) / 10.0f;
+    // Update action based on target vs current
+    if (std::isfinite(this->target_temperature)) {
+      if (this->target_temperature > this->current_temperature) {
+        this->action = climate::CLIMATE_ACTION_HEATING;
+      } else if (this->target_temperature < this->current_temperature) {
+        this->action = climate::CLIMATE_ACTION_COOLING;
+      } else {
+        this->action = climate::CLIMATE_ACTION_IDLE;
+      }
+    }
     publish_state();
   });
   temp_setpoint_number_->add_on_state_callback([this](float state) {
     ESP_LOGD(TAG, "TEMP SETPOINT SENSOR CALLBACK: %f", state);
-  target_temperature = roundf(state * 10.0f) / 10.0f;
+    target_temperature = roundf(state * 10.0f) / 10.0f;
+    // Update action when target changes
+    if (std::isfinite(this->current_temperature)) {
+      if (this->target_temperature > this->current_temperature) {
+        this->action = climate::CLIMATE_ACTION_HEATING;
+      } else if (this->target_temperature < this->current_temperature) {
+        this->action = climate::CLIMATE_ACTION_COOLING;
+      } else {
+        this->action = climate::CLIMATE_ACTION_IDLE;
+      }
+    }
     publish_state();
   });
   fan_speed_number_->add_on_state_callback([this](float state) {
@@ -25,6 +45,15 @@ void Genvexv2Climate::setup() {
 
   current_temperature = roundf(current_temp_sensor_->state * 10.0f) / 10.0f;
   target_temperature  = roundf(temp_setpoint_number_->state * 10.0f) / 10.0f;
+  if (std::isfinite(this->current_temperature) && std::isfinite(this->target_temperature)) {
+    if (this->target_temperature > this->current_temperature) {
+      this->action = climate::CLIMATE_ACTION_HEATING;
+    } else if (this->target_temperature < this->current_temperature) {
+      this->action = climate::CLIMATE_ACTION_COOLING;
+    } else {
+      this->action = climate::CLIMATE_ACTION_IDLE;
+    }
+  }
   genvexv2fanspeed_to_fanmode(fan_speed_number_->state);
 }
 
@@ -35,6 +64,16 @@ void Genvexv2Climate::control(const climate::ClimateCall& call) {
     float target = target_temperature;
     ESP_LOGD(TAG, "Target temperature changed to: %f", target);
     temp_setpoint_number_->make_call().set_value(target).perform();//set(target);
+    // Update action when HA sets new target
+    if (std::isfinite(this->current_temperature)) {
+      if (this->target_temperature > this->current_temperature) {
+        this->action = climate::CLIMATE_ACTION_HEATING;
+      } else if (this->target_temperature < this->current_temperature) {
+        this->action = climate::CLIMATE_ACTION_COOLING;
+      } else {
+        this->action = climate::CLIMATE_ACTION_IDLE;
+      }
+    }
   }
 
   if (call.get_mode().has_value())
@@ -124,6 +163,7 @@ climate::ClimateTraits Genvexv2Climate::traits() {
   // Older ESPHome: explicitly mark support for current temperature; target
   // temperature is supported by default for single setpoint climates.
   traits.set_supports_current_temperature(true);
+  traits.set_supports_action(true);
   traits.set_visual_temperature_step(0.1);
   traits.set_visual_min_temperature(5);
   traits.set_visual_max_temperature(30);
