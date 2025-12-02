@@ -108,6 +108,28 @@ void Genvexv2Climate::control(const climate::ClimateCall& call) {
         }
         break;
       }
+      case climate::CLIMATE_MODE_HEAT:
+      {
+        ESP_LOGD("TAG", "Mode changed to HEAT");
+        // Indicate heating action based on target/current comparison
+        if (std::isfinite(this->current_temperature) && std::isfinite(this->target_temperature)) {
+          this->action = (this->target_temperature > this->current_temperature)
+                           ? climate::CLIMATE_ACTION_HEATING
+                           : climate::CLIMATE_ACTION_IDLE;
+        }
+        break;
+      }
+      case climate::CLIMATE_MODE_COOL:
+      {
+        ESP_LOGD("TAG", "Mode changed to COOL");
+        // Indicate cooling action based on target/current comparison
+        if (std::isfinite(this->current_temperature) && std::isfinite(this->target_temperature)) {
+          this->action = (this->target_temperature < this->current_temperature)
+                           ? climate::CLIMATE_ACTION_COOLING
+                           : climate::CLIMATE_ACTION_IDLE;
+        }
+        break;
+      }
       default:
         break;
     }
@@ -158,6 +180,8 @@ climate::ClimateTraits Genvexv2Climate::traits() {
   traits.set_supported_modes({
     climate::ClimateMode::CLIMATE_MODE_OFF,
     climate::ClimateMode::CLIMATE_MODE_AUTO,
+    climate::ClimateMode::CLIMATE_MODE_HEAT,
+    climate::ClimateMode::CLIMATE_MODE_COOL,
    });
 
   // Older ESPHome: explicitly mark support for current temperature; target
