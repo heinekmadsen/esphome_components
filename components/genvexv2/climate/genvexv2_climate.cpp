@@ -110,18 +110,6 @@ void Genvexv2Climate::control(const climate::ClimateCall& call) {
     }
   }
 
-  // Handle intuitive presets: "On" => active control (HEAT), "Off" => OFF
-  if (call.get_preset().has_value())
-  {
-    auto preset = *call.get_preset();
-    if (preset == "On") {
-      this->mode = climate::CLIMATE_MODE_HEAT;
-    } else if (preset == "Off") {
-      this->mode = climate::CLIMATE_MODE_OFF;
-      this->action = climate::CLIMATE_ACTION_OFF;
-    }
-  }
-
   if (call.get_fan_mode().has_value())
   {
     ESP_LOGD("TAG", "Fan mode changed to OFF from Home Assistant");
@@ -176,9 +164,6 @@ climate::ClimateTraits Genvexv2Climate::traits() {
   traits.set_visual_temperature_step(0.5);
   traits.set_visual_min_temperature(5);
   traits.set_visual_max_temperature(30);
-
-  // Add intuitive presets for UI simplicity
-  traits.set_supported_presets({"On", "Off"});
 
   return traits;
 }
