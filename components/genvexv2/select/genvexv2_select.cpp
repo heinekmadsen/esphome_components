@@ -18,19 +18,19 @@ void Genvexv2Select::parse_and_publish(const std::vector<uint8_t> &data) {
   float received_value = payload_to_float(data, *this);
   ESP_LOGD(TAG, "Genvexv2 Select index: %f", received_value);
 
-  auto options = traits.get_options();
+  const auto &options = this->traits.get_options();
 
   if(received_value < options.size()) {
-    auto select_value = options[received_value];
-    ESP_LOGD(TAG, "Select new state : %s", select_value.c_str());
-    this->publish_state(select_value);
+    const char *select_value = options[received_value];
+    ESP_LOGD(TAG, "Select new state : %s", select_value);
+    this->publish_state(std::string(select_value));
   }
 }
 
 void Genvexv2Select::control(const std::string &value) {
   ESP_LOGD(TAG, "Genvexv2 Select state: %s", value.c_str());
 
-  auto options = traits.get_options();
+  const auto &options = this->traits.get_options();
 
   for(auto i = 0; i<options.size(); ++i) {
     if(options[i] == value) {
