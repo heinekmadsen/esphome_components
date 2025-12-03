@@ -13,7 +13,7 @@ CONF_MODE = "mode_select_id"
 sentio_ns = cg.esphome_ns.namespace('sentio')
 SentioClimate = sentio_ns.class_('SentioClimate', climate.Climate, cg.Component)
  
-CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
+CONFIG_SCHEMA = climate.climate_schema(SentioClimate).extend({
     cv.GenerateID(): cv.declare_id(SentioClimate),
     cv.GenerateID(CONF_SENTIO_ID): cv.use_id(Sentio),
     cv.Required(CONF_TARGET_TEMP): cv.use_id(number.Number),

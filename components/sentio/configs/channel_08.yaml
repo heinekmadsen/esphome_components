@@ -1,0 +1,121 @@
+select:
+  - platform: modbus_controller
+    modbus_controller_id: sentio_modbus_controller
+    name: "${channel_8} termostat lås"
+    id: thermostat_lock_channel_8
+    address: 820
+    force_new_range: true
+    use_write_multiple: true
+    value_type: U_WORD
+    optionsmap:
+      "Locked" : 8
+      "Hotel" : 16
+      "Unlocked" : 32
+      
+#########################
+#### INPUT REGISTER  ####
+#########################
+sensor:
+
+  - platform: modbus_controller
+    modbus_controller_id: sentio_modbus_controller
+    name: "${channel_8} mode"
+    id: mode_channel_8
+    register_type: read
+    address: 802
+      
+  - platform: modbus_controller
+    modbus_controller_id: sentio_modbus_controller
+    name: "${channel_8} temperatur"
+    id: temperatur_channel_8
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    device_class: temperature
+    register_type: read
+    address: 804
+    filters:
+      - multiply: 0.01
+      
+  - platform: modbus_controller
+    modbus_controller_id: sentio_modbus_controller
+    name: "${channel_8} luftfugtighed"
+    id: luftfugtighed_channel_8
+    unit_of_measurement: '%'
+    accuracy_decimals: 1
+    device_class: humidity
+    register_type: read
+    address: 806
+    filters:
+      - multiply: 0.01 
+
+  - platform: modbus_controller
+    modbus_controller_id: sentio_modbus_controller
+    name: "${channel_8} dugpunkt"
+    id: dugpunkt_channel_8
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    device_class: humidity
+    register_type: read
+    address: 807
+    filters:
+      - multiply: 0.01  
+      
+#########################
+### SETPOINT REGISTER  ##
+#########################
+number:
+
+  - platform: modbus_controller
+    modbus_controller_id: sentio_modbus_controller
+    name: "${channel_8} temperatur setpunkt"
+    id: temperatur_setpunkt_channel_8
+    min_value: 10.0
+    max_value: 30.0
+    step: 0.5
+    address: 819
+    force_new_range: true
+    use_write_multiple: true 
+    multiply: 100  
+
+  - platform: modbus_controller
+    modbus_controller_id: sentio_modbus_controller
+    name: "${channel_8} ferie temperatur setpunkt"
+    id: ferie_temperatur_setpunkt_channel_8
+    min_value: 10.0
+    max_value: 30.0
+    step: 0.5
+    address: 822
+    force_new_range: true
+    use_write_multiple: true 
+    multiply: 100
+
+#########################
+#### INPUT REGISTER  ####
+#########################
+binary_sensor:
+
+  - platform: modbus_controller
+    modbus_controller_id: sentio_modbus_controller
+    name: "Fejl ${channel_8}"
+    id: sentio_warning_channel_8
+    register_type: read
+    address: 801
+    bitmask: 1      
+
+  - platform: modbus_controller
+    modbus_controller_id: sentio_modbus_controller
+    name: "Lav batteri ${channel_8}"
+    id: sentio_battery_low_channel_8
+    register_type: read
+    address: 803
+    bitmask: 1 
+
+#########################
+#### CLIMATE ENTITY   ###
+#########################
+climate:
+  - platform: sentio
+    name: ${channel_8}
+    current_temp_sensor_id: temperatur_channel_8
+    target_temp_sensor_id: temperatur_setpunkt_channel_8
+    mode_select_id: mode_channel_8
