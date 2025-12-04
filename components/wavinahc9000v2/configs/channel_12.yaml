@@ -56,7 +56,12 @@ binary_sensor:
       - 0x00
       - $channel_12
       - 0x01
-    bitmask: 0x0010
+    lambda: |-
+      uint16_t value = (data[2] << 8) | data[3];
+      ESP_LOGD("DEBUG", "Output status raw value: 0x%04X", value);
+      bool heating = (value & 0x0010) != 0;
+      ESP_LOGD("DEBUG", "Heating output for channel ${channel_12_friendly_name}: %s", heating ? "ON" : "OFF");
+      return heating;
 # ----------- Number ----------- #
 number:
   - platform:               modbus_controller
@@ -101,7 +106,7 @@ switch:
       - $channel_12
       - 0x01
     write_lambda: |-
-      ESP_LOGD("main","Modbus Switch incoming state for channel 01 = %s",ONOFF(x));
+      ESP_LOGD("main","Modbus Switch incoming state for channel 12 = %s",ONOFF(x));
       bool state = ONOFF(x);
       uint8_t MODE_MASK = 0x07;
       payload.push_back(0x01);
@@ -126,9 +131,9 @@ switch:
       payload.push_back((~MODE_MASK) & 0xFF);
       return true;
     lambda: |-
-      int mode = data[1];
-      ESP_LOGD("main","MODE for Channel 01 is: %i",mode);    
-      return mode;
+      uint16_t mode = (data[2] << 8) | data[3];
+      ESP_LOGD("main","MODE raw value for Channel 12: 0x%04X",mode);    
+      return (mode & 0x01) != 0;
 
 # ----------- Climate ----------- #
 climate:

@@ -85,9 +85,9 @@ switch:
       payload.push_back((~MODE_MASK) & 0xFF);
       return true;
     lambda: |-
-      int mode = data[1];
-      ESP_LOGD("main","MODE for Channel 01 is: %i",mode);    
-      return mode;
+      uint16_t mode = (data[2] << 8) | data[3];
+      ESP_LOGD("main","MODE raw value for Channel 01: 0x%04X",mode);    
+      return (mode & 0x01) != 0;
 
 # ----------- Climate ----------- #
 climate:
