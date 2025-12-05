@@ -22,7 +22,7 @@ CONF_STATE_CLASS = "measurement"
 
 WavinAhc9000Climate = wavinAhc9000_ns.class_('WavinAhc9000Climate', climate.Climate, cg.Component)
  
-CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend({
+CONFIG_SCHEMA = climate.climate_schema(WavinAhc9000Climate).extend({
     cv.GenerateID(): cv.declare_id(WavinAhc9000Climate),
     cv.GenerateID(CONF_WAVINAHC9000_ID): cv.use_id(WavinAhc9000),
     cv.Required(CONF_CHANNEL): cv.int_range(min=1, max=16),

@@ -35,7 +35,8 @@ void SentioClimate::control(const climate::ClimateCall& call) {
     this->target_temperature = *call.get_target_temperature();
     float target = target_temperature;
     ESP_LOGD(TAG, "Target temperature changed to: %f", target);
-    temp_setpoint_number_->set(target);
+    //temp_setpoint_number_->set(target);
+    temp_setpoint_number_->make_call().set_value(target).perform();//set(target);
   }
 }
 
@@ -43,7 +44,7 @@ climate::ClimateTraits SentioClimate::traits() {
   auto traits = climate::ClimateTraits();
 
   traits.set_supports_current_temperature(true);
-  traits.set_visual_temperature_step(0.5);
+  traits.set_visual_temperature_step(0.1);
   traits.set_visual_min_temperature(5);
   traits.set_visual_max_temperature(30);
 

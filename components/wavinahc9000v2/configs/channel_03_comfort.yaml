@@ -60,7 +60,7 @@ switch:
       - $channel_03
       - 0x03
     write_lambda: |-
-      ESP_LOGD("main","Modbus Switch incoming state for channel 01 = %s",ONOFF(x));
+      ESP_LOGD("main","Modbus Switch incoming state for channel 03 = %s",ONOFF(x));
       bool state = ONOFF(x);
       uint8_t MODE_MASK = 0x07;
       payload.push_back(0x01);
@@ -85,15 +85,20 @@ switch:
       payload.push_back((~MODE_MASK) & 0xFF);
       return true;
     lambda: |-
-      int mode = data[1];
-      ESP_LOGD("main","MODE for Channel 03 is: %i",mode);    
-      return mode;
+      uint16_t mode = (data[2] << 8) | data[3];
+      ESP_LOGD("main","MODE raw value for Channel 03: 0x%04X",mode);
+      return (mode & 0x01) != 0;
 
 # ----------- Climate ----------- #
 climate:
   - platform:               wavinahc9000v2
+    id:                     ${device}_climate_${channel_03_id}
     name:                   ${name} Comfort ${channel_03_friendly_name}
     current_temp_sensor_id: ${device}_comfort_temp_${channel_03_id}
     target_temp_number_id:  ${device}_comfort_target_temp_${channel_03_id}
     mode_switch_sensor_id:  ${device}_comfort_standby_${channel_03_id}
     action_sensor_id:       ${device}_output_${channel_03_id}
+    visual:
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1

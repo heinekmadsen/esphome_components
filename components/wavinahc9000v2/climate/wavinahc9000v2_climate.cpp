@@ -23,7 +23,7 @@ void Wavinahc9000v2Climate::setup() {
       this->mode = climate::CLIMATE_MODE_OFF;
     }
     else if (!state) {
-      this->mode = climate::CLIMATE_MODE_AUTO;
+      this->mode = climate::CLIMATE_MODE_HEAT;
     }
     publish_state();
   });
@@ -56,14 +56,13 @@ void Wavinahc9000v2Climate::control(const climate::ClimateCall& call) {
   {
     ESP_LOGD(TAG, "MODE CHANGED");
     auto new_mode = *call.get_mode();
-    mode = new_mode;
 
-    if(mode == climate::CLIMATE_MODE_AUTO)
+    if(new_mode == climate::CLIMATE_MODE_HEAT)
     {
       ESP_LOGD(TAG, "Turning off thermostat standby mode");
       mode_switch_->turn_off();
     }
-    else if(mode == climate::CLIMATE_MODE_OFF)
+    else if(new_mode == climate::CLIMATE_MODE_OFF)
     {
       ESP_LOGD(TAG, "Turning on thermostat standby mode");
       mode_switch_->turn_on();
@@ -77,7 +76,7 @@ climate::ClimateTraits Wavinahc9000v2Climate::traits() {
 
   traits.set_supported_modes({
     climate::ClimateMode::CLIMATE_MODE_OFF,
-    climate::ClimateMode::CLIMATE_MODE_AUTO,
+    climate::ClimateMode::CLIMATE_MODE_HEAT,
   });
 
   traits.set_supports_action(true);
