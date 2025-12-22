@@ -24,7 +24,7 @@ static const uint8_t CHANNEL_OUTP_ON = 0x10;
 static const uint8_t MODE_MASK = 0x07;
 
 void WavinAhc9000::setup() {
-  rw_pin_->pin_mode(gpio::FLAG_OUTPUT);
+  rw_pin_->setup();
   rw_pin_->digital_write(false);
 }
 
@@ -54,25 +54,36 @@ void WavinAhc9000::set_target_temp(int channel, float temperature) {
 }
 
 void WavinAhc9000::on_modbus_data(const std::vector<uint8_t> &data) {
-  ESP_LOGV(TAG, "Channel %d, state %d, Data: %s", channel_ + 1, state_, hexencode(data).c_str());
+  ESP_LOGV(TAG, "Channel %d, state %d, Data: %s", channel_ + 1, state_, format_hex_pretty(data).c_str());
+  
+  // Modbus response format: [function_code][byte_count][payload...]
+  // For function 0x43/0x44, skip first 2 bytes to get actual data payload
+  if (data.size() < 2) {
+    ESP_LOGW(TAG, "Invalid modbus response - too short");
+    waiting_ = false;
+    return;
+  }
+  
+  std::vector<uint8_t> payload(data.begin() + 2, data.end());
+  
   float temperature;
   switch (state_) {
     case 0:
-      temperature = ((data[0] << 8) + data[1]) / 10.0;
+      temperature = ((payload[0] << 8) + payload[1]) / 10.0;
       ESP_LOGD(TAG, "Confirmed target temperature channel %i: %.1f", channel_ + 1, temperature);
       channel_ = -1;
       break;
     case 1:
-      handle_channel_data_(data);
+      handle_channel_data_(payload);
       break;
     case 2:
-      handle_element_data_(data);
+      handle_element_data_(payload);
       break;
     case 3:
-      handle_target_temp_data_(data);
+      handle_target_temp_data_(payload);
       break;
     case 4:
-      handle_mode_data_(data);
+      handle_mode_data_(payload);
       break;
   }
   waiting_ = false;
@@ -132,8 +143,8 @@ uint16_t crc16(const uint8_t *data, uint8_t len) {
 }
 
 void WavinAhc9000::loop() {
-  static long last_update_time = 0;
-  long now = millis();
+  static uint32_t last_update_time = 0;
+  uint32_t now = millis();
   if (waiting_) {
     if (last_update_time + 1000 < now) {
       if (state_ == 0) {
@@ -174,11 +185,24 @@ void WavinAhc9000::loop() {
   if (start_scan_) {
     start_scan_ = false;
     channel_ = 0;
+    // Find first configured channel
+    while (channel_ < 16 && !used_channels_[channel_]) {
+      channel_++;
+    }
+    if (channel_ >= 16) {
+      channel_ = -1;
+      return;
+    }
   }
   if (channel_ < 0)
     return;
   if (++state_ > 4) {
-    if (++channel_ > 15) {
+    // Move to next configured channel
+    do {
+      channel_++;
+    } while (channel_ < 16 && !used_channels_[channel_]);
+    
+    if (channel_ >= 16) {
       state_ = 0;
       channel_ = -1;
       return;

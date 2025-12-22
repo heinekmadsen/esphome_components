@@ -68,6 +68,7 @@ number:
     name:                   ${name} Target Temperature ${channel_11_friendly_name}
     id:                     ${device}_target_temp_${channel_11_id}
     modbus_controller_id:   ${device}_modbus_controller
+    internal: true
     custom_command: 
       - 0x01
       - 0x43

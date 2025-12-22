@@ -31,6 +31,7 @@ number:
       - 0x01 # 01 = comfort
       - $channel_01
       - 0x01
+      internal: true
     value_type: U_WORD
     unit_of_measurement: "°C"
     min_value: 6

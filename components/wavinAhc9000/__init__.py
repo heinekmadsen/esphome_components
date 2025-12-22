@@ -14,9 +14,9 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Required(CONF_RW_PIN): pins.gpio_output_pin_schema
 }).extend(cv.polling_component_schema('60s')).extend(modbus.modbus_device_schema(0x01))
 
-def to_code(config):
+async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-    yield cg.register_component(var, config)
-    yield modbus.register_modbus_device(var, config)
-    pin = yield cg.gpio_pin_expression(config[CONF_RW_PIN])
+    await cg.register_component(var, config)
+    await modbus.register_modbus_device(var, config)
+    pin = await cg.gpio_pin_expression(config[CONF_RW_PIN])
     cg.add(var.set_rw_pin(pin))
