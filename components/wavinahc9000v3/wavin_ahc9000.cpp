@@ -7,9 +7,9 @@
 #include <sstream>
 
 namespace esphome {
-namespace wavin_ahc9000 {
+namespace wavinahc9000v3 {
 
-static const char *const TAG = "wavin_ahc9000";
+static const char *const TAG = "wavinahc9000v3";
 
 
 // Simple Modbus CRC16 (0xA001 poly)
@@ -758,8 +758,8 @@ void WavinAHC9000::generate_yaml_suggestion() {
       group_ss << "\n  # Group climates (shared thermostat across members)\n";
       have_group_section = true;
     }
-    group_ss << "  - platform: wavin_ahc9000\n";
-    group_ss << "    wavin_ahc9000_id: wavin\n";
+    group_ss << "  - platform: wavinahc9000v3\n";
+    group_ss << "    wavinahc9000v3_id: wavin\n";
     group_ss << "    name: \"" << name << "\"\n";
     group_ss << "    members: [";
     for (size_t i = 0; i < sorted.size(); i++) {
@@ -777,8 +777,8 @@ void WavinAHC9000::generate_yaml_suggestion() {
     if (fname.empty()) fname = "Zone " + std::to_string((int) ch);
     bool grouped = grouped_channels.count(ch) != 0;
     const char *prefix = grouped ? "  # " : "  ";
-    climate_ss << prefix << "- platform: wavin_ahc9000\n";
-    climate_ss << prefix << "  wavin_ahc9000_id: wavin\n";
+    climate_ss << prefix << "- platform: wavinahc9000v3\n";
+    climate_ss << prefix << "  wavinahc9000v3_id: wavin\n";
     climate_ss << prefix << "  name: \"" << fname << "\"\n";
     climate_ss << prefix << "  channel: " << (int) ch << "\n";
     if (grouped)
@@ -798,8 +798,8 @@ void WavinAHC9000::generate_yaml_suggestion() {
         climate_ss << "\n  # Comfort climates (floor temperature as the current reading)\n";
         have_comfort_section = true;
       }
-      climate_ss << "  - platform: wavin_ahc9000\n";
-      climate_ss << "    wavin_ahc9000_id: wavin\n";
+      climate_ss << "  - platform: wavinahc9000v3\n";
+      climate_ss << "    wavinahc9000v3_id: wavin\n";
       climate_ss << "    name: \"" << fname << " Comfort\"\n";
       climate_ss << "    channel: " << (int) ch << "\n";
       climate_ss << "    use_floor_temperature: true\n";
@@ -817,8 +817,8 @@ void WavinAHC9000::generate_yaml_suggestion() {
     for (auto ch : active) {
       std::string fname = this->get_channel_friendly_name(ch);
       if (fname.empty()) fname = "Zone " + std::to_string((int) ch);
-      sensor_ss << "  - platform: wavin_ahc9000\n";
-      sensor_ss << "    wavin_ahc9000_id: wavin\n";
+      sensor_ss << "  - platform: wavinahc9000v3\n";
+      sensor_ss << "    wavinahc9000v3_id: wavin\n";
       sensor_ss << "    name: \"" << fname << " Battery\"\n";
       sensor_ss << "    channel: " << (int) ch << "\n";
       sensor_ss << "    type: battery\n";
@@ -827,8 +827,8 @@ void WavinAHC9000::generate_yaml_suggestion() {
     for (auto ch : active) {
       std::string fname = this->get_channel_friendly_name(ch);
       if (fname.empty()) fname = "Zone " + std::to_string((int) ch);
-      sensor_ss << "  - platform: wavin_ahc9000\n";
-      sensor_ss << "    wavin_ahc9000_id: wavin\n";
+      sensor_ss << "  - platform: wavinahc9000v3\n";
+      sensor_ss << "    wavinahc9000v3_id: wavin\n";
       sensor_ss << "    name: \"" << fname << " Temperature\"\n";
       sensor_ss << "    channel: " << (int) ch << "\n";
       sensor_ss << "    type: temperature\n";
@@ -845,8 +845,8 @@ void WavinAHC9000::generate_yaml_suggestion() {
     for (auto ch : active) {
       std::string fname = this->get_channel_friendly_name(ch);
       if (fname.empty()) fname = "Zone " + std::to_string((int) ch);
-      switch_ss << "  - platform: wavin_ahc9000\n";
-      switch_ss << "    wavin_ahc9000_id: wavin\n";
+      switch_ss << "  - platform: wavinahc9000v3\n";
+      switch_ss << "    wavinahc9000v3_id: wavin\n";
       switch_ss << "    name: \"" << fname << " Child Lock\"\n";
       switch_ss << "    channel: " << (int) ch << "\n";
     }
@@ -1215,5 +1215,5 @@ void WavinYamlDumpButton::press_action() {
   }
 }
 
-}  // namespace wavin_ahc9000
+}  // namespace wavinahc9000v3
 }  // namespace esphome

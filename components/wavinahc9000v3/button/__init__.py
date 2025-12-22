@@ -4,7 +4,7 @@ from esphome.components import button
 
 from .. import WavinAHC9000, ns
 
-CONF_PARENT_ID = "wavin_ahc9000_id"
+CONF_PARENT_ID = "wavinahc9000v3_id"
 CONF_CHANNEL = "channel"
 
 WavinRepairButton = ns.class_("WavinRepairButton", button.Button, cg.Component)

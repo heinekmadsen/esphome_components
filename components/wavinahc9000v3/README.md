@@ -56,7 +56,7 @@ Static diagram (SVG):
 ```yaml
 external_components:
   - source: github://heinekmadsen/esphome_wavinahc9000v3
-    components: [wavin_ahc9000]
+    components: [wavinahc9000v3]
 
 uart:
   id: uart_wavin
@@ -64,7 +64,7 @@ uart:
   rx_pin: GPIO16
   baud_rate: 38400
 
-wavin_ahc9000:
+wavinahc9000v3:
   id: wavin
   uart_id: uart_wavin
   update_interval: 5s
@@ -76,24 +76,30 @@ wavin_ahc9000:
   channel_02_friendly_name: "Living Room"
   channel_03_friendly_name: "Kitchen"
 
+api:
+  services:
+    - service: dump_wavin_yaml
+      then:
+        - lambda: 'id(wavin).generate_yaml_suggestion();'
+
 climate:
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Living Room & Kitchen"
     members: [2,3]
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bedroom"
     channel: 1
 
 sensor:
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bedroom Battery"
     channel: 1
     type: battery
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bedroom Temperature"
     channel: 1
     type: temperature
@@ -105,7 +111,7 @@ This variant shows a single channel, a grouped climate, plus both battery and te
 ```yaml
 external_components:
   - source: github://heinekmadsen/esphome_wavinahc9000v3
-    components: [wavin_ahc9000]
+    components: [wavinahc9000v3]
 
 uart:
   id: uart_wavin
@@ -113,7 +119,7 @@ uart:
   rx_pin: GPIO16
   baud_rate: 38400
 
-wavin_ahc9000:
+wavinahc9000v3:
   id: wavin
   uart_id: uart_wavin
   update_interval: 5s
@@ -125,31 +131,31 @@ wavin_ahc9000:
 
 climate:
   # Group climate (channels 2 & 3). Generated YAML would comment out single 2/3 climates.
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Living Room & Kitchen"
     members: [2,3]
   # Single channel climate (channel 1)
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bedroom"
     channel: 1
 
 sensor:
   # Battery sensor for channel 1
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bedroom Battery"
     channel: 1
     type: battery
   # Ambient temperature sensor for channel 1
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bedroom Temperature"
     channel: 1
     type: temperature
 
-If you're using the uStepper RS485 expansion (commonly paired with ESP32-C3 boards), add `module: ustepper` under the `wavin_ahc9000:` block. This enables the longer guard times and RX flushing from the timing-optimized branch to prevent truncated acknowledgements.
+If you're using the uStepper RS485 expansion (commonly paired with ESP32-C3 boards), add `module: ustepper` under the `wavinahc9000v3:` block. This enables the longer guard times and RX flushing from the timing-optimized branch to prevent truncated acknowledgements.
 ```
 
 ### Comfort Climate Example
@@ -160,14 +166,14 @@ Add `use_floor_temperature: true` to a single-channel climate. You can optionall
 ```yaml
 climate:
   # Standard air temperature climate
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bathroom"
     channel: 4
 
   # Comfort (floor-based) variant – requires a valid floor probe reading
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bathroom Comfort"
     channel: 4
     use_floor_temperature: true
@@ -199,19 +205,19 @@ Prefer `flow_control_pin` for new builds. Keep `tx_enable_pin` only for backward
 
 ## Two-Phase Workflow (Recommended)
 
-1. Generation phase (minimal config + generator package) → see `example_generate_yaml.yaml`.
-2. Final phase (copied entities, generator removed) → see `example_after_generate_yaml.yaml`.
+1. Generation phase: flash a minimal config (see `example.yaml`) and call the `dump_wavin_yaml` service to capture suggested entities from the logs.
+2. Final phase: paste the pieces you want to keep into your permanent node YAML (you can leave the service in place for future regeneration or remove it afterward).
 
 This keeps the final runtime lean while letting the component propose accurate entities.
 
 See `INSTALLATION.md` for a detailed, step-by-step onboarding guide (generation → stitching → final deploy) plus troubleshooting tips.
 
-Note: climates are defined explicitly under the `climate:` section using platform `wavin_ahc9000` (single channel or grouped). Optional per-channel battery sensors use `sensor: - platform: wavin_ahc9000`.
+Note: climates are defined explicitly under the `climate:` section using platform `wavinahc9000v3` (single channel or grouped). Optional per-channel battery sensors use `sensor: - platform: wavinahc9000v3`.
 
 ## Friendly Names
 Provide any subset of:
 ```yaml
-wavin_ahc9000:
+wavinahc9000v3:
   channel_01_friendly_name: "Bedroom"
   channel_07_friendly_name: "Office"
 ```
@@ -250,8 +256,8 @@ Lock the physical thermostat interface (prevent local user temperature changes) 
 ### YAML Example
 ```yaml
 switch:
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     channel: 9
     # type: child_lock   # optional (defaults to child_lock for now)
     name: "Office Lock"
@@ -260,16 +266,16 @@ switch:
 Multiple channels:
 ```yaml
 switch:
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     channel: 3
     name: "Hall Lock"
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     channel: 7
     name: "Guest Lock"
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     channel: 9
     name: "Office Lock"
 ```
@@ -315,7 +321,7 @@ automation:
 |---------|------------|
 | Switch state flips back | Underlying write failed (bus issue); check logs at DEBUG for masked write result |
 | Switch always off | Channel not yet fully discovered; wait until first packed read (discovery phase) |
-| No switch entity | YAML omitted switch platform or validation failed – ensure indentation & `platform: wavin_ahc9000` |
+| No switch entity | YAML omitted switch platform or validation failed – ensure indentation & `platform: wavinahc9000v3` |
 
 ### Safety Considerations
 Child lock blocks manual thermostat adjustments. Ensure you have reliable automation or a fallback (e.g., override climate setpoint) before mass‑locking all zones.
@@ -358,8 +364,8 @@ If you do not want writable number entities but still want to surface the curren
 
 ```yaml
 sensor:
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     channel: 3
     type: comfort_setpoint
     name: "Zone 3 Comfort Setpoint"
@@ -373,8 +379,8 @@ If your thermostat provides a floor probe value, you can expose it separately:
 
 ```yaml
 sensor:
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     channel: 3
     type: floor_temperature
     name: "Zone 3 Floor Temperature"

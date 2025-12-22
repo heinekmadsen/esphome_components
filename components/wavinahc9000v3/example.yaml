@@ -9,13 +9,19 @@ esp32:
 
 external_components:
   - source: github://heinekmadsen/esphome_wavinahc9000v3
-    components: [wavin_ahc9000]
+    components: [wavinahc9000v3]
     refresh: 0s
 
 logger:
   level: DEBUG
   logs:
-    wavin_ahc9000: DEBUG
+    wavinahc9000v3: DEBUG
+
+api:
+  services:
+    - service: dump_wavin_yaml
+      then:
+        - lambda: 'id(wavin).generate_yaml_suggestion();'
 
 uart:
   id: uart_wavin
@@ -26,7 +32,7 @@ uart:
   stop_bits: 1
   parity: NONE
 
-wavin_ahc9000:
+wavinahc9000v3:
   id: wavin
   uart_id: uart_wavin
   # module: ustepper  # enable extended guard timings for uStepper RS485 hats
@@ -35,7 +41,7 @@ wavin_ahc9000:
   # Optional: speed up initial discovery (uncomment briefly)
   # poll_channels_per_cycle: 8
   # update_interval: 2s
-  allow_mode_writes: false
+  # allow_mode_writes: false  # uncomment to make climates read-only (defaults to true)
   # Optional per-channel friendly names used in the logged YAML suggestion output
   # Provide any subset (1..16). Missing entries fallback to "Zone N".
   channel_01_friendly_name: "Bedroom"
@@ -46,25 +52,25 @@ wavin_ahc9000:
 
 climate:
   # Single channel climate using channel 1 (friendly name -> Bedroom)
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bedroom"
     channel: 1
   # Group climate combining channels 2 & 3. Since both have friendly names,
   # the generated group suggestion will use "Living Room & Kitchen".
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Living Area"  # You can override; suggestion would be auto-composed
     members: [2,3]
 
 sensor:
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bedroom Battery"
     channel: 1
     type: battery
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bedroom Temperature"
     channel: 1
     type: temperature

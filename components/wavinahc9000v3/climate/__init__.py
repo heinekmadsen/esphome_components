@@ -5,7 +5,7 @@ from esphome.const import CONF_ID, CONF_NAME
 
 from .. import WavinAHC9000, WavinZoneClimate
 
-CONF_PARENT_ID = "wavin_ahc9000_id"
+CONF_PARENT_ID = "wavinahc9000v3_id"
 CONF_CHANNEL = "channel"
 CONF_MEMBERS = "members"
 

@@ -21,7 +21,7 @@ Provide at most one of the two. If your interface auto-manages half-duplex, you 
 - `module: ustepper`: Adds additional pre/post transmit guard delays and clears the RX buffer before writes. Use this when you interface the controller through the uStepper RS485 add-on – it prevents truncated acknowledgements on ESP32-C3 boards.
 
 ## Step 1: Base ESPHome Config
-Start with a lean configuration that includes logging and a helper service to trigger the YAML dump:
+Start with a lean configuration that includes logging and a helper service to trigger the YAML dump (see `components/wavinahc9000v3/example.yaml` for a ready-to-flash template):
 
 ```yaml
 esphome:
@@ -34,7 +34,7 @@ esp32:
 
 external_components:
   - source: github://heinekmadsen/esphome_wavinahc9000v3
-    components: [wavin_ahc9000]
+    components: [wavinahc9000v3]
 
 logger:
   level: INFO  # temporarily raise to DEBUG if you need extra polling detail
@@ -47,7 +47,7 @@ uart:
   parity: NONE
   stop_bits: 1
 
-wavin_ahc9000:
+wavinahc9000v3:
   id: wavin
   uart_id: uart_wavin
   update_interval: 5s
@@ -89,8 +89,8 @@ Call the helper service you added above:
 
 ```yaml
 button:
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Dump Wavin YAML"
 ```
 
@@ -99,21 +99,21 @@ The ESPHome log prints the suggestion between banner lines, for example:
 ```
 ==================== Wavin YAML SUGGESTION BEGIN ====================
 climate:
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bedroom"
     channel: 1
 
 sensor:
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bedroom Battery"
     channel: 1
     type: battery
 
 switch:
-  - platform: wavin_ahc9000
-    wavin_ahc9000_id: wavin
+  - platform: wavinahc9000v3
+    wavinahc9000v3_id: wavin
     name: "Bedroom Child Lock"
     channel: 1
 ...
@@ -144,7 +144,7 @@ Need to add a room or rename a zone? Just call the `dump_wavin_yaml` service aga
 | Group names look generic (`Zone G`) | Add friendly names for each member channel and re-run the service. |
 | Logged YAML still shows commented single climates | That is intentional; uncomment any channel you want to manage individually even if it participates in a group climate. |
 | Bus warnings or repeated retries | Re-check wiring, RS‑485 termination, and (if used) direction-control GPIO. Temporarily set `logger:` to DEBUG for deeper insight. |
-| Missing replies on uStepper hardware | Add `module: ustepper` under `wavin_ahc9000:` to slow the RS485 turnaround timing. |
+| Missing replies on uStepper hardware | Add `module: ustepper` under `wavinahc9000v3:` to slow the RS485 turnaround timing. |
 
 ## Optional: Quick Console Trigger
 When connected via `esphome logs`, you can trigger the dump interactively:

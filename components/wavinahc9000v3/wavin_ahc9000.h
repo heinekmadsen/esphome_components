@@ -16,7 +16,7 @@ namespace esphome {
 namespace sensor { class Sensor; }
 namespace switch_ { class Switch; }
 namespace button { class Button; }
-namespace wavin_ahc9000 {
+namespace wavinahc9000v3 {
 
 // Forward
 class WavinZoneClimate;
@@ -311,7 +311,7 @@ class WavinZoneClimate : public climate::Climate, public Component {
 
 // Repair button removed; use API service to normalize
 
-}  // namespace wavin_ahc9000
+}  // namespace wavinahc9000v3
 }  // namespace esphome
 
 // --- Child lock extension placeholders (to integrate in subsequent patch) ---
