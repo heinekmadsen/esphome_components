@@ -14,6 +14,7 @@ class WavinAhc9000 : public PollingComponent, public modbus::ModbusDevice {
     void on_modbus_data(const std::vector<uint8_t> &data) override;
 
     void set_rw_pin(GPIOPin *pin) { rw_pin_ = pin; }
+    void register_channel(int channel) { used_channels_[channel] = true; }
     void add_temp_callback(int channel, std::function<void(float)> &&callback);
     void add_bat_level_callback(int channel, std::function<void(float)> &&callback);
     void add_target_temp_callback(int channel, std::function<void(float)> &&callback);
@@ -33,6 +34,7 @@ class WavinAhc9000 : public PollingComponent, public modbus::ModbusDevice {
     int element_ = 0;
     bool start_scan_ = false;
     bool waiting_ = false;
+    bool used_channels_[16] = {false};
     std::vector<float> set_temp_;
     std::vector<float> temp_channel_;
 
