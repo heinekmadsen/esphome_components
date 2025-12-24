@@ -47,7 +47,7 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_ALLOW_MODE_WRITES, default=True): cv.boolean,
             cv.Optional(CONF_MODULE, default="default"): cv.enum(MODULE_OPTIONS, upper=False),
             cv.Optional(CONF_KEEP_STANDBY_ALIVE, default=False): cv.boolean,
-            cv.Optional(CONF_STANDBY_KEEPALIVE_INTERVAL, default="180s"): cv.time_period_milliseconds,
+            cv.Optional(CONF_STANDBY_KEEPALIVE_INTERVAL, default="180s"): cv.time_period,
             **_FRIENDLY_NAME_KEYS,
         }
     )
@@ -80,7 +80,15 @@ async def to_code(config):
     if CONF_KEEP_STANDBY_ALIVE in config:
         cg.add(var.set_keep_standby_alive(config[CONF_KEEP_STANDBY_ALIVE]))
     if CONF_STANDBY_KEEPALIVE_INTERVAL in config:
-        cg.add(var.set_standby_keepalive_interval(config[CONF_STANDBY_KEEPALIVE_INTERVAL].total_milliseconds()))
+        interval = config[CONF_STANDBY_KEEPALIVE_INTERVAL]
+        total_ms = getattr(interval, "total_milliseconds", None)
+        if callable(total_ms):
+            ms = int(total_ms())
+        elif total_ms is not None:
+            ms = int(total_ms)
+        else:
+            ms = int(interval.total_seconds() * 1000)
+        cg.add(var.set_standby_keepalive_interval(ms))
 
     # Parse channel friendly names
     for key, value in config.items():
