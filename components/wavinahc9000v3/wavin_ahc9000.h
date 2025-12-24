@@ -42,6 +42,8 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   void set_module_profile(ModuleProfile profile) { this->module_profile_ = profile; }
   void set_poll_channels_per_cycle(uint8_t n) { this->poll_channels_per_cycle_ = n == 0 ? 1 : (n > 16 ? 16 : n); }
   void set_allow_mode_writes(bool v) { this->allow_mode_writes_ = v; }
+  void set_keep_standby_alive(bool v);
+  void set_standby_keepalive_interval(uint32_t ms);
   bool get_allow_mode_writes() const { return this->allow_mode_writes_; }
   // Friendly name support (optional per-channel overrides for generated YAML)
   void set_channel_friendly_name(uint8_t channel, const std::string &name);
@@ -107,6 +109,10 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   void prepare_for_tx_();
   void finish_tx_();
   void clear_stale_rx_();
+  void handle_standby_keepalive_(uint8_t channel, bool is_off, std::vector<uint8_t> &reassert_list);
+  bool standby_keepalive_enabled_() const {
+    return this->keep_standby_alive_ && this->standby_keepalive_interval_ms_ > 0;
+  }
 
   // Helpers
   float raw_to_c(float raw) const { return raw / this->temp_divisor_; }
@@ -160,6 +166,9 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   uint32_t pre_tx_delay_us_{0};
   uint32_t post_tx_guard_us_{300};
   bool flush_rx_before_tx_{false};
+  bool keep_standby_alive_{false};
+  uint32_t standby_keepalive_interval_ms_{180000};
+  std::map<uint8_t, uint32_t> standby_keepalive_deadlines_;
 
   // Protocol constants
   static constexpr uint8_t DEVICE_ADDR = 0x01;

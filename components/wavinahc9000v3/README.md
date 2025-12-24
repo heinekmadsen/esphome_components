@@ -68,6 +68,8 @@ wavinahc9000v3:
   id: wavin
   uart_id: uart_wavin
   update_interval: 5s
+  # keep_standby_alive: true       # disabled by default; enable to periodically reassert OFF
+  # standby_keepalive_interval: 180s  # optional override (default 180s, increase to reduce bus writes)
   # module: ustepper  # enable extended RS485 guard timings for uStepper hats
   # Optional: half-duplex RS485 direction control (DE/RE). Only include ONE of these if needed.
   # flow_control_pin: GPIO23  # Preferred unified DE/RE control (driven HIGH only while transmitting)
@@ -183,6 +185,9 @@ Notes:
 * The comfort climate only appears in generated YAML if the floor probe was already detected (plausible >1°C and <90°C reading). If you add it manually and the probe is not yet detected it will show as unavailable until a valid value is read.
 * Low / high target temperatures correspond to the controller's floor min / max limits. Adjusting them writes those limits (clamped 5–35°C, 0.5°C steps with at least 1.0°C separation enforced).
 * Action (heating/idle) logic still derives from the difference between current (floor) temperature and the setpoint with a small hysteresis.
+
+### Standby Keep-Alive
+If the Wavin controller reverts channels from standby back to heat after several minutes, enable `keep_standby_alive: true`. The keep-alive is disabled by default. Once enabled, the hub reasserts OFF every `standby_keepalive_interval` (defaults to 180s) so longer `update_interval` values still hold the physical thermostat in standby. Increase the interval if you want fewer bus writes; set it to `0s` or disable the flag to stop the keep-alive altogether.
 
 ## Hardware & Wiring
 * RS‑485 (A/B) from controller to a TTL↔RS‑485 adapter.

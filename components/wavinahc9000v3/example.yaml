@@ -38,6 +38,8 @@ wavinahc9000v3:
   # module: ustepper  # enable extended guard timings for uStepper RS485 hats
   # Regular polling interval; optionally lower temporarily for quicker discovery
   update_interval: 5s
+  # keep_standby_alive: true          # disabled by default; enable to reassert OFF periodically
+  # standby_keepalive_interval: 180s  # optional override (default 180s, controller drifts after ~4-5 min)
   # Optional: speed up initial discovery (uncomment briefly)
   # poll_channels_per_cycle: 8
   # update_interval: 2s
