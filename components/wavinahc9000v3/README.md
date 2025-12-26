@@ -42,7 +42,7 @@ Flowchart (Mermaid):
 flowchart TD
   A[Start / Flash Config] --> B{Discovery Stable?}
   B -- No --> A
-  B -- Yes --> C[Trigger generate_yaml_suggestion()]
+  B -- Yes --> C["Trigger generate_yaml_suggestion()"]
   C --> D[Copy YAML from ESPHome Log]
   D --> E[Update Node Configuration]
   E --> F{Need Updates Later?}
