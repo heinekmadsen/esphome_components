@@ -636,27 +636,38 @@ void WavinAHC9000::handle_standby_keepalive_(uint8_t channel, bool is_off, std::
     if (!is_off) this->standby_keepalive_deadlines_.erase(channel);
     return;
   }
-  if (!is_off) {
+
+  uint32_t interval = this->standby_keepalive_interval_ms_;
+  if (interval == 0) {
     this->standby_keepalive_deadlines_.erase(channel);
     return;
   }
 
-  uint32_t interval = this->standby_keepalive_interval_ms_;
-  if (interval == 0) return;
-
   uint32_t now = millis();
   auto it = this->standby_keepalive_deadlines_.find(channel);
+
+  if (!is_off) {
+    if (it != this->standby_keepalive_deadlines_.end()) {
+      if (std::find(reassert_list.begin(), reassert_list.end(), channel) == reassert_list.end()) {
+        ESP_LOGD(TAG, "Keep-alive: controller exited standby for channel %u, reasserting", (unsigned) channel);
+        reassert_list.push_back(channel);
+      }
+      it->second = now + interval;
+    }
+    return;
+  }
+
   if (it == this->standby_keepalive_deadlines_.end()) {
     this->standby_keepalive_deadlines_[channel] = now + interval;
     return;
   }
 
   uint32_t deadline = it->second;
-  if ((int32_t)(now - deadline) >= 0) {
+  if ((int32_t) (now - deadline) >= 0) {
     if (std::find(reassert_list.begin(), reassert_list.end(), channel) == reassert_list.end()) {
       reassert_list.push_back(channel);
     }
-    this->standby_keepalive_deadlines_[channel] = now + interval;
+    it->second = now + interval;
   }
 }
 
