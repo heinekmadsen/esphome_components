@@ -298,6 +298,16 @@ void WavinAHC9000::update() {
   this->next_active_index_ = (uint8_t) ((this->next_active_index_ + 1) % this->active_channels_.size());
   }
 
+  if (this->standby_keepalive_enabled_()) {
+    uint32_t now = millis();
+    for (auto &kv : this->standby_keepalive_deadlines_) {
+      if ((int32_t) (now - kv.second) >= 0) {
+        keepalive_reassert.push_back(kv.first);
+        kv.second = now + this->standby_keepalive_interval_ms_;
+      }
+    }
+  }
+
   if (!keepalive_reassert.empty()) {
     std::sort(keepalive_reassert.begin(), keepalive_reassert.end());
     keepalive_reassert.erase(std::unique(keepalive_reassert.begin(), keepalive_reassert.end()), keepalive_reassert.end());
