@@ -69,6 +69,22 @@ void WavinAHC9000::setup() {
 }
 void WavinAHC9000::loop() {}
 
+void WavinAHC9000::set_keep_standby_alive(bool v) {
+  if (this->keep_standby_alive_ == v) {
+    if (!v) this->standby_keepalive_deadlines_.clear();
+    return;
+  }
+  this->keep_standby_alive_ = v;
+  if (!v) this->standby_keepalive_deadlines_.clear();
+}
+
+void WavinAHC9000::set_standby_keepalive_interval(uint32_t ms) {
+  this->standby_keepalive_interval_ms_ = ms;
+  if (ms == 0) {
+    this->standby_keepalive_deadlines_.clear();
+  }
+}
+
 void WavinAHC9000::set_channel_friendly_name(uint8_t channel, const std::string &name) {
   if (channel < 1 || channel > 16) return;
   if (this->channel_friendly_names_.size() < 17) this->channel_friendly_names_.assign(17, std::string());
@@ -82,6 +98,8 @@ std::string WavinAHC9000::get_channel_friendly_name(uint8_t channel) const {
 }
 
 void WavinAHC9000::update() {
+  std::vector<uint8_t> keepalive_reassert;
+  keepalive_reassert.reserve(4);
   // If polling is temporarily suspended (after a write), skip until window expires
   if (this->suspend_polling_until_ != 0 && millis() < this->suspend_polling_until_) {
     ESP_LOGV(TAG, "Polling suspended for %u ms more", (unsigned) (this->suspend_polling_until_ - millis()));
@@ -104,6 +122,7 @@ void WavinAHC9000::update() {
       st.mode = is_off ? climate::CLIMATE_MODE_OFF : climate::CLIMATE_MODE_HEAT;
       st.child_lock = (raw_cfg & PACKED_CONFIGURATION_CHILD_LOCK_MASK) != 0;
       ESP_LOGD(TAG, "CH%u cfg=0x%04X mode=%s child_lock=%s", (unsigned) ch, (unsigned) raw_cfg, is_off ? "OFF" : "HEAT", st.child_lock?"Y":"N");
+      this->handle_standby_keepalive_(ch, is_off, keepalive_reassert);
       // Reconcile desired mode if pending and mismatch
       auto it_des = this->desired_mode_.find(ch);
       if (it_des != this->desired_mode_.end()) {
@@ -194,6 +213,7 @@ void WavinAHC9000::update() {
             st.mode = is_off ? climate::CLIMATE_MODE_OFF : climate::CLIMATE_MODE_HEAT;
             st.child_lock = (raw_cfg & PACKED_CONFIGURATION_CHILD_LOCK_MASK) != 0;
             ESP_LOGD(TAG, "CH%u cfg=0x%04X mode=%s child_lock=%s", ch_num, (unsigned) raw_cfg, is_off ? "OFF" : "HEAT", st.child_lock?"Y":"N");
+            this->handle_standby_keepalive_(ch_num, is_off, keepalive_reassert);
           } else {
             ESP_LOGW(TAG, "CH%u: mode read failed", ch_num);
           }
@@ -276,6 +296,26 @@ void WavinAHC9000::update() {
 
   // advance to next active channel
   this->next_active_index_ = (uint8_t) ((this->next_active_index_ + 1) % this->active_channels_.size());
+  }
+
+  if (this->standby_keepalive_enabled_()) {
+    uint32_t now = millis();
+    for (auto &kv : this->standby_keepalive_deadlines_) {
+      if ((int32_t) (now - kv.second) >= 0) {
+        keepalive_reassert.push_back(kv.first);
+        kv.second = now + this->standby_keepalive_interval_ms_;
+      }
+    }
+  }
+
+  if (!keepalive_reassert.empty()) {
+    std::sort(keepalive_reassert.begin(), keepalive_reassert.end());
+    keepalive_reassert.erase(std::unique(keepalive_reassert.begin(), keepalive_reassert.end()), keepalive_reassert.end());
+    for (auto ch : keepalive_reassert) {
+      if (!this->standby_keepalive_enabled_()) break;
+      ESP_LOGD(TAG, "Keep-alive: reasserting standby for channel %u", (unsigned) ch);
+      this->write_channel_mode(ch, climate::CLIMATE_MODE_OFF);
+    }
   }
 
   // publish once per cycle
@@ -553,6 +593,11 @@ void WavinAHC9000::write_channel_mode(uint8_t channel, climate::ClimateMode mode
     this->channels_[channel].mode = (mode == climate::CLIMATE_MODE_OFF) ? climate::CLIMATE_MODE_OFF : climate::CLIMATE_MODE_HEAT;
     this->urgent_channels_.push_back(channel);
     this->suspend_polling_until_ = millis() + 100; // 100 ms guard
+    if (mode == climate::CLIMATE_MODE_OFF && this->standby_keepalive_enabled_()) {
+      this->standby_keepalive_deadlines_[channel] = millis() + this->standby_keepalive_interval_ms_;
+    } else if (mode != climate::CLIMATE_MODE_OFF) {
+      this->standby_keepalive_deadlines_.erase(channel);
+    }
   } else {
     ESP_LOGW(TAG, "Mode write failed for ch=%u", (unsigned) channel);
   }
@@ -583,6 +628,46 @@ void WavinAHC9000::write_channel_child_lock(uint8_t channel, bool enable) {
     ESP_LOGI(TAG, "Child lock: set ch=%u -> %s (0x%04X)", (unsigned) channel, enable?"ENABLED":"DISABLED", (unsigned) next);
   } else {
     ESP_LOGW(TAG, "Child lock: write failed ch=%u", (unsigned) channel);
+  }
+}
+
+void WavinAHC9000::handle_standby_keepalive_(uint8_t channel, bool is_off, std::vector<uint8_t> &reassert_list) {
+  if (!this->standby_keepalive_enabled_()) {
+    if (!is_off) this->standby_keepalive_deadlines_.erase(channel);
+    return;
+  }
+
+  uint32_t interval = this->standby_keepalive_interval_ms_;
+  if (interval == 0) {
+    this->standby_keepalive_deadlines_.erase(channel);
+    return;
+  }
+
+  uint32_t now = millis();
+  auto it = this->standby_keepalive_deadlines_.find(channel);
+
+  if (!is_off) {
+    if (it != this->standby_keepalive_deadlines_.end()) {
+      if (std::find(reassert_list.begin(), reassert_list.end(), channel) == reassert_list.end()) {
+        ESP_LOGD(TAG, "Keep-alive: controller exited standby for channel %u, reasserting", (unsigned) channel);
+        reassert_list.push_back(channel);
+      }
+      it->second = now + interval;
+    }
+    return;
+  }
+
+  if (it == this->standby_keepalive_deadlines_.end()) {
+    this->standby_keepalive_deadlines_[channel] = now + interval;
+    return;
+  }
+
+  uint32_t deadline = it->second;
+  if ((int32_t) (now - deadline) >= 0) {
+    if (std::find(reassert_list.begin(), reassert_list.end(), channel) == reassert_list.end()) {
+      reassert_list.push_back(channel);
+    }
+    it->second = now + interval;
   }
 }
 

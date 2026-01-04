@@ -22,6 +22,8 @@ CONF_RECEIVE_TIMEOUT_MS = "receive_timeout_ms"
 CONF_POLL_CHANNELS_PER_CYCLE = "poll_channels_per_cycle"
 CONF_ALLOW_MODE_WRITES = "allow_mode_writes"
 CONF_MODULE = "module"
+CONF_KEEP_STANDBY_ALIVE = "keep_standby_alive"
+CONF_STANDBY_KEEPALIVE_INTERVAL = "standby_keepalive_interval"
 
 MODULE_OPTIONS = {
     "default": ModuleProfile.MODULE_DEFAULT,
@@ -44,6 +46,8 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_POLL_CHANNELS_PER_CYCLE, default=2): cv.int_range(min=1, max=16),
             cv.Optional(CONF_ALLOW_MODE_WRITES, default=True): cv.boolean,
             cv.Optional(CONF_MODULE, default="default"): cv.enum(MODULE_OPTIONS, upper=False),
+            cv.Optional(CONF_KEEP_STANDBY_ALIVE, default=False): cv.boolean,
+            cv.Optional(CONF_STANDBY_KEEPALIVE_INTERVAL, default="180s"): cv.time_period,
             **_FRIENDLY_NAME_KEYS,
         }
     )
@@ -73,6 +77,18 @@ async def to_code(config):
         cg.add(var.set_allow_mode_writes(config[CONF_ALLOW_MODE_WRITES]))
     if CONF_MODULE in config:
         cg.add(var.set_module_profile(config[CONF_MODULE]))
+    if CONF_KEEP_STANDBY_ALIVE in config:
+        cg.add(var.set_keep_standby_alive(config[CONF_KEEP_STANDBY_ALIVE]))
+    if CONF_STANDBY_KEEPALIVE_INTERVAL in config:
+        interval = config[CONF_STANDBY_KEEPALIVE_INTERVAL]
+        total_ms = getattr(interval, "total_milliseconds", None)
+        if callable(total_ms):
+            ms = int(total_ms())
+        elif total_ms is not None:
+            ms = int(total_ms)
+        else:
+            ms = int(interval.total_seconds() * 1000)
+        cg.add(var.set_standby_keepalive_interval(ms))
 
     # Parse channel friendly names
     for key, value in config.items():
