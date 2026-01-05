@@ -134,7 +134,7 @@ void Genvexv2Climate::dump_config() {
 }
 
 void Genvexv2Climate::apply_custom_fan_mode_string_(const std::string &mode_text) {
-  const char *matched_mode = this->find_custom_fan_mode_(mode_text.c_str(), mode_text.length());
+  const char *matched_mode = this->find_custom_fan_mode_(mode_text.c_str());
   if (matched_mode != nullptr) {
     this->set_custom_fan_mode_(matched_mode);
   } else {
