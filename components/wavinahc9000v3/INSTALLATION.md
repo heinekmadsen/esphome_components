@@ -51,6 +51,8 @@ wavinahc9000v3:
   id: wavin
   uart_id: uart_wavin
   update_interval: 5s
+  # keep_standby_alive: true       # disabled by default; enable to reassert OFF if the controller drifts back to HEAT
+  # standby_keepalive_interval: 180s  # optional override (default 180s)
   # module: ustepper  # enable extended RS485 guard timings for uStepper RS485 hats
   # Optional direction control (choose at most one)
   # flow_control_pin: GPIO23
