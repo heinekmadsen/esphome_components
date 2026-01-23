@@ -250,6 +250,9 @@ Depending on the hw you use, you may need to add "flow_control_pin: xx" to your 
 Follow the instructions below for the old genvex and wavin components
 Add this repository to your ESPHome config yaml:
 
+> Note: ESPHome is deprecating `custom_components/` (removal scheduled for 2026.6.0).
+> If you previously copied this repo into `custom_components/`, migrate to `external_components:`.
+
 ```yaml
 external_components:
   - source: github://heinekmadsen/esphome_components
