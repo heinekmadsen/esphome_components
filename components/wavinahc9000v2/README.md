@@ -85,8 +85,8 @@ Add this after your normal ESPhome config (wifi, ota, api, etc....) and uncommen
 packages:
   remote_package:
     url: https://github.com/heinekmadsen/esphome_components
-    ref: main
-    #ref: develop
+    ref: "v1.0.1"
+    #ref: "v1.0.1-dev"
     files: 
       - components/wavinahc9000v2/configs/basic.yaml # REQUIRED FOR WAVIN AHC 9000
       - components/wavinahc9000v2/configs/channel_01.yaml
