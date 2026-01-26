@@ -86,6 +86,8 @@ packages:
   remote_package:
     url: https://github.com/heinekmadsen/esphome_components
     ref: "v1.0.1"
+    #ref: "main"
+    #ref: "develop"
     #ref: "v1.0.1-dev"
     files: 
       - components/wavinahc9000v2/configs/basic.yaml # REQUIRED FOR WAVIN AHC 9000
