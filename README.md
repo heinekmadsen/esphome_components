@@ -4,13 +4,24 @@ My creation of custom components fro ESP home.
 
 Please change to WavinAHC9000v3 components as its the most robust version.
 
-### Recent updates
+### Instructions
+Please see instructions under each component.
+
+Balboa_spa - https://github.com/heinekmadsen/esphome_components/tree/develop/components/balboa_spa
+Genvexv1 - https://github.com/heinekmadsen/esphome_components/tree/develop/components/genvex
+Genvexv2 - https://github.com/heinekmadsen/esphome_components/tree/develop/components/genvexv2 (Recommended version)
+Sentio - https://github.com/heinekmadsen/esphome_components/tree/develop/components/sentio
+WavinAHC9000v1 - https://github.com/heinekmadsen/esphome_components/tree/develop/components/wavinahc9000
+WavinAHC9000v2 - https://github.com/heinekmadsen/esphome_components/tree/develop/components/wavinahc9000v2
+WavinAHC9000v3 - https://github.com/heinekmadsen/esphome_components/tree/develop/components/wavinahc9000v3 (Recommended version)
+
+## Recent updates
 26-01-2026
 Added WavinAHC9000v3 component back into this repo
 Added Balboa Spa component
 Moved instructions for components to respective components folder.
 
-There may be breaking changes, so please make a copu of your current yaml before updating.
+There may be breaking changes, so please make a copy of your current yaml before updating.
 
 05-07-2025 - Updated for ESPHome 2025.6.5+ Compatibility
 A big thanks to ricobach for the PR on this.
