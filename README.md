@@ -5,15 +5,17 @@ My creation of custom components fro ESP home.
 Please change to WavinAHC9000v3 components as its the most robust version.
 
 ### Instructions
-Please see instructions under each component.
+Pick the component you want and follow the README in that folder.
 
-Balboa_spa - https://github.com/heinekmadsen/esphome_components/tree/develop/components/balboa_spa
-Genvexv1 - https://github.com/heinekmadsen/esphome_components/tree/develop/components/genvex
-Genvexv2 - https://github.com/heinekmadsen/esphome_components/tree/develop/components/genvexv2 (Recommended version)
-Sentio - https://github.com/heinekmadsen/esphome_components/tree/develop/components/sentio
-WavinAHC9000v1 - https://github.com/heinekmadsen/esphome_components/tree/develop/components/wavinahc9000
-WavinAHC9000v2 - https://github.com/heinekmadsen/esphome_components/tree/develop/components/wavinahc9000v2
-WavinAHC9000v3 - https://github.com/heinekmadsen/esphome_components/tree/develop/components/wavinahc9000v3 (Recommended version)
+📦 **Component index**
+
+- 🛁 **Balboa SPA**: [components/balboa_spa](components/balboa_spa)
+- 🌬️ **Genvex v1** (legacy / deprecated): [components/genvex](components/genvex)
+- 🌬️ **Genvex v2** ⭐ (recommended): [components/genvexv2](components/genvexv2)
+- 🏠 **Wavin Sentio**: [components/sentio](components/sentio)
+- 🔥 **Wavin AHC 9000 v1** (legacy / deprecated): [components/wavinAhc9000](components/wavinAhc9000)
+- 🔥 **Wavin AHC 9000 v2**: [components/wavinahc9000v2](components/wavinahc9000v2)
+- 🔥 **Wavin AHC 9000 v3** ⭐ (recommended): [components/wavinahc9000v3](components/wavinahc9000v3)
 
 ## Recent updates
 26-01-2026
