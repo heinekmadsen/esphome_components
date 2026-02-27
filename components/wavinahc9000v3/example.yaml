@@ -8,7 +8,12 @@ esp32:
     type: esp-idf
 
 external_components:
-  - source: github://heinekmadsen/esphome_wavinahc9000v3
+  - source:
+      type: git
+      url: https://github.com/heinekmadsen/esphome_components
+      ref: "v1.0.1"
+      #ref: "main"
+      #ref: "develop"
     components: [wavinahc9000v3]
     refresh: 0s
 

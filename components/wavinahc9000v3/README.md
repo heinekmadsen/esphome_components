@@ -54,9 +54,15 @@ Static diagram (SVG):
 ![Workflow Diagram](docs/workflow_diagram.svg)
 
 ```yaml
-external_components:
-  - source: github://heinekmadsen/esphome_wavinahc9000v3
+  - source:
+      type: git
+      url: https://github.com/heinekmadsen/esphome_components
+      ref: "v1.0.1"
+      #ref: "main"
+      #ref: "develop"
+      path: components
     components: [wavinahc9000v3]
+    refresh: 0s
 
 uart:
   id: uart_wavin
@@ -111,9 +117,15 @@ sensor:
 This variant shows a single channel, a grouped climate, plus both battery and temperature sensors explicitly defined.
 
 ```yaml
-external_components:
-  - source: github://heinekmadsen/esphome_wavinahc9000v3
+  - source:
+      type: git
+      url: https://github.com/heinekmadsen/esphome_components
+      ref: "v1.0.1"
+      #ref: "main"
+      #ref: "develop"
+      path: components
     components: [wavinahc9000v3]
+    refresh: 0s
 
 uart:
   id: uart_wavin

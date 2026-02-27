@@ -1,5 +1,7 @@
 # Genvex air circulation modbus interface
 
+!!! This component i depricated and no longer maintaineed !!!
+
 A configured uart component and a modbus component is required.
 
 Example minimal required config:
