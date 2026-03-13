@@ -4,7 +4,7 @@
 
 namespace esphome {
 namespace wavinahc9000v2 {
-static const char *TAG = "wavinahc9000v2.climate";
+static const char *const TAG = "wavinahc9000v2.climate";
 
 void Wavinahc9000v2Climate::setup() {
   current_temp_sensor_->add_on_state_callback([this](float state) {
@@ -22,7 +22,7 @@ void Wavinahc9000v2Climate::setup() {
     if (state) {
       this->mode = climate::CLIMATE_MODE_OFF;
     }
-    else if (!state) {
+    else {
       this->mode = climate::CLIMATE_MODE_HEAT;
     }
     publish_state();
@@ -32,7 +32,7 @@ void Wavinahc9000v2Climate::setup() {
     if (state) {
       this->action = climate::CLIMATE_ACTION_HEATING;
     }
-    else if (!state) {
+    else {
       this->action = climate::CLIMATE_ACTION_IDLE;
     }
     publish_state();

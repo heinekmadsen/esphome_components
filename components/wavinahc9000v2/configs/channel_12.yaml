@@ -17,12 +17,17 @@ sensor:
     device_class: temperature
     force_update: True
     lambda: |-
-      for (int i = 0; i < data.size(); i++) {
-        ESP_LOGD("DEBUG", "data[%d] = 0x%02X", i, data[i]);
+      if (data.size() < 4) {
+        ESP_LOGW("wavinahc9000v2", "Temperature response too short (%d bytes)", data.size());
+        return {};
       }
       uint16_t raw_temp = (data[2] << 8) | data[3];
-      ESP_LOGD("DEBUG", "Correct raw_temp assembled: %d", raw_temp);
-      return raw_temp * 0.1;
+      float temp_c = raw_temp * 0.1f;
+      if (temp_c < 1.0f || temp_c > 90.0f) {
+        ESP_LOGW("wavinahc9000v2", "Temperature out of range: %.1f C (raw=%d), ignoring", temp_c, raw_temp);
+        return {};
+      }
+      return temp_c;
 # ----------- Battery ----------- #
   - platform:               modbus_controller
     name:                   ${name} Battery ${channel_12_friendly_name}
@@ -40,9 +45,10 @@ sensor:
     accuracy_decimals: 1
     device_class: battery
     lambda: |-
+      if (data.size() < 4) return {};
       uint16_t raw_battery = (data[2] << 8) | data[3];
-      ESP_LOGD("DEBUG", "Battery raw value: %d", raw_battery);
-      return raw_battery * 10.0;
+      if (raw_battery > 100) return {};
+      return raw_battery * 10.0f;
 # ----------- Binary ----------- #
 binary_sensor:
   - platform:               modbus_controller
@@ -57,8 +63,8 @@ binary_sensor:
       - $channel_12
       - 0x01
     lambda: |-
+      if (data.size() < 4) return {};
       uint16_t value = (data[2] << 8) | data[3];
-      ESP_LOGD("DEBUG", "Output status raw value: 0x%04X", value);
       bool heating = (value & 0x0010) != 0;
       ESP_LOGD("DEBUG", "Heating output for channel ${channel_12_friendly_name}: %s", heating ? "ON" : "OFF");
       return heating;
@@ -90,9 +96,11 @@ number:
       payload.push_back(targettemp);
       return true;
     lambda: |-
+      if (data.size() < 4) return {};
       uint16_t raw_temp = (data[2] << 8) | data[3];
-      ESP_LOGD("DEBUG", "Target temp raw value: %d", raw_temp);
-      return raw_temp * 0.1;
+      float temp_c = raw_temp * 0.1f;
+      if (temp_c < 1.0f || temp_c > 90.0f) return {};
+      return temp_c;
 # ----------- Switch ----------- #
 switch:
   - platform:               modbus_controller
@@ -108,7 +116,6 @@ switch:
       - 0x01
     write_lambda: |-
       ESP_LOGD("main","Modbus Switch incoming state for channel 12 = %s",ONOFF(x));
-      bool state = ONOFF(x);
       uint8_t MODE_MASK = 0x07;
       payload.push_back(0x01);
       payload.push_back(0x45);
@@ -132,8 +139,8 @@ switch:
       payload.push_back((~MODE_MASK) & 0xFF);
       return true;
     lambda: |-
-      uint16_t mode = (data[2] << 8) | data[3];
-      ESP_LOGD("main","MODE raw value for Channel 12: 0x%04X",mode);    
+      if (data.size() < 4) return {};
+      uint16_t mode = (data[2] << 8) | data[3];    
       return (mode & 0x01) != 0;
 
 # ----------- Climate ----------- #
