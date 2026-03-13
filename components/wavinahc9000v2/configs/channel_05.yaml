@@ -19,13 +19,13 @@ sensor:
     lambda: |-
       if (data.size() < 4) {
         ESP_LOGW("wavinahc9000v2", "Temperature response too short (%d bytes)", data.size());
-        return {};
+        return NAN;
       }
       uint16_t raw_temp = (data[2] << 8) | data[3];
       float temp_c = raw_temp * 0.1f;
       if (temp_c < 1.0f || temp_c > 90.0f) {
         ESP_LOGW("wavinahc9000v2", "Temperature out of range: %.1f C (raw=%d), ignoring", temp_c, raw_temp);
-        return {};
+        return NAN;
       }
       return temp_c;
 # ----------- Battery ----------- #
@@ -45,9 +45,9 @@ sensor:
     accuracy_decimals: 1
     device_class: battery
     lambda: |-
-      if (data.size() < 4) return {};
+      if (data.size() < 4) return NAN;
       uint16_t raw_battery = (data[2] << 8) | data[3];
-      if (raw_battery > 100) return {};
+      if (raw_battery > 100) return NAN;
       return raw_battery * 10.0f;
 # ----------- Binary ----------- #
 binary_sensor:
@@ -63,7 +63,7 @@ binary_sensor:
       - $channel_05
       - 0x01
     lambda: |-
-      if (data.size() < 4) return {};
+      if (data.size() < 4) return false;
       uint16_t value = (data[2] << 8) | data[3];
       bool heating = (value & 0x0010) != 0;
       ESP_LOGD("DEBUG", "Heating output for channel ${channel_05_friendly_name}: %s", heating ? "ON" : "OFF");
@@ -96,10 +96,10 @@ number:
       payload.push_back(targettemp);
       return true;
     lambda: |-
-      if (data.size() < 4) return {};
+      if (data.size() < 4) return NAN;
       uint16_t raw_temp = (data[2] << 8) | data[3];
       float temp_c = raw_temp * 0.1f;
-      if (temp_c < 1.0f || temp_c > 90.0f) return {};
+      if (temp_c < 1.0f || temp_c > 90.0f) return NAN;
       return temp_c;
 # ----------- Switch ----------- #
 switch:
@@ -139,7 +139,7 @@ switch:
       payload.push_back((~MODE_MASK) & 0xFF);
       return true;
     lambda: |-
-      if (data.size() < 4) return {};
+      if (data.size() < 4) return false;
       uint16_t mode = (data[2] << 8) | data[3];    
       return (mode & 0x01) != 0;
 
