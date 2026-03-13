@@ -15,8 +15,18 @@ sensor:
     unit_of_measurement: "°C"
     accuracy_decimals: 1
     device_class: temperature
-    filters:
-      - multiply: 0.1
+    lambda: |-
+      if (data.size() < 4) {
+        ESP_LOGW("wavinahc9000v2", "Comfort temp response too short (%d bytes)", data.size());
+        return NAN;
+      }
+      uint16_t raw_temp = (data[2] << 8) | data[3];
+      float temp_c = raw_temp * 0.1f;
+      if (temp_c < 1.0f || temp_c > 90.0f) {
+        ESP_LOGW("wavinahc9000v2", "Comfort temp out of range: %.1f C (raw=%d), ignoring", temp_c, raw_temp);
+        return NAN;
+      }
+      return temp_c;
 
 # ----------- Number ----------- #
 number:
@@ -45,7 +55,10 @@ number:
       payload.push_back(${channel_13}01);
       payload.push_back(targettemp);
       return true;
-    lambda: "return x*0.1;"
+    lambda: |-
+      float temp_c = x * 0.1f;
+      if (temp_c < 1.0f || temp_c > 90.0f) return NAN;
+      return temp_c;
 
 # ----------- Switch ----------- #
 switch:
@@ -62,7 +75,6 @@ switch:
       - 0x03
     write_lambda: |-
       ESP_LOGD("main","Modbus Switch incoming state for channel 13 = %s",ONOFF(x));
-      bool state = ONOFF(x);
       uint8_t MODE_MASK = 0x07;
       payload.push_back(0x01);
       payload.push_back(0x45);
@@ -86,8 +98,8 @@ switch:
       payload.push_back((~MODE_MASK) & 0xFF);
       return true;
     lambda: |-
+      if (data.size() < 4) return false;
       uint16_t mode = (data[2] << 8) | data[3];
-      ESP_LOGD("main","MODE raw value for Channel 13: 0x%04X",mode);
       return (mode & 0x01) != 0;
 
 # ----------- Climate ----------- #

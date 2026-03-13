@@ -4,7 +4,7 @@
 
 namespace esphome {
 namespace wavinahc9000v2 {
-static const char *TAG = "wavinahc9000v2.climate";
+static const char *const TAG = "wavinahc9000v2.climate";
 
 void Wavinahc9000v2Climate::setup() {
   current_temp_sensor_->add_on_state_callback([this](float state) {
@@ -22,7 +22,7 @@ void Wavinahc9000v2Climate::setup() {
     if (state) {
       this->mode = climate::CLIMATE_MODE_OFF;
     }
-    else if (!state) {
+    else {
       this->mode = climate::CLIMATE_MODE_HEAT;
     }
     publish_state();
@@ -32,7 +32,7 @@ void Wavinahc9000v2Climate::setup() {
     if (state) {
       this->action = climate::CLIMATE_ACTION_HEATING;
     }
-    else if (!state) {
+    else {
       this->action = climate::CLIMATE_ACTION_IDLE;
     }
     publish_state();
@@ -79,9 +79,7 @@ climate::ClimateTraits Wavinahc9000v2Climate::traits() {
     climate::ClimateMode::CLIMATE_MODE_HEAT,
   });
 
-  traits.set_supports_action(true);
-
-  traits.set_supports_current_temperature(true);
+  traits.add_feature_flags(climate::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE | climate::CLIMATE_SUPPORTS_ACTION);
   traits.set_visual_temperature_step(0.5);
   traits.set_visual_min_temperature(6);
   traits.set_visual_max_temperature(40);
