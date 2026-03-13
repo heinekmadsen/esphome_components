@@ -1279,23 +1279,34 @@ void WavinZoneClimate::update_from_parent() {
       this->action = raw_action;
     }
   } else if (!this->members_.empty()) {
-    float sum_curr = 0.0f, sum_set = 0.0f;
+    float sum_curr = 0.0f;
     int n_curr = 0;
     bool any_heat = false;
     bool all_off = true;
+    // Primary member (first in list) is the authoritative setpoint source
+    uint8_t primary_ch = this->members_[0];
+    float primary_setpoint = this->parent_->get_channel_setpoint(primary_ch);
     for (auto ch : this->members_) {
       float c = this->parent_->get_channel_current_temp(ch);
       if (!std::isnan(c)) {
         sum_curr += c;
         n_curr++;
       }
-      float s = this->parent_->get_channel_setpoint(ch);
-      if (!std::isnan(s)) sum_set += s;
+      // Auto-sync: if a secondary member has a different setpoint, write the primary's value to it
+      if (ch != primary_ch && !std::isnan(primary_setpoint)) {
+        float s = this->parent_->get_channel_setpoint(ch);
+        if (!std::isnan(s) && std::fabs(s - primary_setpoint) > 0.049f) {
+          ESP_LOGI(TAG, "Group sync: CH%u setpoint %.1fC -> %.1fC (primary CH%u)",
+                   (unsigned) ch, s, primary_setpoint, (unsigned) primary_ch);
+          this->parent_->write_channel_setpoint(ch, primary_setpoint);
+        }
+      }
       if (this->parent_->get_channel_action(ch) == climate::CLIMATE_ACTION_HEATING) any_heat = true;
       if (this->parent_->get_channel_mode(ch) != climate::CLIMATE_MODE_OFF) all_off = false;
     }
     if (n_curr > 0) this->current_temperature = sum_curr / n_curr;
-    if (!this->members_.empty()) this->target_temperature = sum_set / this->members_.size();
+    // Use primary member's setpoint directly (not an average)
+    if (!std::isnan(primary_setpoint)) this->target_temperature = primary_setpoint;
     this->mode = all_off ? climate::CLIMATE_MODE_OFF : climate::CLIMATE_MODE_HEAT;
     // Group action: prefer temperature comparison with deadband, fallback to any member heating
     const float db = 0.3f;
