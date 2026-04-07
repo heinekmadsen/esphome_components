@@ -5,7 +5,7 @@
 packages:
   remote_package:
     url: https://github.com/heinekmadsen/esphome_components
-    ref: "v1.0.1"
+    ref: "1.0.0-stable"
     #ref: "main"
     #ref: "develop"
     files: [components/genvexv2/optima250.yaml]

@@ -42,7 +42,7 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_TX_ENABLE_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_FLOW_CONTROL_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_TEMP_DIVISOR, default=10.0): cv.positive_float,
-            cv.Optional(CONF_RECEIVE_TIMEOUT_MS, default=1000): cv.positive_int,
+            cv.Optional(CONF_RECEIVE_TIMEOUT_MS, default=350): cv.positive_int,  # FIX: 350ms for Wavin's variable response latency
             cv.Optional(CONF_POLL_CHANNELS_PER_CYCLE, default=2): cv.int_range(min=1, max=16),
             cv.Optional(CONF_ALLOW_MODE_WRITES, default=True): cv.boolean,
             cv.Optional(CONF_MODULE, default="default"): cv.enum(MODULE_OPTIONS, upper=False),

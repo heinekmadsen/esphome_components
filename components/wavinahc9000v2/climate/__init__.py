@@ -23,19 +23,19 @@ CONFIG_SCHEMA = climate.climate_schema(Wavinahc9000v2Climate).extend({
     cv.Required(CONF_ACTION): cv.use_id(binary_sensor.BinarySensor),
 }).extend(cv.COMPONENT_SCHEMA)
 
-def to_code(config):
+async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-    yield cg.register_component(var, config)
-    yield climate.register_climate(var, config)
+    await cg.register_component(var, config)
+    await climate.register_climate(var, config)
 
-    number_set_temp = yield cg.get_variable(config[CONF_TARGET_TEMP])
+    number_set_temp = await cg.get_variable(config[CONF_TARGET_TEMP])
     cg.add(var.set_temp_setpoint_number(number_set_temp))
 
-    sens_current_temp = yield cg.get_variable(config[CONF_CURRENT_TEMP])
+    sens_current_temp = await cg.get_variable(config[CONF_CURRENT_TEMP])
     cg.add(var.set_current_temp_sensor(sens_current_temp))
 
-    switch_mode = yield cg.get_variable(config[CONF_MODE])
+    switch_mode = await cg.get_variable(config[CONF_MODE])
     cg.add(var.set_mode_switch(switch_mode))
 
-    hvac_action = yield cg.get_variable(config[CONF_ACTION])
+    hvac_action = await cg.get_variable(config[CONF_ACTION])
     cg.add(var.set_hvac_action(hvac_action))

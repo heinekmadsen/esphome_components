@@ -45,6 +45,12 @@ void WavinAHC9000::setup() {
   const uint32_t bits_per_frame = 11;
   const uint32_t frame_us = (bits_per_frame * 1000000UL + baud - 1) / baud;  // ceil division
 
+  // FIX: Always flush RX before TX when using half-duplex RS485 (flow control pin set)
+  // This prevents stale echo bytes from corrupting response parsing.
+  if (this->flow_control_pin_ != nullptr || this->tx_enable_pin_ != nullptr) {
+    this->flush_rx_before_tx_ = true;
+  }
+
   switch (this->module_profile_) {
     case ModuleProfile::MODULE_USTEPPER: {
       // uStepper RS485 hat needs extra guard time; approximate 12-byte frame plus slack.
@@ -52,20 +58,31 @@ void WavinAHC9000::setup() {
       const uint32_t computed_guard = frame_us * worst_case_bytes + frame_us * 2;
       this->pre_tx_delay_us_ = std::max<uint32_t>(frame_us / 2, 100);
       this->post_tx_guard_us_ = std::max<uint32_t>(computed_guard, 2500);
-      this->flush_rx_before_tx_ = true;
+      this->inter_frame_delay_us_ = std::max<uint32_t>(frame_us * 4, 3000);
       break;
     }
     case ModuleProfile::MODULE_DEFAULT:
     default:
-      this->pre_tx_delay_us_ = 0;
-      this->post_tx_guard_us_ = std::max<uint32_t>(250, frame_us * 2);
-      this->flush_rx_before_tx_ = false;
+      // FIX: Increased post-TX guard for ESP32-C3 at 38400 baud.
+      // At 38400 baud, one byte frame = ~286us. A 12-byte TX message takes ~3430us.
+      // The UART flush() may return before the last byte's stop bit is clocked out.
+      // We need enough guard time for the last byte to finish plus transceiver turnaround.
+      // Using 6x frame time (~1716us, min 1500us) to ensure the complete last byte + stop
+      // bit is on the wire before we switch the transceiver direction.
+      this->pre_tx_delay_us_ = std::max<uint32_t>(frame_us / 2, 50);
+      this->post_tx_guard_us_ = std::max<uint32_t>(frame_us * 6, 1500);
+      // FIX: Inter-frame delay ensures the Wavin controller has time to process one
+      // response before the next request arrives. The AHC-9000 needs ~5ms between
+      // consecutive transactions to avoid missed responses.
+      this->inter_frame_delay_us_ = std::max<uint32_t>(frame_us * 18, 5000);
       break;
   }
 
   const char *profile = (this->module_profile_ == ModuleProfile::MODULE_USTEPPER) ? "ustepper" : "default";
-  ESP_LOGCONFIG(TAG, "Wavin AHC9000 hub setup (baud=%u module=%s guard=%uus pre=%uus)",
-                (unsigned) baud, profile, (unsigned) this->post_tx_guard_us_, (unsigned) this->pre_tx_delay_us_);
+  ESP_LOGCONFIG(TAG, "Wavin AHC9000 hub setup (baud=%u module=%s guard=%uus pre=%uus interframe=%uus flush_rx=%s)",
+                (unsigned) baud, profile, (unsigned) this->post_tx_guard_us_,
+                (unsigned) this->pre_tx_delay_us_, (unsigned) this->inter_frame_delay_us_,
+                this->flush_rx_before_tx_ ? "yes" : "no");
 }
 void WavinAHC9000::loop() {}
 
@@ -367,6 +384,9 @@ bool WavinAHC9000::read_registers(uint8_t category, uint8_t page, uint8_t index,
   // Retry logic: attempt up to IO_RETRY_ATTEMPTS. First attempt failures are logged at DEBUG; only the
   // final failed attempt escalates to WARN to reduce log noise from transient bus glitches.
   for (uint8_t attempt = 0; attempt < IO_RETRY_ATTEMPTS; attempt++) {
+    // FIX: Inter-frame delay before each transaction to allow bus turnaround
+    this->inter_frame_delay_();
+
     uint8_t msg[8];
     msg[0] = DEVICE_ADDR;
     msg[1] = FC_READ;
@@ -414,7 +434,8 @@ bool WavinAHC9000::read_registers(uint8_t category, uint8_t page, uint8_t index,
           }
         }
       }
-      delay(1);
+      // FIX: Tighter polling interval instead of delay(1) to avoid byte reception gaps
+      delayMicroseconds(100);
     }
     // Timeout
     if (attempt + 1 == IO_RETRY_ATTEMPTS) {
@@ -430,6 +451,8 @@ bool WavinAHC9000::read_registers(uint8_t category, uint8_t page, uint8_t index,
 bool WavinAHC9000::write_register(uint8_t category, uint8_t page, uint8_t index, uint16_t value) {
   // Similar retry strategy as read_registers() with severity gating.
   for (uint8_t attempt = 0; attempt < IO_RETRY_ATTEMPTS; attempt++) {
+    this->inter_frame_delay_();
+
     uint8_t msg[10];
     msg[0] = DEVICE_ADDR;
     msg[1] = FC_WRITE;
@@ -474,7 +497,8 @@ bool WavinAHC9000::write_register(uint8_t category, uint8_t page, uint8_t index,
           }
         }
       }
-      delay(1);
+      // FIX: Tighter polling interval instead of delay(1) to avoid byte reception gaps
+      delayMicroseconds(100);
     }
     if (attempt + 1 == IO_RETRY_ATTEMPTS) {
       ESP_LOGW(TAG, "ACK-WR: timeout after %u attempts (cat=%u idx=%u page=%u)", (unsigned) IO_RETRY_ATTEMPTS, category, index, page);
@@ -489,6 +513,8 @@ bool WavinAHC9000::write_register(uint8_t category, uint8_t page, uint8_t index,
 bool WavinAHC9000::write_masked_register(uint8_t category, uint8_t page, uint8_t index, uint16_t and_mask, uint16_t or_mask) {
   // Similar retry strategy as write_register(); reduces spurious WARN logs.
   for (uint8_t attempt = 0; attempt < IO_RETRY_ATTEMPTS; attempt++) {
+    this->inter_frame_delay_();
+
     uint8_t msg[12];
     msg[0] = DEVICE_ADDR;
     msg[1] = FC_WRITE_MASKED;
@@ -535,7 +561,8 @@ bool WavinAHC9000::write_masked_register(uint8_t category, uint8_t page, uint8_t
           }
         }
       }
-      delay(1);
+      // FIX: Tighter polling interval instead of delay(1) to avoid byte reception gaps
+      delayMicroseconds(100);
     }
     if (attempt + 1 == IO_RETRY_ATTEMPTS) {
       ESP_LOGW(TAG, "ACK-WM: timeout after %u attempts (cat=%u idx=%u page=%u)", (unsigned) IO_RETRY_ATTEMPTS, category, index, page);
@@ -1042,24 +1069,50 @@ void WavinAHC9000::publish_updates() {
 
 
 void WavinAHC9000::clear_stale_rx_() {
-  if (!this->flush_rx_before_tx_) return;
+  // FIX: Always clear RX buffer regardless of flush_rx_before_tx_ flag when called explicitly
+  int discarded = 0;
   while (this->available()) {
     int c = this->read();
     if (c < 0) break;
+    discarded++;
+  }
+  if (discarded > 0) {
+    ESP_LOGD(TAG, "Flushed %d stale RX bytes", discarded);
   }
 }
 
 void WavinAHC9000::prepare_for_tx_() {
-  this->clear_stale_rx_();
+  // FIX: Always flush stale RX bytes before transmitting on half-duplex RS485
+  if (this->flush_rx_before_tx_) {
+    this->clear_stale_rx_();
+  }
   if (this->flow_control_pin_ != nullptr) this->flow_control_pin_->digital_write(true);
   if (this->tx_enable_pin_ != nullptr) this->tx_enable_pin_->digital_write(true);
   if (this->pre_tx_delay_us_ > 0) delayMicroseconds(this->pre_tx_delay_us_);
 }
 
 void WavinAHC9000::finish_tx_() {
+  // FIX: Wait for UART TX FIFO to fully drain before switching flow control.
+  // The flush() in the caller drains the software buffer, but hardware FIFO may still
+  // be clocking out the last byte. The post_tx_guard covers this plus transceiver turnaround.
   delayMicroseconds(this->post_tx_guard_us_);
   if (this->tx_enable_pin_ != nullptr) this->tx_enable_pin_->digital_write(false);
   if (this->flow_control_pin_ != nullptr) this->flow_control_pin_->digital_write(false);
+  // FIX: After switching transceiver to RX mode, wait for it to settle and then
+  // discard any TX echo bytes that leaked into the RX FIFO during transmission.
+  // On half-duplex RS485, the transceiver's own TX appears on RX while the DE pin is high.
+  // Some bytes may still be in the hardware FIFO after switching DE low.
+  delayMicroseconds(500);  // transceiver RX settling time
+  this->clear_stale_rx_();
+}
+
+void WavinAHC9000::inter_frame_delay_() {
+  // FIX: Enforce a minimum silence period between consecutive bus transactions.
+  // The Wavin AHC-9000 (like most Modbus devices) needs a brief quiet period
+  // between the end of one response and the start of the next request.
+  if (this->inter_frame_delay_us_ > 0) {
+    delayMicroseconds(this->inter_frame_delay_us_);
+  }
 }
 
 float WavinAHC9000::get_channel_current_temp(uint8_t channel) const {
@@ -1226,23 +1279,34 @@ void WavinZoneClimate::update_from_parent() {
       this->action = raw_action;
     }
   } else if (!this->members_.empty()) {
-    float sum_curr = 0.0f, sum_set = 0.0f;
+    float sum_curr = 0.0f;
     int n_curr = 0;
     bool any_heat = false;
     bool all_off = true;
+    // Primary member (first in list) is the authoritative setpoint source
+    uint8_t primary_ch = this->members_[0];
+    float primary_setpoint = this->parent_->get_channel_setpoint(primary_ch);
     for (auto ch : this->members_) {
       float c = this->parent_->get_channel_current_temp(ch);
       if (!std::isnan(c)) {
         sum_curr += c;
         n_curr++;
       }
-      float s = this->parent_->get_channel_setpoint(ch);
-      if (!std::isnan(s)) sum_set += s;
+      // Auto-sync: if a secondary member has a different setpoint, write the primary's value to it
+      if (ch != primary_ch && !std::isnan(primary_setpoint)) {
+        float s = this->parent_->get_channel_setpoint(ch);
+        if (!std::isnan(s) && std::fabs(s - primary_setpoint) > 0.049f) {
+          ESP_LOGI(TAG, "Group sync: CH%u setpoint %.1fC -> %.1fC (primary CH%u)",
+                   (unsigned) ch, s, primary_setpoint, (unsigned) primary_ch);
+          this->parent_->write_channel_setpoint(ch, primary_setpoint);
+        }
+      }
       if (this->parent_->get_channel_action(ch) == climate::CLIMATE_ACTION_HEATING) any_heat = true;
       if (this->parent_->get_channel_mode(ch) != climate::CLIMATE_MODE_OFF) all_off = false;
     }
     if (n_curr > 0) this->current_temperature = sum_curr / n_curr;
-    if (!this->members_.empty()) this->target_temperature = sum_set / this->members_.size();
+    // Use primary member's setpoint directly (not an average)
+    if (!std::isnan(primary_setpoint)) this->target_temperature = primary_setpoint;
     this->mode = all_off ? climate::CLIMATE_MODE_OFF : climate::CLIMATE_MODE_HEAT;
     // Group action: prefer temperature comparison with deadband, fallback to any member heating
     const float db = 0.3f;
@@ -1285,10 +1349,10 @@ void WavinRepairButton::press_action() {
 
   if (this->aggressive_) {
     ESP_LOGI(TAG, "Aggressive refresh requested for channel %u", (unsigned) this->channel_);
-    this->parent_->refresh_channel_now(this->channel_);
-  } else {
-    this->parent_->request_status_channel(this->channel_);
   }
+
+  // FIX: Always use refresh_channel_now() — request_status_channel() just queues a poll
+  this->parent_->refresh_channel_now(this->channel_);
 }
 
 void WavinYamlDumpButton::press_action() {

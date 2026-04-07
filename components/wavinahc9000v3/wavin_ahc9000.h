@@ -110,6 +110,8 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   void finish_tx_();
   void clear_stale_rx_();
   void handle_standby_keepalive_(uint8_t channel, bool is_off, std::vector<uint8_t> &reassert_list);
+  // Inter-frame silence to ensure bus turnaround between consecutive transactions
+  void inter_frame_delay_();
   bool standby_keepalive_enabled_() const {
     return this->keep_standby_alive_ && this->standby_keepalive_interval_ms_ > 0;
   }
@@ -153,7 +155,7 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
 
   float temp_divisor_{10.0f};
   uint32_t last_poll_ms_{0};
-  uint32_t receive_timeout_ms_{1000};
+  uint32_t receive_timeout_ms_{350};  // FIX: 350ms balances responsiveness with Wavin's variable response latency
   uint32_t suspend_polling_until_{0};
   GPIOPin *tx_enable_pin_{nullptr};
   GPIOPin *flow_control_pin_{nullptr};
@@ -165,6 +167,7 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   bool allow_mode_writes_{true};
   uint32_t pre_tx_delay_us_{0};
   uint32_t post_tx_guard_us_{300};
+  uint32_t inter_frame_delay_us_{0};  // FIX: silence gap between consecutive transactions (set by setup())
   bool flush_rx_before_tx_{false};
   bool keep_standby_alive_{false};
   uint32_t standby_keepalive_interval_ms_{180000};
