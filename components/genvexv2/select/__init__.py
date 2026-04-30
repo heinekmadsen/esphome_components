@@ -38,7 +38,6 @@ CONFIG_SCHEMA = select.select_schema(Genvexv2Select).extend({
     #cv.Optional(CONF_REGISTER_COUNT, default=0): cv.positive_int,
     cv.Optional(CONF_SKIP_UPDATES, default=0): cv.positive_int,
     cv.Optional(CONF_FORCE_NEW_RANGE, default=False): cv.boolean,
-    cv.Optional(CONF_FORCE_NEW_RANGE, default=False): cv.boolean,
 }).extend(cv.COMPONENT_SCHEMA)
  
 def to_code(config):
