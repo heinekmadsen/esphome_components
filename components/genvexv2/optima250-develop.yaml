@@ -3,6 +3,7 @@ external_components:
       type: git
       url: https://github.com/heinekmadsen/esphome_components
       ref: "develop"
+      #ref: "fix/genvexv2-compile-warnings"
     refresh: 0s
     components: [genvexv2]
 
