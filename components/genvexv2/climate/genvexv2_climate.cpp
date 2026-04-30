@@ -7,6 +7,8 @@ namespace genvexv2 {
 static const char *TAG = "genvexv2.climate";
 
 void Genvexv2Climate::setup() {
+  this->set_supported_custom_fan_modes({"1", "2", "3", "4"});
+
   current_temp_sensor_->add_on_state_callback([this](float state) {
     ESP_LOGD(TAG, "CURRENT TEMP SENSOR CALLBACK: %f", state);
     current_temperature = state;
@@ -104,13 +106,6 @@ void Genvexv2Climate::control(const climate::ClimateCall& call) {
 
 climate::ClimateTraits Genvexv2Climate::traits() {
   auto traits = climate::ClimateTraits();
-
-  traits.set_supported_custom_fan_modes({
-    "1",
-    "2",
-    "3",
-    "4"
-  });
 
   traits.set_supported_fan_modes({ 
     climate::ClimateFanMode::CLIMATE_FAN_OFF 

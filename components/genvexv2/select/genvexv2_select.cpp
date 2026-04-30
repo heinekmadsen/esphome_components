@@ -30,10 +30,8 @@ void Genvexv2Select::control(const std::string &value) {
 
   for (size_t i = 0; i < options.size(); ++i) {
     if (value == options[i]) {
-      ESP_LOGD(TAG, "WRITING INDEX: %d", i);
-      std::vector<uint16_t> data = modbus_controller::float_to_payload(i, modbus_controller::SensorValueType::U_WORD);
-      uint16_t speed = i;
-      ESP_LOGD(TAG, "UINT16_t speed: %i", speed);
+      uint16_t speed = static_cast<uint16_t>(i);
+      ESP_LOGD(TAG, "WRITING INDEX: %d (speed: %u)", i, speed);
       //auto write_cmd = ModbusCommandItem::create_write_multiple_command(modbus_controller_, this->start_address + this->offset, this->register_count, data);
       auto write_cmd = ModbusCommandItem::create_write_single_command(modbus_controller_, this->start_address, speed);
 
