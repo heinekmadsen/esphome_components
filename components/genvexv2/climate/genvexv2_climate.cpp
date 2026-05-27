@@ -7,6 +7,8 @@ namespace genvexv2 {
 static const char *TAG = "genvexv2.climate";
 
 void Genvexv2Climate::setup() {
+  this->set_supported_custom_fan_modes({"1", "2", "3", "4"});
+
   current_temp_sensor_->add_on_state_callback([this](float state) {
     ESP_LOGD(TAG, "CURRENT TEMP SENSOR CALLBACK: %f", state);
     current_temperature = state;
@@ -105,13 +107,6 @@ void Genvexv2Climate::control(const climate::ClimateCall& call) {
 climate::ClimateTraits Genvexv2Climate::traits() {
   auto traits = climate::ClimateTraits();
 
-  traits.set_supported_custom_fan_modes({
-    "1",
-    "2",
-    "3",
-    "4"
-  });
-
   traits.set_supported_fan_modes({ 
     climate::ClimateFanMode::CLIMATE_FAN_OFF 
   });
@@ -143,42 +138,24 @@ void Genvexv2Climate::apply_custom_fan_mode_string_(const std::string &mode_text
   }
 }
 
-void Genvexv2Climate::genvexv2fanspeed_to_fanmode(const int state)
+void Genvexv2Climate::genvexv2fanspeed_to_fanmode(float state)
 {
-  ESP_LOGD("TAG", "In genvexv2fanspeed_to_fanmode");
-  ESP_LOGD("TAG", "State is %i", state);
+  const int istate = static_cast<int>(state);
+  ESP_LOGD(TAG, "In genvexv2fanspeed_to_fanmode, state=%i", istate);
   this->clear_custom_fan_mode_();
   this->fan_mode.reset();
 
-  switch (state) {
+  switch (istate) {
   case 1:
-    ESP_LOGD("TAG", "Case 1");
-    this->mode = climate::CLIMATE_MODE_HEAT_COOL;
-    this->apply_custom_fan_mode_string_(esphome::to_string(state));
-    break;
   case 2:
-    ESP_LOGD("TAG", "Case 2");
-    this->mode = climate::CLIMATE_MODE_HEAT_COOL;
-    this->apply_custom_fan_mode_string_(esphome::to_string(state));
-    break;
   case 3:
-    ESP_LOGD("TAG", "Case 3");
-    this->mode = climate::CLIMATE_MODE_HEAT_COOL;
-    this->apply_custom_fan_mode_string_(esphome::to_string(state));
-    break;
   case 4:
-    ESP_LOGD("TAG", "Case 4");
     this->mode = climate::CLIMATE_MODE_HEAT_COOL;
-    this->apply_custom_fan_mode_string_(esphome::to_string(state));
+    this->apply_custom_fan_mode_string_(esphome::to_string(istate));
     break;
   case 0:
-    ESP_LOGD("TAG", "Case 0");
-    this->fan_mode = climate::CLIMATE_FAN_OFF; 
-    this->mode = climate::CLIMATE_MODE_OFF;
-    break;
-  default: 
-    ESP_LOGD("TAG", "Case default");
-    this->fan_mode = climate::CLIMATE_FAN_OFF; 
+  default:
+    this->fan_mode = climate::CLIMATE_FAN_OFF;
     this->mode = climate::CLIMATE_MODE_OFF;
     break;
   }

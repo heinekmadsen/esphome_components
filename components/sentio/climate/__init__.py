@@ -21,16 +21,16 @@ CONFIG_SCHEMA = climate.climate_schema(SentioClimate).extend({
     cv.Required(CONF_MODE): cv.use_id(sensor.Sensor)
 }).extend(cv.COMPONENT_SCHEMA)
  
-def to_code(config):
+async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-    yield cg.register_component(var, config)
-    yield climate.register_climate(var, config)
+    await cg.register_component(var, config)
+    await climate.register_climate(var, config)
 
-    number_set_temp = yield cg.get_variable(config[CONF_TARGET_TEMP])
+    number_set_temp = await cg.get_variable(config[CONF_TARGET_TEMP])
     cg.add(var.set_temp_setpoint_number(number_set_temp))
 
-    sens_current_temp = yield cg.get_variable(config[CONF_CURRENT_TEMP])
+    sens_current_temp = await cg.get_variable(config[CONF_CURRENT_TEMP])
     cg.add(var.current_temp_sensor(sens_current_temp))
 
-    read_mode = yield cg.get_variable(config[CONF_MODE])
+    read_mode = await cg.get_variable(config[CONF_MODE])
     cg.add(var.mode_select(read_mode))

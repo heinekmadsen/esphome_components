@@ -9,5 +9,5 @@ class Genvexv2 : public Component {
   public:
     Genvexv2() {}
 };
-} // namespace genvex
+} // namespace genvexv2
 } // namespace esphome

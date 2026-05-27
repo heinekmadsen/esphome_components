@@ -10,11 +10,6 @@ using modbus_controller::ModbusCommandItem;
 using modbus_controller::ModbusRegisterType;
 
 void Genvexv2Select::parse_and_publish(const std::vector<uint8_t> &data) {
-  union {
-    float float_value;
-    uint32_t raw;
-  } raw_to_float;
-
   float received_value = payload_to_float(data, *this);
   ESP_LOGD(TAG, "Genvexv2 Select index: %f", received_value);
 
@@ -22,9 +17,9 @@ void Genvexv2Select::parse_and_publish(const std::vector<uint8_t> &data) {
 
   if (received_value >= 0 && received_value < options.size()) {
     const auto index = static_cast<size_t>(received_value);
-    const char *select_value = options[index];
-    ESP_LOGD(TAG, "Select new state : %s", select_value);
-    this->publish_state(std::string(select_value));
+    const std::string &select_value = options[index];
+    ESP_LOGD(TAG, "Select new state : %s", select_value.c_str());
+    this->publish_state(select_value);
   }
 }
 
@@ -35,10 +30,8 @@ void Genvexv2Select::control(const std::string &value) {
 
   for (size_t i = 0; i < options.size(); ++i) {
     if (value == options[i]) {
-      ESP_LOGD(TAG, "WRITING INDEX: %d", i);
-      std::vector<uint16_t> data = modbus_controller::float_to_payload(i, modbus_controller::SensorValueType::U_WORD);
-      uint16_t speed = i;
-      ESP_LOGD(TAG, "UINT16_t speed: %i", speed);
+      uint16_t speed = static_cast<uint16_t>(i);
+      ESP_LOGD(TAG, "WRITING INDEX: %d (speed: %u)", i, speed);
       //auto write_cmd = ModbusCommandItem::create_write_multiple_command(modbus_controller_, this->start_address + this->offset, this->register_count, data);
       auto write_cmd = ModbusCommandItem::create_write_single_command(modbus_controller_, this->start_address, speed);
 
