@@ -3,14 +3,14 @@ import esphome.config_validation as cv
 from esphome.components import select, modbus_controller
 from .. import Genvexv2, CONF_GENVEXV2_ID
 
-from esphome.components.modbus_controller import (
+from esphome.components.modbus.helpers import SENSOR_VALUE_TYPE
+from esphome.components.modbus_controller.const import (
     CONF_MODBUS_CONTROLLER_ID,
     CONF_FORCE_NEW_RANGE,
     CONF_BYTE_OFFSET,
     CONF_SKIP_UPDATES,
     CONF_REGISTER_TYPE,
     CONF_VALUE_TYPE,
-    SENSOR_VALUE_TYPE,
 )
 
 from esphome.const import (
