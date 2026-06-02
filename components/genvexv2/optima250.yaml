@@ -449,8 +449,8 @@ number:
 
   - platform: modbus_controller
     modbus_controller_id: genvex_modbus_controller
-    name: "Bypass Close on Low Inlet Temp (Diff From Target Temp)"
-    id: bypass_close_on_low_inlet_temp
+    name: "Genvex Bypass Close on Low Inlet Temp (Diff From Target Temp)"
+    id: genvex_bypass_close_on_low_inlet_temp
     icon: mdi:thermometer
     unit_of_measurement: °C
     min_value: 0
