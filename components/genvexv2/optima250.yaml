@@ -443,7 +443,7 @@ number:
     lambda: "return x/10;"
     write_lambda: |-
       ESP_LOGD("Genvex bypass max temp","Processing new bypass max open temp %f", x);
-      uint16_t new_temp = x * 10;
+      uint16_t new_temp = lroundf(x * 10.0f);
       ESP_LOGD("Genvex bypass max temp","New value %d", new_temp);
       return new_temp;
 
