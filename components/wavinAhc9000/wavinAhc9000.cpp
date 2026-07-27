@@ -56,15 +56,15 @@ void WavinAhc9000::send_read_(uint8_t function_code, uint16_t arg1, uint16_t arg
   this->send_pdu(std::span<const uint8_t>(pdu, sizeof(pdu)));
 }
 
-void WavinAhc9000::on_response(std::span<const uint8_t> request_pdu, std::span<const uint8_t> response_pdu) {
+void WavinAhc9000::on_modbus_data(const std::vector<uint8_t> &data) {
   this->waiting_ = false;
-  // response_pdu is the PDU without address/CRC: [function_code][byte_count][payload...]
-  if (response_pdu.size() < 2) {
+  // The modbus core already stripped the address and the function code, so `data`
+  // is [byte_count][payload...]. Skip the byte-count byte to reach the payload.
+  if (data.size() < 2) {
     ESP_LOGW(TAG, "Invalid modbus response - too short");
     return;
   }
-  // Skip function code + byte count to reach the payload, matching the original parser.
-  std::vector<uint8_t> payload(response_pdu.begin() + 2, response_pdu.end());
+  std::vector<uint8_t> payload(data.begin() + 1, data.end());
 
   float temperature;
   switch (state_) {
@@ -88,7 +88,7 @@ void WavinAhc9000::on_response(std::span<const uint8_t> request_pdu, std::span<c
   }
 }
 
-bool WavinAhc9000::on_no_response() {
+bool WavinAhc9000::on_modbus_no_response() {
   this->waiting_ = false;
   if (state_ == 0) {
     ESP_LOGD(TAG, "Timeout on set temperature on channel %d", channel_ + 1);
@@ -138,7 +138,7 @@ void WavinAhc9000::handle_mode_data_(const std::vector<uint8_t> &data) {
 }
 
 void WavinAhc9000::loop() {
-  // One transaction in flight at a time; on_response()/on_no_response() clear this.
+  // One transaction in flight at a time; on_modbus_data()/on_modbus_no_response() clear this.
   if (this->waiting_)
     return;
 

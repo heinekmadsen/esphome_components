@@ -14,10 +14,10 @@ class WavinAhc9000 : public PollingComponent, public modbus::ModbusClientDevice 
     void update() override;
     void loop() override;
 
-    // New modbus client hooks (replace the old on_modbus_data path).
-    void on_response(std::span<const uint8_t> request_pdu, std::span<const uint8_t> response_pdu) override;
-    bool on_no_response() override;
-    void on_not_sent() override { this->waiting_ = false; }
+    // Modbus client-device hooks (ESPHome 2026.7.x API).
+    void on_modbus_data(const std::vector<uint8_t> &data) override;
+    bool on_modbus_no_response() override;
+    void on_modbus_not_sent() override { this->waiting_ = false; }
 
     void register_channel(int channel) { used_channels_[channel] = true; }
     void add_temp_callback(int channel, std::function<void(float)> &&callback);
