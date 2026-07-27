@@ -23,11 +23,6 @@ static const uint8_t ALL_TP_LOST_MASK = 0x02;
 static const uint8_t CHANNEL_OUTP_ON = 0x10;
 static const uint8_t MODE_MASK = 0x07;
 
-void WavinAhc9000::setup() {
-  rw_pin_->setup();
-  rw_pin_->digital_write(false);
-}
-
 void WavinAhc9000::add_temp_callback(int channel, std::function<void(float)> &&callback) {
   temp_callbacks_[channel].add(std::move(callback));
 }
@@ -53,19 +48,24 @@ void WavinAhc9000::set_target_temp(int channel, float temperature) {
   temp_channel_.push_back(channel);
 }
 
-void WavinAhc9000::on_modbus_data(const std::vector<uint8_t> &data) {
-  ESP_LOGV(TAG, "Channel %d, state %d, Data: %s", channel_ + 1, state_, format_hex_pretty(data).c_str());
-  
-  // Modbus response format: [function_code][byte_count][payload...]
-  // For function 0x43/0x44, skip first 2 bytes to get actual data payload
-  if (data.size() < 2) {
+void WavinAhc9000::send_read_(uint8_t function_code, uint16_t arg1, uint16_t arg2) {
+  // Wavin custom read: [function][arg1 hi][arg1 lo][arg2 hi][arg2 lo].
+  // send_pdu() prepends the device address and appends the CRC.
+  const uint8_t pdu[5] = {function_code, (uint8_t) (arg1 >> 8), (uint8_t) (arg1 & 0xff),
+                         (uint8_t) (arg2 >> 8), (uint8_t) (arg2 & 0xff)};
+  this->send_pdu(std::span<const uint8_t>(pdu, sizeof(pdu)));
+}
+
+void WavinAhc9000::on_response(std::span<const uint8_t> request_pdu, std::span<const uint8_t> response_pdu) {
+  this->waiting_ = false;
+  // response_pdu is the PDU without address/CRC: [function_code][byte_count][payload...]
+  if (response_pdu.size() < 2) {
     ESP_LOGW(TAG, "Invalid modbus response - too short");
-    waiting_ = false;
     return;
   }
-  
-  std::vector<uint8_t> payload(data.begin() + 2, data.end());
-  
+  // Skip function code + byte count to reach the payload, matching the original parser.
+  std::vector<uint8_t> payload(response_pdu.begin() + 2, response_pdu.end());
+
   float temperature;
   switch (state_) {
     case 0:
@@ -86,7 +86,18 @@ void WavinAhc9000::on_modbus_data(const std::vector<uint8_t> &data) {
       handle_mode_data_(payload);
       break;
   }
-  waiting_ = false;
+}
+
+bool WavinAhc9000::on_no_response() {
+  this->waiting_ = false;
+  if (state_ == 0) {
+    ESP_LOGD(TAG, "Timeout on set temperature on channel %d", channel_ + 1);
+    channel_ = -1;
+  } else {
+    ESP_LOGD(TAG, "Timeout on channel %d, state %d", channel_ + 1, state_);
+    state_ = 4;  // skip remaining reads for this channel
+  }
+  return false;  // do not ask the hub to retry
 }
 
 void WavinAhc9000::handle_channel_data_(const std::vector<uint8_t> &data) {
@@ -126,39 +137,10 @@ void WavinAhc9000::handle_mode_data_(const std::vector<uint8_t> &data) {
   mode_callbacks_[channel_].call(mode);
 }
 
-uint16_t crc16(const uint8_t *data, uint8_t len) {
-  uint16_t crc = 0xFFFF;
-  while (len--) {
-    crc ^= *data++;
-    for (uint8_t i = 0; i < 8; i++) {
-      if ((crc & 0x01) != 0) {
-        crc >>= 1;
-        crc ^= 0xA001;
-      } else {
-        crc >>= 1;
-      }
-    }
-  }
-  return crc;
-}
-
 void WavinAhc9000::loop() {
-  static uint32_t last_update_time = 0;
-  uint32_t now = millis();
-  if (waiting_) {
-    if (last_update_time + 1000 < now) {
-      if (state_ == 0) {
-        ESP_LOGD(TAG, "Timeout on set temperature on channel %d", channel_ + 1);
-        channel_ = -1;
-      } else {
-        ESP_LOGD(TAG, "Timeout on channel %d, state %d", channel_ + 1, state_);
-        state_ = 4;
-      }
-      waiting_ = false;
-    } else {
-      return;
-    }
-  }
+  // One transaction in flight at a time; on_response()/on_no_response() clear this.
+  if (this->waiting_)
+    return;
 
   if (set_temp_.size() && (channel_ < 0)) {
     int temperature = ((roundf(set_temp_.front() * 2.0) / 2) * 10);
@@ -167,18 +149,11 @@ void WavinAhc9000::loop() {
     channel_ = temp_channel_.front();
     temp_channel_.erase(temp_channel_.begin());
     ESP_LOGV(TAG, "Setting temperature for channel %d: %d", channel_ + 1, temperature);
-    uint8_t data[10] = {address_, MODBUS_WRITE_REGISTER, CATEGORY_PACKED_DATA, PACKED_DATA_MANUAL_TEMPERATURE,
-                        (uint8_t)channel_, 1, (uint8_t)(temperature >> 8), (uint8_t)(temperature & 0xff), 0, 0};
-    uint16_t crc = crc16(data, 8);
-    data[8] = crc & 0xff;
-    data[9] = crc >> 8;
-    rw_pin_->digital_write(true);
-    parent_->write_array(data, sizeof(data));
-    parent_->flush();
-    delay(1);
-    rw_pin_->digital_write(false);
-    waiting_ = true;
-    last_update_time = now;
+    // Wavin custom write: [function][category][index][channel][count=1][value hi][value lo].
+    const uint8_t pdu[7] = {MODBUS_WRITE_REGISTER, CATEGORY_PACKED_DATA, PACKED_DATA_MANUAL_TEMPERATURE,
+                           (uint8_t) channel_, 1, (uint8_t) (temperature >> 8), (uint8_t) (temperature & 0xff)};
+    this->send_pdu(std::span<const uint8_t>(pdu, sizeof(pdu)));
+    this->waiting_ = true;
     return;
   }
 
@@ -201,7 +176,7 @@ void WavinAhc9000::loop() {
     do {
       channel_++;
     } while (channel_ < 16 && !used_channels_[channel_]);
-    
+
     if (channel_ >= 16) {
       state_ = 0;
       channel_ = -1;
@@ -210,51 +185,28 @@ void WavinAhc9000::loop() {
     state_ = 1;
   }
 
-  rw_pin_->digital_write(true);
   ESP_LOGV(TAG, "Sending for channel %d, state %d", channel_ + 1, state_);
   switch(state_) {
     case 1:
-      send(MODBUS_READ_REGISTER, (CATEGORY_CHANNELS << 8) + 0, (channel_ << 8) + 3);
+      send_read_(MODBUS_READ_REGISTER, (CATEGORY_CHANNELS << 8) + 0, (channel_ << 8) + 3);
       break;
     case 2:
       ESP_LOGV(TAG, "Reading data for element %d", element_);
-      send(MODBUS_READ_REGISTER, (CATEGORY_ELEMENTS << 8) + 4, (element_ << 8) + 7);
+      send_read_(MODBUS_READ_REGISTER, (CATEGORY_ELEMENTS << 8) + 4, (element_ << 8) + 7);
       break;
     case 3:
-      send(MODBUS_READ_REGISTER, (CATEGORY_PACKED_DATA << 8) + PACKED_DATA_MANUAL_TEMPERATURE, (channel_ << 8) + 1);
+      send_read_(MODBUS_READ_REGISTER, (CATEGORY_PACKED_DATA << 8) + PACKED_DATA_MANUAL_TEMPERATURE, (channel_ << 8) + 1);
       break;
     case 4:
-      send(MODBUS_READ_REGISTER, (CATEGORY_PACKED_DATA << 8) + PACKED_DATA_CONFIGURATION, (channel_ << 8) + 1);
+      send_read_(MODBUS_READ_REGISTER, (CATEGORY_PACKED_DATA << 8) + PACKED_DATA_CONFIGURATION, (channel_ << 8) + 1);
       break;
   }
-  parent_->flush();
-  delay(1);
-  rw_pin_->digital_write(false);
-  waiting_ = true;
-  last_update_time = now;
+  this->waiting_ = true;
 }
 
 void WavinAhc9000::update() {
   start_scan_ = true;
 }
-
-/*
-// ------------------------------------------------
-// Functions for writing to Wavin AHC 9000
-void WavinAhc9000::writeFanMode_(int new_fan_speed)
-{
-	
-	//ESP_LOGD(TAG, "Writing new fan speed to system.... (%i)",new_fan_speed);
-	//this->send(CMD_WRITE_SINGLE_REG, 100, new_fan_speed);
-}
-
-void WavinAhc9000::writeTargetTemperature_(float new_target_temp)
-{
-	
-	//ESP_LOGD(TAG, "Writing new fan speed to system.... (%i)",new_fan_speed);
-	//this->send(CMD_WRITE_SINGLE_REG, 100, new_fan_speed);
-}
-*/
 
 } // wavinAhc9000
 } // esphome
