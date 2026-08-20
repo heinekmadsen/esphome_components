@@ -59,7 +59,7 @@ void WavinAhc9000Climate::control(const climate::ClimateCall &call) {
 
 climate::ClimateTraits WavinAhc9000Climate::traits() {
   auto traits = climate::ClimateTraits();
-  traits.set_supports_current_temperature(true);
+  traits.add_feature_flags(climate::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
   traits.set_supported_modes({climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_HEAT});
   traits.set_visual_min_temperature(5.0);
   traits.set_visual_max_temperature(40.0);
