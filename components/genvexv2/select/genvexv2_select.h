@@ -13,7 +13,8 @@ using modbus_controller::ModbusController;
 using modbus_controller::SensorItem;
 using modbus_controller::SensorValueType;
 
-class Genvexv2Select : public select::Select, public Component, public SensorItem {
+//class Genvexv2Select : public select::Select, public Component, public SensorItem { // Changed see below.
+class Genvexv2Select : public select::Select, public Component, public SensorItem, public modbus_controller::WriterEntity {
 public:
   Genvexv2Select(uint16_t start_address, uint8_t offset, uint32_t bitmask, SensorValueType value_type, 
               int register_count, uint8_t skip_updates, bool force_new_range)
@@ -23,13 +24,16 @@ public:
     this->set_offset_from_start_address(offset);
     this->bitmask = bitmask;
     this->sensor_value_type = value_type;
-    this->register_count = register_count;
-    this->skip_updates = skip_updates;
-    this->force_new_range = force_new_range;
+//    this->register_count = register_count; // Remove
+//    this->skip_updates = skip_updates; // Remove
+//    this->force_new_range = force_new_range; // Remove
   };
 
   void parse_and_publish(std::span<const uint8_t> data) override;
-  void set_parent(ModbusController *modbus_controller) { this->modbus_controller_ = modbus_controller; }
+  void set_parent(ModbusController *modbus_controller) {
+    this->modbus_controller_ = modbus_controller;
+    this->set_controller_(modbus_controller); // Added.
+  }
 
 protected:
   modbus_controller::ModbusController *modbus_controller_{nullptr};
