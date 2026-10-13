@@ -67,6 +67,12 @@ bool WavinAHC9000::zone_validate_(uint8_t zone, uint16_t mask, const std::string
   }
   for (uint8_t other = 1; other <= WAVIN_MAX_ZONES; other++) {
     if (other == zone) continue;
+    // Only a slot that a climate entity is bound to in the *current* config
+    // counts. A zone left behind in NVS by an earlier config (e.g. after rooms
+    // were added/removed and slots were renumbered) must not permanently
+    // reserve a live room's channels and block switching it back on.
+    if (!this->zone_climates_.empty() && this->zone_climates_.find(other) == this->zone_climates_.end())
+      continue;
     const auto &z = this->zones_.zones[other - 1];
     if (z.channel_mask == 0) continue;
     uint16_t clash = (uint16_t) (z.channel_mask & mask);
@@ -333,7 +339,32 @@ void WavinAHC9000::zone_publish_(uint8_t zone) {
 
 // --- control ---------------------------------------------------------------
 
+// Drop zones that no climate entity in the current config is bound to. These
+// are leftovers from an earlier config whose room list changed (slots are
+// assigned in declaration order), and they would otherwise keep whole rooms'
+// channels reserved forever, silently blocking those rooms from being switched
+// back on. Runs once, after every zone entity has registered itself.
+void WavinAHC9000::zone_prune_unbound_() {
+  if (this->zones_pruned_ || this->zone_climates_.empty()) return;
+  this->zones_pruned_ = true;
+  bool changed = false;
+  for (uint8_t zone = 1; zone <= WAVIN_MAX_ZONES; zone++) {
+    auto &z = this->zones_.zones[zone - 1];
+    if (z.channel_mask == 0) continue;
+    if (this->zone_climates_.find(zone) != this->zone_climates_.end()) continue;
+    ESP_LOGW(TAG, "Pruning stale zone %u ('%s', channels %s) - not in the current config", zone, z.name,
+             this->mask_to_csv_(z.channel_mask).c_str());
+    this->zone_release_(zone);
+    memset(&z, 0, sizeof(z));
+    z.target_c = 21.0f;
+    this->zone_rt_[zone - 1] = ZoneRuntime{};
+    changed = true;
+  }
+  if (changed) this->zones_save_();
+}
+
 void WavinAHC9000::zones_tick_() {
+  this->zone_prune_unbound_();
   for (uint8_t zone = 1; zone <= WAVIN_MAX_ZONES; zone++) {
     if (this->zones_.zones[zone - 1].enabled == 0) continue;
     this->zone_apply_(zone);
