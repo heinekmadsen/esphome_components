@@ -5,6 +5,7 @@
 #include "esphome/components/switch/switch.h"
 #include "esphome/components/button/button.h"
 #include "esphome/core/component.h"
+#include "esphome/core/preferences.h"
 
 #include <vector>
 #include <map>
@@ -16,6 +17,7 @@ namespace esphome {
 namespace sensor { class Sensor; }
 namespace switch_ { class Switch; }
 namespace button { class Button; }
+namespace text_sensor { class TextSensor; }
 namespace wavinahc9000v3 {
 
 // Forward
@@ -23,6 +25,59 @@ class WavinZoneClimate;
 class WavinChildLockSwitch;
 class WavinYamlDumpButton;
 class WavinRepairButton;
+class WavinZoneThermostat;
+class WavinZoneEnableSwitch;
+
+// ---------------------------------------------------------------------------
+// Runtime zone layer: secondary temperature feedback per channel/room.
+//
+// A zone pairs one or more AHC-9000 channels with an external temperature that
+// Home Assistant pushes in. While the zone is enabled, the channel setpoint is
+// biased by (target - external) so the AHC-9000's own control loop ends up
+// regulating on your sensor instead of its thermostat. Disable the zone and the
+// plain target is written back, handing control straight back to the original
+// Wavin thermostat.
+//
+// Zones are commissioned at runtime from HA and stored in NVS, so adding or
+// re-mapping a room needs no YAML edit and no recompile.
+// ---------------------------------------------------------------------------
+
+// Fixed pool size. Entities are compile-time in ESPHome, so the pool is compiled once and
+// individual slots are populated at runtime from Home Assistant.
+static constexpr uint8_t WAVIN_MAX_ZONES = 8;
+static constexpr uint8_t WAVIN_ZONE_NAME_LEN = 24;
+
+// Persisted-to-NVS zone configuration. POD only, no pointers/std::string, so it can be
+// written as a flat blob. Fast-changing runtime state deliberately lives in ZoneRuntime
+// instead, so it never triggers a flash write.
+struct ZoneConfigPod {
+  uint16_t channel_mask;             // bit0 = channel 1 ... bit15 = channel 16
+  float target_c;
+  uint8_t enabled;
+  char name[WAVIN_ZONE_NAME_LEN];
+} __attribute__((packed));
+
+struct ZonesBlob {
+  uint32_t magic;
+  uint16_t version;
+  uint16_t reserved;
+  ZoneConfigPod zones[WAVIN_MAX_ZONES];
+} __attribute__((packed));
+
+static constexpr uint32_t WAVIN_ZONES_MAGIC = 0x5A4E5731;  // "ZNW1"
+static constexpr uint16_t WAVIN_ZONES_VERSION = 1;
+
+// Volatile per-zone state. Never persisted.
+//
+// Note that what has actually been written is tracked per *channel*, not per
+// zone: a room can span several channels (a joined room like 3+4), each with
+// its own thermostat reading and therefore its own computed setpoint.
+struct ZoneRuntime {
+  float external_temp_c{NAN};
+  uint32_t last_seen_ms{0};
+  bool ever_seen{false};
+  bool failsafe{false};
+};
 
 enum class ModuleProfile : uint8_t {
   MODULE_DEFAULT = 0,
@@ -53,6 +108,7 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   void loop() override;
   void update() override;
   void dump_config() override;
+  void on_shutdown() override;
 
   void add_channel_climate(WavinZoneClimate *c);
   void add_group_climate(WavinZoneClimate *c);
@@ -97,6 +153,47 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   float get_channel_floor_max_temp(uint8_t channel) const;
   climate::ClimateMode get_channel_mode(uint8_t channel) const;
   climate::ClimateAction get_channel_action(uint8_t channel) const;
+
+  // --- Zone layer configuration ----------------------------------------
+  void set_sensor_timeout(uint32_t ms) { this->sensor_timeout_ms_ = ms; }
+  void set_min_write_interval(uint32_t ms) { this->min_write_interval_ms_ = ms; }
+  void set_setpoint_deadband(float c) { this->setpoint_deadband_c_ = c; }
+  void set_setpoint_bounds(float lo, float hi) {
+    this->min_setpoint_c_ = lo;
+    this->max_setpoint_c_ = hi;
+  }
+
+  // --- Commissioning API -------------------------------------------------
+  // These only mutate ESP32 state - they never emit a Modbus write, so a
+  // mis-click in the HA UI cannot disturb the heating.
+  bool zone_configure(uint8_t zone, const std::string &name, const std::string &channels_csv, bool enabled);
+  // Room defined in the YAML: channels and name come from the config, while the
+  // target temperature and on/off state are kept from NVS so the user's setting
+  // survives a reboot or a reflash.
+  void zone_set_static(uint8_t zone, uint16_t channel_mask, const std::string &name);
+  bool zone_set_enabled(uint8_t zone, bool enabled);
+  bool zone_clear(uint8_t zone);
+  void zone_push_temperature(uint8_t zone, float celsius);
+  void zone_push_unavailable(uint8_t zone);
+  bool zone_set_target(uint8_t zone, float celsius);
+  void discover_channels();
+
+  // --- Zone accessors used by the bound entities -------------------------
+  bool zone_is_enabled(uint8_t zone) const;
+  float zone_get_target(uint8_t zone) const;
+  float zone_get_temperature(uint8_t zone) const;
+  bool zone_in_failsafe(uint8_t zone) const;
+  climate::ClimateAction zone_get_action(uint8_t zone) const;
+  std::string zone_get_name(uint8_t zone) const;
+  std::string zone_get_channels_csv(uint8_t zone) const;
+
+  // --- Entity binding ----------------------------------------------------
+  void add_zone_climate(uint8_t zone, WavinZoneThermostat *c);
+  void add_zone_enable_switch(uint8_t zone, switch_::Switch *s);
+  void set_discovery_text_sensor(text_sensor::TextSensor *s) { this->discovery_text_sensor_ = s; }
+
+  // Restore native thermostat control on every zone (clean reboot / OTA).
+  void release_all_zones();
 
  protected:
   // Low-level protocol helpers (dkjonas framing)
@@ -213,6 +310,39 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
 
   // I/O reliability: number of attempts for read/write before escalating to WARN
   static constexpr uint8_t IO_RETRY_ATTEMPTS = 2; // first failure logged at DEBUG, final at WARN
+
+  // --- Zone layer internals -------------------------------------------------
+  void zones_load_();
+  void zones_save_();
+  void zones_tick_();
+  void zone_apply_(uint8_t zone);
+  void zone_release_(uint8_t zone);
+  void zone_publish_(uint8_t zone);
+  bool zone_validate_(uint8_t zone, uint16_t mask, const std::string &name) const;
+  bool parse_channel_csv_(const std::string &csv, uint16_t &mask_out) const;
+  std::string mask_to_csv_(uint16_t mask) const;
+
+  ZonesBlob zones_{};
+  ZoneRuntime zone_rt_[WAVIN_MAX_ZONES]{};
+  ESPPreferenceObject zones_pref_;
+
+  // What we last wrote, per channel (index 1..16). A channel belongs to at
+  // most one zone, so one flat array is enough and every channel in a joined
+  // room gets written independently.
+  float ch_applied_setpoint_[17]{};
+  uint32_t ch_last_write_ms_[17]{};
+  bool ch_applied_valid_[17]{};
+  void zone_reset_channel_state_(uint8_t zone);
+
+  uint32_t sensor_timeout_ms_{1800000};     // 30 min without a push -> hand back
+  uint32_t min_write_interval_ms_{600000};  // 10 min; guards the AHC-9000's EEPROM
+  float setpoint_deadband_c_{0.3f};
+  float min_setpoint_c_{5.0f};
+  float max_setpoint_c_{35.0f};
+
+  std::map<uint8_t, WavinZoneThermostat *> zone_climates_;
+  std::map<uint8_t, switch_::Switch *> zone_enable_switches_;
+  text_sensor::TextSensor *discovery_text_sensor_{nullptr};
 };
 
 // Simple dedicated switch subclass for child lock control. Avoids relying on codegen lambdas
@@ -322,6 +452,53 @@ class WavinZoneClimate : public climate::Climate, public Component {
 };
 
 // Repair button removed; use API service to normalize
+
+// ---------------------------------------------------------------------------
+// Zone-bound entities. One compiled pool; slots populated at runtime.
+// ---------------------------------------------------------------------------
+
+class WavinZoneThermostat : public climate::Climate, public Component {
+ public:
+  void set_parent(WavinAHC9000 *p) { this->parent_ = p; }
+  void set_zone(uint8_t z) { this->zone_ = z; }
+  uint8_t get_zone() const { return this->zone_; }
+  void set_visual_range(float lo, float hi) {
+    this->visual_min_ = lo;
+    this->visual_max_ = hi;
+  }
+  // Channels from the YAML (bit0 = channel 1). 0 means "commission at runtime".
+  void set_static_channels(uint16_t mask) { this->static_mask_ = mask; }
+  // Home Assistant entity this room follows. ESPHome subscribes to it over the
+  // native API, so nothing has to be configured on the HA side.
+  void set_source_entity(const std::string &e) { this->source_entity_ = e; }
+
+  void setup() override;
+  float get_setup_priority() const override;
+  void update_from_parent();
+  void dump_config() override;
+
+ protected:
+  climate::ClimateTraits traits() override;
+  void control(const climate::ClimateCall &call) override;
+
+  WavinAHC9000 *parent_{nullptr};
+  uint8_t zone_{0};
+  float visual_min_{5.0f};
+  float visual_max_{35.0f};
+  uint16_t static_mask_{0};
+  std::string source_entity_{};
+};
+
+class WavinZoneEnableSwitch : public switch_::Switch {
+ public:
+  void set_parent(WavinAHC9000 *p) { this->parent_ = p; }
+  void set_zone(uint8_t z) { this->zone_ = z; }
+
+ protected:
+  void write_state(bool state) override;
+  WavinAHC9000 *parent_{nullptr};
+  uint8_t zone_{0};
+};
 
 }  // namespace wavinahc9000v3
 }  // namespace esphome

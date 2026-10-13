@@ -1,20 +1,43 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import climate
-from esphome.const import CONF_ID, CONF_NAME
+from esphome.const import CONF_ID
 
-from .. import WavinAHC9000, WavinZoneClimate
+from .. import MAX_ZONES, WavinAHC9000, WavinZoneClimate, WavinZoneThermostat
 
 CONF_PARENT_ID = "wavinahc9000v3_id"
 CONF_CHANNEL = "channel"
 CONF_MEMBERS = "members"
-
-
+CONF_CHANNELS = "channels"
+CONF_SENSOR = "sensor"
+CONF_ZONE = "zone"
+CONF_VISUAL_MIN_TEMPERATURE = "visual_min_temperature"
+CONF_VISUAL_MAX_TEMPERATURE = "visual_max_temperature"
 CONF_STRICT_MODE_WRITES = "strict_mode_writes"
-
 CONF_USE_FLOOR_TEMPERATURE = "use_floor_temperature"
+# Resolved during validation, consumed by to_code. Not user-facing.
+CONF_RESOLVED_ZONE = "resolved_zone"
 
-CONFIG_SCHEMA = climate.climate_schema(WavinZoneClimate).extend(
+# Zone slots are handed out in declaration order, so the YAML never has to
+# mention a slot number. Explicit `zone:` entries reserve their slot, and a
+# collision is reported rather than silently overwriting a room.
+_used_zones: set[int] = set()
+
+
+def _claim_zone(explicit=None):
+    if explicit is not None:
+        if explicit in _used_zones:
+            raise cv.Invalid(f"zone {explicit} is already used by another climate block")
+        _used_zones.add(explicit)
+        return explicit
+    for slot in range(1, MAX_ZONES + 1):
+        if slot not in _used_zones:
+            _used_zones.add(slot)
+            return slot
+    raise cv.Invalid(f"too many rooms: at most {MAX_ZONES} are supported")
+
+
+CHANNEL_SCHEMA = climate.climate_schema(WavinZoneClimate).extend(
     {
         cv.GenerateID(CONF_PARENT_ID): cv.use_id(WavinAHC9000),
         cv.Optional(CONF_CHANNEL): cv.int_range(min=1, max=16),
@@ -24,12 +47,88 @@ CONFIG_SCHEMA = climate.climate_schema(WavinZoneClimate).extend(
     }
 )
 
+# A room: which Wavin channel(s) it heats, and which Home Assistant temperature
+# entity measures it. That is the whole configuration.
+ROOM_SCHEMA = climate.climate_schema(WavinZoneThermostat).extend(
+    {
+        cv.GenerateID(CONF_PARENT_ID): cv.use_id(WavinAHC9000),
+        cv.Required(CONF_CHANNELS): cv.ensure_list(cv.int_range(min=1, max=16)),
+        cv.Optional(CONF_SENSOR): cv.entity_id,
+        cv.Optional(CONF_ZONE): cv.int_range(min=1, max=MAX_ZONES),
+        cv.Optional(CONF_VISUAL_MIN_TEMPERATURE, default=5.0): cv.float_range(min=0.0, max=30.0),
+        cv.Optional(CONF_VISUAL_MAX_TEMPERATURE, default=35.0): cv.float_range(min=5.0, max=40.0),
+    }
+)
+
+# Runtime-commissioned slot (advanced): no channels in the YAML.
+ZONE_SCHEMA = climate.climate_schema(WavinZoneThermostat).extend(
+    {
+        cv.GenerateID(CONF_PARENT_ID): cv.use_id(WavinAHC9000),
+        cv.Required(CONF_ZONE): cv.int_range(min=1, max=MAX_ZONES),
+        cv.Optional(CONF_VISUAL_MIN_TEMPERATURE, default=5.0): cv.float_range(min=0.0, max=30.0),
+        cv.Optional(CONF_VISUAL_MAX_TEMPERATURE, default=35.0): cv.float_range(min=5.0, max=40.0),
+    }
+)
+
+
+def CONFIG_SCHEMA(config):
+    """`channels:` = a room; `zone:` alone = runtime slot; otherwise legacy."""
+    if not isinstance(config, dict):
+        return CHANNEL_SCHEMA(config)
+
+    if CONF_CHANNELS in config or CONF_ZONE in config:
+        other = CONF_CHANNELS if CONF_CHANNELS in config else CONF_ZONE
+        for key in (CONF_CHANNEL, CONF_MEMBERS):
+            if key in config:
+                raise cv.Invalid(f"'{key}' cannot be combined with '{other}'")
+        out = (ROOM_SCHEMA if CONF_CHANNELS in config else ZONE_SCHEMA)(config)
+        # Claim the slot here rather than at codegen so a clash is reported by
+        # `esphome config`, before anything is built.
+        out[CONF_RESOLVED_ZONE] = _claim_zone(out.get(CONF_ZONE))
+        return out
+
+    return CHANNEL_SCHEMA(config)
+
+
+async def _setup_room(config, hub):
+    var = cg.new_Pvariable(config[CONF_ID])
+    await climate.register_climate(var, config)
+    # Must also be a Component, otherwise setup() never runs and the room is
+    # never bound to its channels or its sensor.
+    await cg.register_component(var, config)
+    cg.add(var.set_parent(hub))
+
+    zone = config[CONF_RESOLVED_ZONE]
+    cg.add(var.set_zone(zone))
+    cg.add(
+        var.set_visual_range(
+            config[CONF_VISUAL_MIN_TEMPERATURE], config[CONF_VISUAL_MAX_TEMPERATURE]
+        )
+    )
+
+    if CONF_CHANNELS in config:
+        mask = 0
+        for ch in config[CONF_CHANNELS]:
+            mask |= 1 << (ch - 1)
+        cg.add(var.set_static_channels(mask))
+
+    # Subscribe to the Home Assistant temperature entity directly over the
+    # native API, so nothing has to be configured on the HA side.
+    if CONF_SENSOR in config:
+        cg.add(var.set_source_entity(config[CONF_SENSOR]))
+        cg.add_define("USE_API_HOMEASSISTANT_STATES")
+    cg.add(hub.add_zone_climate(zone, var))
+
 
 async def to_code(config):
     hub = await cg.get_variable(config[CONF_PARENT_ID])
+
+    if CONF_CHANNELS in config or CONF_ZONE in config:
+        await _setup_room(config, hub)
+        return
+
     var = cg.new_Pvariable(config[CONF_ID])
     await climate.register_climate(var, config)
-    # Bind to hub
     cg.add(var.set_parent(hub))
     if CONF_CHANNEL in config:
         cg.add(var.set_single_channel(config[CONF_CHANNEL]))
@@ -44,3 +143,4 @@ async def to_code(config):
         for ch in config[CONF_MEMBERS]:
             cg.add(hub.add_active_channel(ch))
         cg.add(hub.add_group_climate(var))
+

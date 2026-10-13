@@ -3,15 +3,16 @@ import esphome.config_validation as cv
 from esphome.components import switch
 from esphome.const import CONF_CHANNEL
 
-from .. import WavinAHC9000, ns
+from .. import MAX_ZONES, WavinAHC9000, ns
 
 CONF_PARENT_ID = "wavinahc9000v3_id"
 CONF_TYPE = "type"
+CONF_ZONE = "zone"
 
 WavinChildLockSwitch = ns.class_("WavinChildLockSwitch", switch.Switch)
+WavinZoneEnableSwitch = ns.class_("WavinZoneEnableSwitch", switch.Switch)
 
-# Only one switch type currently; keep 'type' for forward compatibility.
-CONFIG_SCHEMA = switch.switch_schema(WavinChildLockSwitch).extend(
+CHILD_LOCK_SCHEMA = switch.switch_schema(WavinChildLockSwitch).extend(
     {
         cv.GenerateID(CONF_PARENT_ID): cv.use_id(WavinAHC9000),
         cv.Required(CONF_CHANNEL): cv.int_range(min=1, max=16),
@@ -19,11 +20,35 @@ CONFIG_SCHEMA = switch.switch_schema(WavinChildLockSwitch).extend(
     }
 )
 
+# ON  = this room follows its external sensor
+# OFF = this room follows its own Wavin thermostat
+ZONE_SCHEMA = switch.switch_schema(WavinZoneEnableSwitch).extend(
+    {
+        cv.GenerateID(CONF_PARENT_ID): cv.use_id(WavinAHC9000),
+        cv.Required(CONF_ZONE): cv.int_range(min=1, max=MAX_ZONES),
+    }
+)
+
+
+def CONFIG_SCHEMA(config):
+    """`zone:` selects the zone switch; `channel:` the child lock."""
+    if isinstance(config, dict) and CONF_ZONE in config:
+        if CONF_CHANNEL in config:
+            raise cv.Invalid("'channel' cannot be combined with 'zone'")
+        return ZONE_SCHEMA(config)
+    return CHILD_LOCK_SCHEMA(config)
+
+
 async def to_code(config):
     hub = await cg.get_variable(config[CONF_PARENT_ID])
-    ch = config[CONF_CHANNEL]
     var = await switch.new_switch(config)
     cg.add(var.set_parent(hub))
+
+    if CONF_ZONE in config:
+        cg.add(var.set_zone(config[CONF_ZONE]))
+        cg.add(hub.add_zone_enable_switch(config[CONF_ZONE], var))
+        return
+
+    ch = config[CONF_CHANNEL]
     cg.add(var.set_channel(ch))
     cg.add(hub.add_channel_child_lock_switch(ch, var))
-    # Optimistic publish handled in write_state override; hub refresh will reconcile.

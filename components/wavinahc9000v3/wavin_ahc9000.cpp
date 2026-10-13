@@ -83,6 +83,15 @@ void WavinAHC9000::setup() {
                 (unsigned) baud, profile, (unsigned) this->post_tx_guard_us_,
                 (unsigned) this->pre_tx_delay_us_, (unsigned) this->inter_frame_delay_us_,
                 this->flush_rx_before_tx_ ? "yes" : "no");
+
+  // Restore runtime-commissioned zones before the first poll.
+  this->zones_load_();
+  for (uint8_t z = 1; z <= WAVIN_MAX_ZONES; z++) {
+    const auto &cfg = this->zones_.zones[z - 1];
+    if (cfg.channel_mask == 0) continue;
+    for (uint8_t ch = 1; ch <= 16; ch++)
+      if (cfg.channel_mask & (uint16_t) (1u << (ch - 1))) this->add_active_channel(ch);
+  }
 }
 void WavinAHC9000::loop() {}
 
@@ -337,6 +346,10 @@ void WavinAHC9000::update() {
 
   // publish once per cycle
   this->publish_updates();
+
+  // Run the external-sensor zone control loop. Kept inside update() so its
+  // Modbus writes can never interleave with the polling transactions above.
+  this->zones_tick_();
 }
 
 void WavinAHC9000::dump_config() { ESP_LOGCONFIG(TAG, "Wavin AHC9000 (UART test read)"); }
