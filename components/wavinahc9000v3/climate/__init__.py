@@ -8,7 +8,6 @@ from .. import MAX_ZONES, WavinAHC9000, WavinZoneClimate, WavinZoneThermostat
 CONF_PARENT_ID = "wavinahc9000v3_id"
 CONF_CHANNEL = "channel"
 CONF_MEMBERS = "members"
-CONF_CHANNELS = "channels"
 CONF_SENSOR = "sensor"
 CONF_ZONE = "zone"
 CONF_VISUAL_MIN_TEMPERATURE = "visual_min_temperature"
@@ -47,13 +46,15 @@ CHANNEL_SCHEMA = climate.climate_schema(WavinZoneClimate).extend(
     }
 )
 
-# A room: which Wavin channel(s) it heats, and which Home Assistant temperature
-# entity measures it. That is the whole configuration.
+# Adding `sensor:` turns a climate into a room that follows that Home Assistant
+# entity. The channels are named the same way as without it, with `channel:` or
+# `members:`.
 ROOM_SCHEMA = climate.climate_schema(WavinZoneThermostat).extend(
     {
         cv.GenerateID(CONF_PARENT_ID): cv.use_id(WavinAHC9000),
-        cv.Required(CONF_CHANNELS): cv.ensure_list(cv.int_range(min=1, max=16)),
-        cv.Optional(CONF_SENSOR): cv.entity_id,
+        cv.Required(CONF_SENSOR): cv.entity_id,
+        cv.Optional(CONF_CHANNEL): cv.int_range(min=1, max=16),
+        cv.Optional(CONF_MEMBERS): cv.ensure_list(cv.int_range(min=1, max=16)),
         cv.Optional(CONF_ZONE): cv.int_range(min=1, max=MAX_ZONES),
         cv.Optional(CONF_VISUAL_MIN_TEMPERATURE, default=5.0): cv.float_range(min=0.0, max=30.0),
         cv.Optional(CONF_VISUAL_MAX_TEMPERATURE, default=35.0): cv.float_range(min=5.0, max=40.0),
@@ -72,22 +73,32 @@ ZONE_SCHEMA = climate.climate_schema(WavinZoneThermostat).extend(
 
 
 def CONFIG_SCHEMA(config):
-    """`channels:` = a room; `zone:` alone = runtime slot; otherwise legacy."""
+    """`sensor:` = a room, `zone:` alone = runtime slot, otherwise plain."""
     if not isinstance(config, dict):
         return CHANNEL_SCHEMA(config)
 
-    if CONF_CHANNELS in config or CONF_ZONE in config:
-        other = CONF_CHANNELS if CONF_CHANNELS in config else CONF_ZONE
-        for key in (CONF_CHANNEL, CONF_MEMBERS):
-            if key in config:
-                raise cv.Invalid(f"'{key}' cannot be combined with '{other}'")
-        out = (ROOM_SCHEMA if CONF_CHANNELS in config else ZONE_SCHEMA)(config)
-        # Claim the slot here rather than at codegen so a clash is reported by
-        # `esphome config`, before anything is built.
-        out[CONF_RESOLVED_ZONE] = _claim_zone(out.get(CONF_ZONE))
-        return out
+    is_room = CONF_SENSOR in config
+    is_slot = CONF_ZONE in config and CONF_CHANNEL not in config and CONF_MEMBERS not in config
 
-    return CHANNEL_SCHEMA(config)
+    if not is_room and not is_slot:
+        return CHANNEL_SCHEMA(config)
+
+    if is_room:
+        if CONF_CHANNEL not in config and CONF_MEMBERS not in config:
+            raise cv.Invalid("a room needs 'channel:' or 'members:' as well as 'sensor:'")
+        if CONF_CHANNEL in config and CONF_MEMBERS in config:
+            raise cv.Invalid("use either 'channel:' or 'members:', not both")
+        if CONF_USE_FLOOR_TEMPERATURE in config:
+            raise cv.Invalid(
+                "'use_floor_temperature' cannot be combined with 'sensor:' - a room "
+                "follows the sensor you name, not the floor probe"
+            )
+
+    out = (ROOM_SCHEMA if is_room else ZONE_SCHEMA)(config)
+    # Claim the slot here rather than at codegen so a clash is reported by
+    # `esphome config`, before anything is built.
+    out[CONF_RESOLVED_ZONE] = _claim_zone(out.get(CONF_ZONE))
+    return out
 
 
 async def _setup_room(config, hub):
@@ -106,9 +117,14 @@ async def _setup_room(config, hub):
         )
     )
 
-    if CONF_CHANNELS in config:
+    channels = []
+    if CONF_CHANNEL in config:
+        channels = [config[CONF_CHANNEL]]
+    elif CONF_MEMBERS in config:
+        channels = config[CONF_MEMBERS]
+    if channels:
         mask = 0
-        for ch in config[CONF_CHANNELS]:
+        for ch in channels:
             mask |= 1 << (ch - 1)
         cg.add(var.set_static_channels(mask))
 
@@ -123,7 +139,7 @@ async def _setup_room(config, hub):
 async def to_code(config):
     hub = await cg.get_variable(config[CONF_PARENT_ID])
 
-    if CONF_CHANNELS in config or CONF_ZONE in config:
+    if CONF_RESOLVED_ZONE in config:
         await _setup_room(config, hub)
         return
 

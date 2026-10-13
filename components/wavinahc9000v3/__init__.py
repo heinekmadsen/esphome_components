@@ -24,7 +24,7 @@ WavinSetpointNumber = ns.class_("WavinSetpointNumber", number.Number)
 ModuleProfile = ns.enum("ModuleProfile")
 
 
-MAX_ZONES = 8
+MAX_ZONES = 16  # keep in sync with WAVIN_MAX_ZONES in wavin_ahc9000.h
 
 CONF_UART_ID = "uart_id"
 CONF_TX_ENABLE_PIN = "tx_enable_pin"

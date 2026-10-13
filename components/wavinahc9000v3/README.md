@@ -71,22 +71,35 @@ its members' names: `A & B` for two, `A, B & C` for three or four, and
 
 ---
 
-## 3. Rooms
+## 3. Climates
 
-A room is one thermostat in Home Assistant covering one or more channels.
+One thermostat in Home Assistant per channel, or one covering several.
 
 ```yaml
 climate:
   - platform: wavinahc9000v3
     wavinahc9000v3_id: wavin
     name: "Bedroom"
-    channels: [1]
+    channel: 1
 
   - platform: wavinahc9000v3
     wavinahc9000v3_id: wavin
-    name: "Living room"
-    channels: [3, 4]
+    name: "Living Room & Kitchen"
+    members: [2, 3]
 ```
+
+For a group, current temperature and setpoint are the average of its members,
+and the action is *heating* if any member is heating.
+
+| Option | Meaning |
+|---|---|
+| `channel` | Single channel, 1-16 |
+| `members` | Several channels in one entity |
+| `sensor` | Follow this Home Assistant temperature entity, see below |
+| `use_floor_temperature` | Report the floor probe as the current temperature |
+| `strict_mode_writes` | Marks the channel for strict baseline writes. Accepted and stored, but nothing reads the flag yet, so it currently changes nothing. |
+
+### Following your own sensor
 
 Add `sensor:` and the room follows that Home Assistant entity instead of the
 Wavin wall thermostat:
@@ -95,47 +108,18 @@ Wavin wall thermostat:
   - platform: wavinahc9000v3
     wavinahc9000v3_id: wavin
     name: "Bedroom"
-    channels: [1]
+    channel: 1
     sensor: sensor.bedroom_temperature
 ```
 
 Nothing is configured on the Home Assistant side, and the controller keeps
-doing the actual control. Full description in **[ROOM_SENSORS.md](ROOM_SENSORS.md)**.
+doing the actual control - the setpoint is biased by the difference between
+your sensor and the wall thermostat. Full description in
+**[ROOM_SENSORS.md](ROOM_SENSORS.md)**.
 
-Up to 8 rooms.
-
-| Option | Required | Meaning |
-|---|---|---|
-| `channels` | yes | Channel numbers this room heats, 1-16 |
-| `sensor` | no | Home Assistant temperature entity to follow |
-
-### Per-channel climates
-
-Address channels directly instead: `channel:` for one, `members:` to average
-several into a single entity.
-
-```yaml
-climate:
-  - platform: wavinahc9000v3
-    wavinahc9000v3_id: wavin
-    name: "Living Room & Kitchen"
-    members: [2, 3]
-
-  - platform: wavinahc9000v3
-    wavinahc9000v3_id: wavin
-    name: "Bedroom"
-    channel: 1
-```
-
-For a group: current temperature and setpoint are the average of its members,
-and the action is *heating* if any member is heating.
-
-| Option | Meaning |
-|---|---|
-| `channel` | Single channel, 1-16 |
-| `members` | Several channels averaged into one entity |
-| `use_floor_temperature` | Report the floor probe as the current temperature |
-| `strict_mode_writes` | Marks the channel for strict baseline writes. Accepted and stored, but nothing reads the flag yet, so it currently changes nothing. |
+Such a room keeps its target temperature and on/off state on the device, so
+both survive a reflash. Up to 16 of them. `sensor:` cannot be combined with
+`use_floor_temperature:`.
 
 ### Comfort climate
 

@@ -44,7 +44,7 @@ class WavinZoneEnableSwitch;
 
 // Fixed pool size. Entities are compile-time in ESPHome, so the pool is compiled once and
 // individual slots are populated at runtime from Home Assistant.
-static constexpr uint8_t WAVIN_MAX_ZONES = 8;
+static constexpr uint8_t WAVIN_MAX_ZONES = 16;
 static constexpr uint8_t WAVIN_ZONE_NAME_LEN = 24;
 
 // Persisted-to-NVS zone configuration. POD only, no pointers/std::string, so it can be
@@ -65,7 +65,9 @@ struct ZonesBlob {
 } __attribute__((packed));
 
 static constexpr uint32_t WAVIN_ZONES_MAGIC = 0x5A4E5731;  // "ZNW1"
-static constexpr uint16_t WAVIN_ZONES_VERSION = 1;
+// Bumped whenever ZonesBlob changes shape. A mismatch reinitialises the blob,
+// so saved targets fall back to their defaults once rather than being misread.
+static constexpr uint16_t WAVIN_ZONES_VERSION = 2;
 
 // Volatile per-zone state. Never persisted.
 //

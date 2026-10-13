@@ -107,15 +107,14 @@ install again. Press the button any time your installation changes.
 
 ## 5. Optional: let a room follow your own sensor
 
-Replace a channel's climate block with a room, naming a Home Assistant
-temperature entity:
+Add `sensor:` to a climate, naming a Home Assistant temperature entity:
 
 ```yaml
 climate:
   - platform: wavinahc9000v3
     wavinahc9000v3_id: wavin
     name: "Bedroom"
-    channels: [1]
+    channel: 1
     sensor: sensor.bedroom_temperature
 ```
 
