@@ -371,6 +371,7 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   void zones_load_();
   void zones_save_();
   void zones_tick_();
+  void zone_prune_unbound_();
   void zone_apply_(uint8_t zone);
   void zone_release_(uint8_t zone);
   void zone_publish_(uint8_t zone);
@@ -381,6 +382,7 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   ZonesBlob zones_{};
   ZoneRuntime zone_rt_[WAVIN_MAX_ZONES]{};
   ESPPreferenceObject zones_pref_;
+  bool zones_pruned_{false};
 
   // What we last wrote, per channel (index 1..16). A channel belongs to at
   // most one zone, so one flat array is enough and every channel in a joined
