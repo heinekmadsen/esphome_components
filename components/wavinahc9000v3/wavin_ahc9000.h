@@ -93,6 +93,12 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
  public:
   void set_temp_divisor(float d) { this->temp_divisor_ = d; }
   void set_receive_timeout_ms(uint32_t t) { this->receive_timeout_ms_ = t; }
+  // Overrides the silence the module profile would enforce between
+  // transactions. Applied after setup() has computed the profile defaults.
+  void set_inter_frame_delay_us(uint32_t us) {
+    this->inter_frame_delay_us_ = us;
+    this->inter_frame_override_ = true;
+  }
   void set_tx_enable_pin(GPIOPin *p) { this->tx_enable_pin_ = p; }
   // Optional half-duplex RS485 DE/RE (flow control) pin. If provided we drive HIGH to transmit and LOW to receive.
   void set_flow_control_pin(GPIOPin *p) { this->flow_control_pin_ = p; }
@@ -207,7 +213,14 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   void publish_updates();
   void prepare_for_tx_();
   void finish_tx_();
-  void clear_stale_rx_();
+  uint32_t clear_stale_rx_();
+  // Reads one reply frame, resynchronising past leading noise. Returns true on
+  // a CRC-valid frame of the expected length.
+  bool receive_frame_(uint8_t function_code, uint8_t expected_payload_bytes, std::vector<uint8_t> &frame);
+  void log_bus_stats_();
+  // Reads an element page, reusing a recent read of the same page so channels
+  // that share a thermostat do not each fetch it.
+  bool read_element_page_(uint8_t elem_page, std::vector<uint16_t> &out);
   void handle_standby_keepalive_(uint8_t channel, bool is_off, std::vector<uint8_t> &reassert_list);
   // Inter-frame silence to ensure bus turnaround between consecutive transactions
   void inter_frame_delay_();
@@ -254,7 +267,12 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
 
   float temp_divisor_{10.0f};
   uint32_t last_poll_ms_{0};
-  uint32_t receive_timeout_ms_{350};  // FIX: 350ms balances responsiveness with Wavin's variable response latency
+  // Deadline for a reply to *start*. Once bytes arrive, rx_gap_us_ decides when
+  // the frame has ended, so this only bounds how long a dead transaction costs.
+  // Measured on an AHC-9000: replies start between 3 ms and 39 ms, so this is a
+  // wide margin over the observed tail while still well under the old 350 ms,
+  // which blocked the main loop for most of a second on a dead transaction.
+  uint32_t receive_timeout_ms_{200};
   uint32_t suspend_polling_until_{0};
   GPIOPin *tx_enable_pin_{nullptr};
   GPIOPin *flow_control_pin_{nullptr};
@@ -262,12 +280,48 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   uint8_t poll_channels_per_cycle_{2};
   uint8_t next_active_index_{0};
   uint8_t channel_step_[16] = {0};
+  uint32_t primary_elem_checked_ms_[16] = {0};  // last CH_PRIMARY_ELEMENT read per channel
+  // One element page can serve several channels, so a page read within this
+  // window is reused rather than repeated on the bus.
+  uint32_t element_read_ms_[16] = {0};
+  uint16_t element_cache_[16][11] = {{0}};
+  bool element_cache_valid_[16] = {false};
+  static constexpr uint32_t PRIMARY_ELEM_RECHECK_MS = 300000;  // 5 minutes
+  static constexpr uint32_t ELEMENT_CACHE_MS = 4000;
   std::vector<uint8_t> urgent_channels_{}; // channels scheduled for immediate refresh on next update
   bool allow_mode_writes_{true};
   uint32_t pre_tx_delay_us_{0};
   uint32_t post_tx_guard_us_{300};
-  uint32_t inter_frame_delay_us_{0};  // FIX: silence gap between consecutive transactions (set by setup())
+  uint32_t inter_frame_delay_us_{0};  // silence between consecutive transactions, set by setup()
+  bool inter_frame_override_{false};  // true when the YAML pinned it
   bool flush_rx_before_tx_{false};
+  // True only when the transceiver keeps receiving while it transmits, i.e.
+  // a bare tx_enable_pin. A combined DE/RE flow-control pin mutes the receiver.
+  bool expect_echo_{false};
+  uint8_t tx_len_{0};        // bytes in the frame just sent, bounds the echo drain
+  uint32_t tx_done_us_{0};   // when the driver was released, for reply timing
+  uint32_t rx_gap_us_{3000}; // silence that ends a reply, set from the baud rate
+
+  // --- bus diagnostics -------------------------------------------------
+  // Counted for every transaction so the health of the RS-485 link can be
+  // measured rather than guessed at. Reported by log_bus_stats_().
+  struct BusStats {
+    uint32_t transactions{0};     // transactions started
+    uint32_t retries{0};          // attempts beyond the first
+    uint32_t failures{0};         // transactions that gave up entirely
+    uint32_t timeouts{0};         // attempts that saw no usable frame
+    uint32_t crc_errors{0};       // attempts that saw a frame with a bad CRC
+    uint32_t resyncs{0};          // leading bytes dropped to find a header
+    uint32_t discarded_pre_tx{0}; // stale bytes dropped before transmitting
+    uint32_t discarded_post_tx{0};// bytes dropped by the post-TX flush
+    uint32_t reply_us_min{0xFFFFFFFF};
+    uint32_t reply_us_max{0};
+    uint64_t reply_us_sum{0};
+    uint32_t reply_count{0};
+  } bus_;
+  uint32_t bus_log_due_{0};
+  static constexpr uint32_t BUS_STATS_INTERVAL_MS = 300000;  // 5 minutes
+
   bool keep_standby_alive_{false};
   uint32_t standby_keepalive_interval_ms_{180000};
   std::map<uint8_t, uint32_t> standby_keepalive_deadlines_;

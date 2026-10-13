@@ -367,13 +367,20 @@ void WavinAHC9000::zone_apply_(uint8_t zone) {
 
     float desired = z.target_c;
     float air = NAN;
+    bool biased = false;
     if (have_external) {
       air = this->get_channel_current_temp(ch);
       if (std::isnan(air)) {
-        ESP_LOGD(TAG, "Zone %u ch%u: thermostat air temperature not known yet - not writing", zone, ch);
-        continue;
+        // The bias needs the wall thermostat's own reading, which may not have
+        // arrived yet - a cold boot, or a channel still learning its element.
+        // Writing the plain target meanwhile keeps the room heating to roughly
+        // the right place; previously this path wrote nothing at all, so a room
+        // could sit indefinitely with its external sensor controlling nothing.
+        ESP_LOGD(TAG, "Zone %u ch%u: thermostat reading not known yet - writing the target unbiased", zone, ch);
+      } else {
+        desired = offset_setpoint(air, z.target_c, external, this->min_setpoint_c_, this->max_setpoint_c_);
+        biased = true;
       }
-      desired = offset_setpoint(air, z.target_c, external, this->min_setpoint_c_, this->max_setpoint_c_);
     }
 
     // MANUAL TEMPERATURE is non-volatile inside the AHC-9000, so this guard is
@@ -388,9 +395,12 @@ void WavinAHC9000::zone_apply_(uint8_t zone) {
       continue;
     }
 
-    if (have_external) {
+    if (biased) {
       ESP_LOGI(TAG, "Zone %u ch%u: setpoint %.1f C (air=%.2f target=%.1f external=%.2f)", zone, ch, desired, air,
                z.target_c, external);
+    } else if (have_external) {
+      ESP_LOGI(TAG, "Zone %u ch%u: setpoint %.1f C (target written unbiased - no thermostat reading yet)", zone, ch,
+               desired);
     } else {
       ESP_LOGI(TAG, "Zone %u ch%u: setpoint %.1f C (no external sensor - plain thermostat)", zone, ch, desired);
     }

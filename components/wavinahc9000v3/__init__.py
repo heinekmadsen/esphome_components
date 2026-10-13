@@ -36,6 +36,7 @@ CONF_ALLOW_MODE_WRITES = "allow_mode_writes"
 CONF_MODULE = "module"
 CONF_KEEP_STANDBY_ALIVE = "keep_standby_alive"
 CONF_STANDBY_KEEPALIVE_INTERVAL = "standby_keepalive_interval"
+CONF_INTER_FRAME_DELAY_US = "inter_frame_delay_us"
 
 CONF_SENSOR_TIMEOUT = "sensor_timeout"
 CONF_MIN_WRITE_INTERVAL = "min_write_interval"
@@ -70,10 +71,16 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_TX_ENABLE_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_FLOW_CONTROL_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_TEMP_DIVISOR, default=10.0): cv.positive_float,
-            cv.Optional(CONF_RECEIVE_TIMEOUT_MS, default=350): cv.positive_int,  # FIX: 350ms for Wavin's variable response latency
+            # Deadline for a reply to start; the inter-character gap decides
+            # when a frame has ended, so this only bounds a dead transaction.
+            # Measured reply latency on an AHC-9000 is 3-39 ms.
+            cv.Optional(CONF_RECEIVE_TIMEOUT_MS, default=200): cv.positive_int,
             cv.Optional(CONF_POLL_CHANNELS_PER_CYCLE, default=2): cv.int_range(min=1, max=16),
             cv.Optional(CONF_ALLOW_MODE_WRITES, default=True): cv.boolean,
             cv.Optional(CONF_MODULE, default="default"): cv.enum(MODULE_OPTIONS, upper=False),
+            # Silence enforced between transactions. Defaults come from the
+            # module profile; override only if the controller ignores requests.
+            cv.Optional(CONF_INTER_FRAME_DELAY_US): cv.int_range(min=0, max=50000),
             cv.Optional(CONF_KEEP_STANDBY_ALIVE, default=False): cv.boolean,
             cv.Optional(CONF_STANDBY_KEEPALIVE_INTERVAL, default="180s"): cv.time_period,
             # --- secondary temperature feedback (zones) -------------------
@@ -111,6 +118,8 @@ async def to_code(config):
         cg.add(var.set_allow_mode_writes(config[CONF_ALLOW_MODE_WRITES]))
     if CONF_MODULE in config:
         cg.add(var.set_module_profile(config[CONF_MODULE]))
+    if CONF_INTER_FRAME_DELAY_US in config:
+        cg.add(var.set_inter_frame_delay_us(config[CONF_INTER_FRAME_DELAY_US]))
     if CONF_KEEP_STANDBY_ALIVE in config:
         cg.add(var.set_keep_standby_alive(config[CONF_KEEP_STANDBY_ALIVE]))
     if CONF_STANDBY_KEEPALIVE_INTERVAL in config:

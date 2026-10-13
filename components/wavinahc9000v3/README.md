@@ -262,8 +262,9 @@ All optional except `uart_id`.
 | `update_interval` | `5s` | Poll interval |
 | `poll_channels_per_cycle` | `2` | Channels read per cycle; raise to discover faster |
 | `flow_control_pin` / `tx_enable_pin` | - | RS-485 direction control, see section 1 |
-| `module` | `default` | `ustepper` for longer bus guard times |
-| `receive_timeout_ms` | `350` | Reply timeout |
+| `module` | `default` | `ustepper` for slightly longer transceiver turnaround |
+| `inter_frame_delay_us` | from `module` | Silence enforced between transactions. Raising it did not help on a tested AHC-9000; try it only if the controller ignores requests. |
+| `receive_timeout_ms` | `200` | How long to wait for a reply to *start*. Measured latency on an AHC-9000 is 3-39 ms. |
 | `temp_divisor` | `10.0` | Raw-to-°C scaling |
 | `allow_mode_writes` | `true` | Allow writing the channel mode |
 | `keep_standby_alive` | `false` | Reassert OFF periodically if channels drift back to heat |
@@ -281,13 +282,40 @@ Only used by rooms that follow their own sensor:
 
 ---
 
-## 10. Troubleshooting
+## 10. Bus health
+
+Every five minutes the component logs one line summarising the RS-485 link:
+
+```
+bus: tx=213 retry=9 fail=0 timeout=9 crc=0 resync=0 drop_pre=0 drop_post=0
+     reply_us min=3023 avg=16237 max=38642
+```
+
+| Field | Meaning |
+|---|---|
+| `tx` | Transactions attempted |
+| `retry` | Attempts beyond the first |
+| `fail` | Transactions that gave up after every retry |
+| `timeout` | Attempts where no usable frame arrived |
+| `crc` | Frames that arrived damaged |
+| `resync` | Bytes skipped to find a frame header - noise on the line |
+| `drop_pre` / `drop_post` | Stale bytes discarded before transmitting, and echo discarded after |
+| `reply_us` | How long the controller took to start answering |
+
+A healthy bus shows `fail=0`, `crc=0` and `resync=0`, with `retry` a small
+percentage of `tx`. Persistent `crc` or `resync` means electrical noise -
+check termination and cable routing. Rising `timeout` with no `crc` means the
+controller is not answering: usually wiring, the direction pin, or a bus the
+master is still driving.
+
+## 11. Troubleshooting
 
 | Symptom | Try |
 |---|---|
 | No entities, no data | Check A/B are not swapped, baud rate 38400, and the direction pin |
 | Values appear then stop | Bus contention - prefer `flow_control_pin` over `tx_enable_pin` |
-| Truncated replies on a uStepper hat | Set `module: ustepper` |
+| Retries climbing, `crc` or `resync` non-zero | Electrical noise; check termination and routing |
+| Retries climbing, only `timeout` | Raise `receive_timeout_ms` if `reply_us max` is near it |
 | A channel never shows up | It has no paired thermostat, or discovery has not reached it yet |
 | Floor sensor unavailable | No plausible reading yet; it needs above 1 °C and below 90 °C |
 | Child lock flips back | The write failed; look for the masked write result at DEBUG |
