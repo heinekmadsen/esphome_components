@@ -6,13 +6,25 @@ from esphome import pins
 
 CODEOWNERS = ["@you"]
 # Ensure dependent component code is compiled so their headers are available.
-AUTO_LOAD = ["climate", "uart", "sensor", "number", "switch", "button"]
+AUTO_LOAD = [
+    "climate",
+    "uart",
+    "sensor",
+    "number",
+    "switch",
+    "button",
+    "text_sensor",
+]
 
 ns = cg.esphome_ns.namespace("wavinahc9000v3")
 WavinAHC9000 = ns.class_("WavinAHC9000", cg.PollingComponent, uart.UARTDevice)
 WavinZoneClimate = ns.class_("WavinZoneClimate", climate.Climate, cg.Component)
+WavinZoneThermostat = ns.class_("WavinZoneThermostat", climate.Climate, cg.Component)
 WavinSetpointNumber = ns.class_("WavinSetpointNumber", number.Number)
 ModuleProfile = ns.enum("ModuleProfile")
+
+
+MAX_ZONES = 16  # keep in sync with WAVIN_MAX_ZONES in wavin_ahc9000.h
 
 CONF_UART_ID = "uart_id"
 CONF_TX_ENABLE_PIN = "tx_enable_pin"
@@ -24,11 +36,28 @@ CONF_ALLOW_MODE_WRITES = "allow_mode_writes"
 CONF_MODULE = "module"
 CONF_KEEP_STANDBY_ALIVE = "keep_standby_alive"
 CONF_STANDBY_KEEPALIVE_INTERVAL = "standby_keepalive_interval"
+CONF_INTER_FRAME_DELAY_US = "inter_frame_delay_us"
+
+CONF_SENSOR_TIMEOUT = "sensor_timeout"
+CONF_MIN_WRITE_INTERVAL = "min_write_interval"
+CONF_SETPOINT_DEADBAND = "setpoint_deadband"
+CONF_MIN_SETPOINT = "min_setpoint"
+CONF_MAX_SETPOINT = "max_setpoint"
 
 MODULE_OPTIONS = {
     "default": ModuleProfile.MODULE_DEFAULT,
     "ustepper": ModuleProfile.MODULE_USTEPPER,
 }
+
+
+def _ms(value):
+    """Normalise an esphome time_period to whole milliseconds."""
+    total_ms = getattr(value, "total_milliseconds", None)
+    if callable(total_ms):
+        return int(total_ms())
+    if total_ms is not None:
+        return int(total_ms)
+    return int(value.total_seconds() * 1000)
 
 _FRIENDLY_NAME_KEYS = {
     cv.Optional(f"channel_{i:02d}_friendly_name"): cv.string for i in range(1, 17)
@@ -42,12 +71,24 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_TX_ENABLE_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_FLOW_CONTROL_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_TEMP_DIVISOR, default=10.0): cv.positive_float,
-            cv.Optional(CONF_RECEIVE_TIMEOUT_MS, default=350): cv.positive_int,  # FIX: 350ms for Wavin's variable response latency
+            # Deadline for a reply to start; the inter-character gap decides
+            # when a frame has ended, so this only bounds a dead transaction.
+            # Measured reply latency on an AHC-9000 is 3-39 ms.
+            cv.Optional(CONF_RECEIVE_TIMEOUT_MS, default=200): cv.positive_int,
             cv.Optional(CONF_POLL_CHANNELS_PER_CYCLE, default=2): cv.int_range(min=1, max=16),
             cv.Optional(CONF_ALLOW_MODE_WRITES, default=True): cv.boolean,
             cv.Optional(CONF_MODULE, default="default"): cv.enum(MODULE_OPTIONS, upper=False),
+            # Silence enforced between transactions. Defaults come from the
+            # module profile; override only if the controller ignores requests.
+            cv.Optional(CONF_INTER_FRAME_DELAY_US): cv.int_range(min=0, max=50000),
             cv.Optional(CONF_KEEP_STANDBY_ALIVE, default=False): cv.boolean,
             cv.Optional(CONF_STANDBY_KEEPALIVE_INTERVAL, default="180s"): cv.time_period,
+            # --- secondary temperature feedback (zones) -------------------
+            cv.Optional(CONF_SENSOR_TIMEOUT, default="30min"): cv.time_period,
+            cv.Optional(CONF_MIN_WRITE_INTERVAL, default="10min"): cv.time_period,
+            cv.Optional(CONF_SETPOINT_DEADBAND, default=0.3): cv.float_range(min=0.0, max=5.0),
+            cv.Optional(CONF_MIN_SETPOINT, default=5.0): cv.float_range(min=0.0, max=30.0),
+            cv.Optional(CONF_MAX_SETPOINT, default=35.0): cv.float_range(min=5.0, max=40.0),
             **_FRIENDLY_NAME_KEYS,
         }
     )
@@ -77,6 +118,8 @@ async def to_code(config):
         cg.add(var.set_allow_mode_writes(config[CONF_ALLOW_MODE_WRITES]))
     if CONF_MODULE in config:
         cg.add(var.set_module_profile(config[CONF_MODULE]))
+    if CONF_INTER_FRAME_DELAY_US in config:
+        cg.add(var.set_inter_frame_delay_us(config[CONF_INTER_FRAME_DELAY_US]))
     if CONF_KEEP_STANDBY_ALIVE in config:
         cg.add(var.set_keep_standby_alive(config[CONF_KEEP_STANDBY_ALIVE]))
     if CONF_STANDBY_KEEPALIVE_INTERVAL in config:
@@ -89,6 +132,12 @@ async def to_code(config):
         else:
             ms = int(interval.total_seconds() * 1000)
         cg.add(var.set_standby_keepalive_interval(ms))
+
+    # --- secondary temperature feedback (zones) ---------------------------
+    cg.add(var.set_sensor_timeout(_ms(config[CONF_SENSOR_TIMEOUT])))
+    cg.add(var.set_min_write_interval(_ms(config[CONF_MIN_WRITE_INTERVAL])))
+    cg.add(var.set_setpoint_deadband(config[CONF_SETPOINT_DEADBAND]))
+    cg.add(var.set_setpoint_bounds(config[CONF_MIN_SETPOINT], config[CONF_MAX_SETPOINT]))
 
     # Parse channel friendly names
     for key, value in config.items():
