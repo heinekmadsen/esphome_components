@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Wavin AHC9000",
+        "description": "Enter the ESPHome device address. The firmware must run wavinahc9000v4 with a topology text sensor.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "noise_psk": "Noise encryption key (leave empty if not used)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to the ESPHome device.",
+      "no_topology": "Connected, but no Wavin topology text sensor was found.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
+    }
+  }
+}
