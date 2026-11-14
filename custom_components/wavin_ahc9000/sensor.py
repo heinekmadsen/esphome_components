@@ -8,13 +8,13 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, UnitOfTemperature
+from homeassistant.const import PERCENTAGE, SIGNAL_STRENGTH_DECIBELS_MILLIWATT, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
 from .coordinator import WavinCoordinator
-from .entity import WavinZoneEntity
+from .entity import WavinParentEntity, WavinZoneEntity
 
 
 async def async_setup_entry(
@@ -23,6 +23,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     coordinator: WavinCoordinator = hass.data[DOMAIN][entry.entry_id]
+    async_add_entities([WavinRssiSensor(coordinator)])
     coordinator.register_platform(
         "sensor",
         async_add_entities,
@@ -74,3 +75,18 @@ class WavinZoneBatterySensor(WavinZoneEntity, SensorEntity):
     def native_value(self) -> int | None:
         value = self.zone.get("battery")
         return int(value) if value is not None else None
+
+
+class WavinRssiSensor(WavinParentEntity, SensorEntity):
+    _attr_name = "RSSI"
+    _attr_device_class = SensorDeviceClass.SIGNAL_STRENGTH
+    _attr_native_unit_of_measurement = SIGNAL_STRENGTH_DECIBELS_MILLIWATT
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_suggested_display_precision = 0
+    _entity_key = "rssi"
+
+    @property
+    def native_value(self) -> int | None:
+        if self.coordinator.rssi is None or self.coordinator.rssi == -127:
+            return None
+        return int(self.coordinator.rssi)

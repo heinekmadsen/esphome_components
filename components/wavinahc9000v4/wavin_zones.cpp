@@ -23,6 +23,9 @@
 #include "esphome/core/log.h"
 #include "esphome/core/helpers.h"
 #include "esphome/components/text_sensor/text_sensor.h"
+#ifdef USE_WIFI
+#include "esphome/components/wifi/wifi_component.h"
+#endif
 #ifdef USE_API
 #include "esphome/components/api/api_server.h"
 #endif
@@ -389,6 +392,20 @@ void WavinAHC9000::zones_tick_() {
     }
     this->zone_publish_(zone);
   }
+
+  if (this->sync_all_zones_) {
+    const uint8_t master = this->first_zone_();
+    if (master != 0) {
+      const float target = this->zones_.zones[master - 1].target_c;
+      for (uint8_t zone = 1; zone <= WAVIN_MAX_ZONES; zone++) {
+        if (zone == master) continue;
+        if (this->zones_.zones[zone - 1].channel_mask == 0) continue;
+        if (std::fabs(this->zones_.zones[zone - 1].target_c - target) >= 0.25f) {
+          this->zone_set_target(zone, target);
+        }
+      }
+    }
+  }
 }
 
 void WavinAHC9000::auto_zone_sync_target_(uint8_t zone) {
@@ -685,6 +702,49 @@ bool WavinAHC9000::zone_set_child_lock(uint8_t zone, bool enable) {
   return true;
 }
 
+uint8_t WavinAHC9000::first_zone_() const {
+  uint8_t best_zone = 0;
+  uint8_t best_channel = 17;
+  for (uint8_t zone = 1; zone <= WAVIN_MAX_ZONES; zone++) {
+    const auto &cfg = this->zones_.zones[zone - 1];
+    if (cfg.channel_mask == 0) continue;
+    for (uint8_t ch = 1; ch <= 16; ch++) {
+      if (cfg.channel_mask & (uint16_t) (1u << (ch - 1))) {
+        if (ch < best_channel) {
+          best_channel = ch;
+          best_zone = zone;
+        }
+        break;
+      }
+    }
+  }
+  return best_zone;
+}
+
+bool WavinAHC9000::zone_set_sync(bool enabled) {
+  if (!enabled) {
+    this->sync_all_zones_ = false;
+    return true;
+  }
+  const uint8_t master = this->first_zone_();
+  if (master == 0) {
+    ESP_LOGW(TAG, "Cannot enable zone sync: no zones available");
+    return false;
+  }
+  const float target = this->zones_.zones[master - 1].target_c;
+  if (std::isnan(target)) return false;
+  this->sync_all_zones_ = true;
+  for (uint8_t zone = 1; zone <= WAVIN_MAX_ZONES; zone++) {
+    if (zone == master) continue;
+    if (this->zones_.zones[zone - 1].channel_mask != 0) {
+      this->zone_set_target(zone, target);
+    }
+  }
+  ESP_LOGI(TAG, "Zone sync enabled: all zones follow zone %u ('%s') at %.1f C",
+           (unsigned) master, this->zones_.zones[master - 1].name, target);
+  return true;
+}
+
 static std::string json_escape(const char *value) {
   std::string out;
   if (value == nullptr) return out;
@@ -793,7 +853,18 @@ void WavinAHC9000::publish_topology_() {
   if (this->topology_text_sensor_ == nullptr) return;
 
   std::ostringstream out;
-  out << "{\"version\":1,\"zones\":[";
+  int rssi = -127;
+#ifdef USE_WIFI
+  if (wifi::global_wifi_component != nullptr) {
+    rssi = wifi::global_wifi_component->wifi_rssi();
+  }
+#endif
+  const uint8_t master = this->first_zone_();
+  const std::string master_name = master ? std::string(this->zones_.zones[master - 1].name) : std::string();
+  out << "{\"version\":1,\"rssi\":" << rssi
+      << ",\"sync\":" << (this->sync_all_zones_ ? "true" : "false")
+      << ",\"master_zone\":" << (unsigned) master
+      << ",\"master_name\":\"" << json_escape(master_name.c_str()) << "\",\"zones\":[";
   bool first_zone = true;
   for (uint8_t z = 1; z <= WAVIN_MAX_ZONES; z++) {
     const auto &cfg = this->zones_.zones[z - 1];

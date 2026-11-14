@@ -9,6 +9,20 @@ from .const import DOMAIN
 from .coordinator import WavinCoordinator
 
 
+class WavinParentEntity(CoordinatorEntity[WavinCoordinator]):
+    """Base class for an entity belonging to the parent ESPHome device."""
+
+    _attr_has_entity_name = True
+
+    def __init__(self, coordinator: WavinCoordinator) -> None:
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{coordinator.mac}_{self._entity_key}"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return self.coordinator.parent_device_info()
+
+
 class WavinZoneEntity(CoordinatorEntity[WavinCoordinator]):
     """Base class for an entity belonging to one Wavin zone."""
 

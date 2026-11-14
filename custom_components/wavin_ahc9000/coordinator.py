@@ -48,6 +48,10 @@ class WavinCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         self.topology_key: int | None = None
         self.services: dict[str, UserService] = {}
         self.zones: dict[int, dict[str, Any]] = {}
+        self.rssi: int | None = None
+        self.sync_enabled = False
+        self.master_zone: int | None = None
+        self.master_name = ""
         self._platforms: dict[str, tuple[Callable, EntityFactory]] = {}
         self._platform_entities: dict[str, dict[int, list[Entity]]] = {}
         self._reconnect_task: asyncio.Task | None = None
@@ -155,6 +159,10 @@ class WavinCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
             for zone in parsed.get("zones", [])
             if isinstance(zone, dict) and "id" in zone
         }
+        self.rssi = parsed.get("rssi")
+        self.sync_enabled = bool(parsed.get("sync"))
+        self.master_zone = parsed.get("master_zone") or None
+        self.master_name = parsed.get("master_name") or ""
         self.zones = zones
         self._ensure_zone_devices()
         self.async_set_updated_data(zones)
@@ -171,6 +179,22 @@ class WavinCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
                 model="Wavin AHC9000 Zone",
                 via_device_id=self.parent_device_id,
             )
+
+    @property
+    def sync_label(self) -> str:
+        name = self.master_name.strip()
+        if name.lower().startswith("zone "):
+            name = "zone " + name[5:]
+        return f"Sync all zones to {name}" if name else "Sync all zones"
+
+    def parent_device_info(self) -> DeviceInfo:
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.mac)},
+            name=self.device_name,
+            manufacturer="MoreGeekN",
+            model="Wavin AHC9000",
+            sw_version=self.sw_version,
+        )
 
     def zone_device_info(self, zone: dict[str, Any]) -> DeviceInfo:
         return DeviceInfo(

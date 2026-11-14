@@ -64,6 +64,12 @@ api:
       then:
         - lambda: 'id(wavin).zone_set_child_lock(zone, enabled);'
 
+    - service: wavin_zone_set_sync
+      variables:
+        enabled: bool
+      then:
+        - lambda: 'id(wavin).zone_set_sync(enabled);'
+
     - service: wavin_zone_discover
       then:
         - lambda: 'id(wavin).publish_topology();'
