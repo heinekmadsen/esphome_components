@@ -53,9 +53,9 @@ api:
     - service: wavin_zone_set_mode
       variables:
         zone: int
-        off: bool
+        turn_off: bool
       then:
-        - lambda: 'id(wavin).zone_set_hvac_mode(zone, off);'
+        - lambda: 'id(wavin).zone_set_hvac_mode(zone, turn_off);'
 
     - service: wavin_zone_set_child_lock
       variables:

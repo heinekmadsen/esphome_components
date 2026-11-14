@@ -78,5 +78,5 @@ class WavinClimateEntity(WavinZoneEntity, ClimateEntity):
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         await self.coordinator.call_service(
             "wavin_zone_set_mode",
-            {"zone": self._zone_id, "off": hvac_mode == HVACMode.OFF},
+            {"zone": self._zone_id, "turn_off": hvac_mode == HVACMode.OFF},
         )
