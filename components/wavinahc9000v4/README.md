@@ -6,8 +6,7 @@ companion Home Assistant integration:
 
 **[Wavin AHC9000 Zones integration](https://github.com/nic6911/ha-Wavin-AHC9000-Zones)**
 
-[![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=nic6911&repository=ha-Wavin-AHC9000-Zones&category=integration)
-[![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=wavin_ahc9000)
+[![Open in Marketplace](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=nic6911&repository=ha-Wavin-AHC9000-Zones&category=integration)
 
 <a href="https://github.com/nic6911/ha-Wavin-AHC9000-Zones"><img src="docs/integration-repo-qr.png" width="170" alt="QR code for the Home Assistant integration"></a>
 
@@ -44,17 +43,21 @@ finds. Leave it running.
 
 ### 3. Install the Home Assistant integration
 
-1. Open HACS.
-2. Add this repository as a custom repository, category **Integration**:
+1. Go to **Settings → Marketplace**.
+2. Select **Add from link**.
+3. Enter this repository:
 
    `https://github.com/nic6911/ha-Wavin-AHC9000-Zones`
 
-3. Install **Wavin AHC9000 Zones**.
-4. Restart Home Assistant.
-5. Go to **Settings → Devices & services → Add integration**.
-6. Select **Wavin AHC9000 Zones**.
-7. Enter the ESP32 IP address, for example `192.168.1.122`.
-8. Leave the Noise key empty unless you enabled ESPHome API encryption.
+4. If Marketplace asks for a type, choose **Integration**.
+5. Open **Wavin AHC9000 Zones** and select **Install**.
+6. If Home Assistant asks to restart, restart it.
+7. Home Assistant normally discovers the module. Select **Configure** on the
+   discovered **Wavin AHC9000** card and confirm. No IP address is needed.
+8. If discovery does not appear, go to **Settings → Devices & services →
+   Add integration**, select **Wavin AHC9000 Zones**, and enter the ESP32
+   address as a fallback. Leave the Noise key empty unless you enabled ESPHome
+   API encryption.
 
 The zones appear as devices named like `Zone (1+2)` or `Zone (16)`.
 
