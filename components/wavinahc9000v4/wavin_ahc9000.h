@@ -383,6 +383,7 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   void publish_topology_();
   void zone_prune_unbound_();
   void zone_apply_(uint8_t zone);
+  void auto_zone_sync_target_(uint8_t zone);
   void zone_release_(uint8_t zone);
   void zone_publish_(uint8_t zone);
   bool zone_validate_(uint8_t zone, uint16_t mask, const std::string &name) const;
@@ -417,6 +418,7 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   uint32_t last_auto_zone_scan_ms_{0};
   bool auto_zone_seen_valid_{false};
   uint64_t auto_zone_fingerprint_{0};
+  uint32_t auto_zone_target_guard_until_[WAVIN_MAX_ZONES + 1]{};
 };
 
 // Simple dedicated switch subclass for child lock control. Avoids relying on codegen lambdas

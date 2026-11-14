@@ -265,7 +265,19 @@ bool WavinAHC9000::zone_set_target(uint8_t zone, float celsius) {
     return false;
   }
   this->zones_.zones[zone - 1].target_c = celsius;
-  this->zone_reset_channel_state_(zone);
+  if (this->auto_zones_) {
+    // Automatic zones follow the AHC thermostat. Write only when Home Assistant
+    // asks for a new target, then leave the controller alone until it changes.
+    const auto &cfg = this->zones_.zones[zone - 1];
+    this->auto_zone_target_guard_until_[zone] = millis() + 3000;
+    for (uint8_t ch = 1; ch <= 16; ch++) {
+      if (cfg.channel_mask & (uint16_t) (1u << (ch - 1))) {
+        this->write_channel_setpoint(ch, celsius);
+      }
+    }
+  } else {
+    this->zone_reset_channel_state_(zone);
+  }
   ESP_LOGI(TAG, "Zone %u target set to %.1f C", zone, celsius);
   this->zones_save_();
   this->zone_publish_(zone);
@@ -370,8 +382,30 @@ void WavinAHC9000::zones_tick_() {
   this->zone_prune_unbound_();
   for (uint8_t zone = 1; zone <= WAVIN_MAX_ZONES; zone++) {
     if (this->zones_.zones[zone - 1].enabled == 0) continue;
-    this->zone_apply_(zone);
+    if (this->auto_zones_) {
+      this->auto_zone_sync_target_(zone);
+    } else {
+      this->zone_apply_(zone);
+    }
     this->zone_publish_(zone);
+  }
+}
+
+void WavinAHC9000::auto_zone_sync_target_(uint8_t zone) {
+  if (!zone_index_ok(zone)) return;
+  if (millis() < this->auto_zone_target_guard_until_[zone]) return;
+  const auto &cfg = this->zones_.zones[zone - 1];
+  for (uint8_t ch = 1; ch <= 16; ch++) {
+    if (!(cfg.channel_mask & (uint16_t) (1u << (ch - 1)))) continue;
+    const float local = this->get_channel_setpoint(ch);
+    if (std::isnan(local)) continue;
+    if (std::fabs(local - cfg.target_c) >= 0.25f) {
+      ESP_LOGI(TAG, "Zone %u: local thermostat setpoint %.1f C (was %.1f C in HA)",
+               (unsigned) zone, local, cfg.target_c);
+      this->zones_.zones[zone - 1].target_c = local;
+      this->zones_save_();
+    }
+    return;
   }
 }
 

@@ -10,6 +10,10 @@ Home Assistant integration. It scans all 16 channels, groups them by AHC primary
 element, and maintains zones named `Zone (<channels>)` such as `Zone (1+2)`.
 Changes are reconciled every `auto_zone_scan_interval` without a recompile.
 
+Automatic zones follow the AHC thermostat. The firmware writes a setpoint only
+when Home Assistant changes it; a setpoint changed on the wall thermostat is
+read back and published to HA instead of being overwritten.
+
 The firmware publishes a machine-readable topology JSON in a `text_sensor` and
 exposes generic zone services. The companion HA integration consumes that JSON
 and creates/removes the actual climate and sensor entities dynamically, with one
