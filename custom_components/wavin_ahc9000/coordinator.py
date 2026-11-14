@@ -1,10 +1,19 @@
 from __future__ import annotations
 
+import asyncio
+from datetime import timedelta
 import json
 import logging
 from typing import Any, Callable
 
-from aioesphomeapi import APIClient, TextSensorInfo, TextSensorState, UserService
+from aioesphomeapi import (
+    APIClient,
+    ConnectionClosedEvent,
+    TextSensorInfo,
+    TextSensorState,
+    UserService,
+)
+from aioesphomeapi.core import ConnectionNotEstablishedAPIError
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -24,7 +33,7 @@ class WavinCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
     """Own the ESPHome native API connection and the zone topology."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=None)
+        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=timedelta(seconds=30))
         self.entry = entry
         self.client = APIClient(
             entry.data[CONF_HOST],
@@ -35,15 +44,24 @@ class WavinCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         self.mac: str = ""
         self.device_name: str = ""
         self.sw_version: str | None = None
+        self.parent_device_id: str | None = None
         self.topology_key: int | None = None
         self.services: dict[str, UserService] = {}
         self.zones: dict[int, dict[str, Any]] = {}
         self._platforms: dict[str, tuple[Callable, EntityFactory]] = {}
         self._platform_entities: dict[str, dict[int, list[Entity]]] = {}
+        self._reconnect_task: asyncio.Task | None = None
+        self._shutdown = False
+        self._remove_connection_closed = self.client.add_connection_closed_callback(
+            self._on_connection_closed
+        )
 
     async def async_setup(self) -> None:
-        await self.client.connect(login=True)
-        device_info = self.client.device_info
+        await self._async_connect_and_discover()
+
+    async def _async_connect_and_discover(self) -> None:
+        await self.client.connect(on_stop=self._on_stop, login=True)
+        device_info = await self.client.device_info()
         if device_info is None:
             raise RuntimeError("ESPHome device information is unavailable")
         self.mac = device_info.mac_address
@@ -75,8 +93,48 @@ class WavinCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
             sw_version=self.sw_version,
         )
 
+    async def _async_update_data(self) -> dict[int, dict[str, Any]]:
+        if not self.client.is_connected:
+            try:
+                await self._async_connect_and_discover()
+            except Exception as err:  # noqa: BLE001
+                _LOGGER.warning("Reconnect failed: %s", err)
+        return self.zones
+
     async def async_shutdown(self) -> None:
+        self._shutdown = True
+        self._remove_connection_closed()
+        if self._reconnect_task is not None:
+            self._reconnect_task.cancel()
+            self._reconnect_task = None
         await self.client.disconnect()
+
+    @callback
+    def _on_connection_closed(self, event: ConnectionClosedEvent) -> None:
+        if self._shutdown:
+            return
+        _LOGGER.warning("ESPHome connection closed (%s); scheduling reconnect", event)
+        if self._reconnect_task is None or self._reconnect_task.done():
+            self._reconnect_task = self.hass.async_create_task(self._async_reconnect())
+
+    async def _on_stop(self, expected: bool) -> None:
+        if self._shutdown:
+            return
+        _LOGGER.warning("ESPHome connection stopped; reconnecting")
+        self._reconnect_task = self.hass.async_create_task(self._async_reconnect())
+
+    async def _async_reconnect(self) -> None:
+        while not self._shutdown:
+            try:
+                await asyncio.sleep(3)
+                await self._async_connect_and_discover()
+                _LOGGER.info("Reconnected to Wavin ESPHome device")
+                return
+            except asyncio.CancelledError:
+                raise
+            except Exception as err:  # noqa: BLE001
+                _LOGGER.warning("Reconnect failed: %s", err)
+                await asyncio.sleep(5)
 
     @callback
     def _on_state(self, state: TextSensorState) -> None:
@@ -111,7 +169,7 @@ class WavinCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
                 name=zone.get("name") or f"Zone {zone['id']}",
                 manufacturer="MoreGeekN",
                 model="Wavin AHC9000 Zone",
-                via_device=(DOMAIN, self.mac),
+                via_device_id=self.parent_device_id,
             )
 
     def zone_device_info(self, zone: dict[str, Any]) -> DeviceInfo:
@@ -120,7 +178,7 @@ class WavinCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
             name=zone.get("name") or f"Zone {zone['id']}",
             manufacturer="MoreGeekN",
             model="Wavin AHC9000 Zone",
-            via_device=(DOMAIN, self.mac),
+            via_device_id=self.parent_device_id,
         )
 
     def register_platform(
@@ -159,4 +217,11 @@ class WavinCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         if service is None:
             _LOGGER.warning("ESPHome service %s is not available", name)
             return
-        await self.client.execute_service(service, data)
+        try:
+            await self.client.execute_service(service, data)
+        except ConnectionNotEstablishedAPIError:
+            _LOGGER.warning("ESPHome connection lost during service call; reconnecting")
+            await self._async_connect_and_discover()
+            service = self.services.get(name)
+            if service is not None:
+                await self.client.execute_service(service, data)

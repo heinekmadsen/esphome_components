@@ -26,7 +26,7 @@ class WavinAHC9000ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             async with asyncio.timeout(20):
                 await client.connect(login=True)
                 entities, _services = await client.list_entities_services()
-                device_info = client.device_info
+                device_info = await client.device_info()
                 if device_info is None:
                     raise RuntimeError("ESPHome device information is unavailable")
                 topology_found = any(
