@@ -18,7 +18,7 @@ from aioesphomeapi.core import ConnectionNotEstablishedAPIError
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo, EVENT_DEVICE_REGISTRY_UPDATED
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.entity import Entity
 
@@ -58,6 +58,9 @@ class WavinCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         self._shutdown = False
         self._remove_connection_closed = self.client.add_connection_closed_callback(
             self._on_connection_closed
+        )
+        self._remove_device_listener = hass.bus.async_listen(
+            EVENT_DEVICE_REGISTRY_UPDATED, self._on_device_registry_updated
         )
 
     async def async_setup(self) -> None:
@@ -108,10 +111,20 @@ class WavinCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
     async def async_shutdown(self) -> None:
         self._shutdown = True
         self._remove_connection_closed()
+        self._remove_device_listener()
         if self._reconnect_task is not None:
             self._reconnect_task.cancel()
             self._reconnect_task = None
         await self.client.disconnect()
+
+    @callback
+    def _on_device_registry_updated(self, event) -> None:
+        if event.data.get("action") != "update":
+            return
+        changes = event.data.get("changes") or {}
+        if "name" not in changes and "name_by_user" not in changes:
+            return
+        self.async_set_updated_data(self.zones)
 
     @callback
     def _on_connection_closed(self, event: ConnectionClosedEvent) -> None:
@@ -180,9 +193,20 @@ class WavinCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
                 via_device_id=self.parent_device_id,
             )
 
+    def _master_display_name(self) -> str:
+        if self.master_zone:
+            device = dr.async_get(self.hass).async_get_device(
+                identifiers={(DOMAIN, f"{self.mac}_zone_{self.master_zone}")}
+            )
+            if device is not None:
+                name = device.name_by_user or device.name
+                if name:
+                    return name
+        return self.master_name
+
     @property
     def sync_label(self) -> str:
-        name = self.master_name.strip()
+        name = self._master_display_name().strip()
         if name.lower().startswith("zone "):
             name = "zone " + name[5:]
         return f"Sync all zones to {name}" if name else "Sync all zones"
