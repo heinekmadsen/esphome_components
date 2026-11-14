@@ -1,8 +1,8 @@
 {
   "domain": "wavinahc9000v4",
   "name": "Wavin AHC 9000 / Jablotron AC-116 (v4)",
-  "version": "0.3.0",
-  "documentation": "https://github.com/heinekmadsen/esphome_wavinahc9000v4",
+  "version": "0.1.0",
+  "documentation": "https://github.com/nic6911/esphome_components/tree/main/components/wavinahc9000v4",
   "requirements": [],
   "dependencies": [
     "uart",
@@ -12,6 +12,6 @@
     "switch",
     "button"
   ],
-  "codeowners": ["@heinekmadsen"],
+  "codeowners": ["@nic6911"],
   "esphome": ">=2024.6.0"
 }
