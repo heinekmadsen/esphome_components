@@ -4,11 +4,11 @@ This is the ESPHome firmware for a Wavin AHC9000 / Jablotron AC-116 heating
 controller. It automatically finds the heating zones and works with the
 companion Home Assistant integration:
 
-**[Wavin AHC9000 Zones integration](https://github.com/nic6911/ha-Wavin-AHC9000-Zones)**
+**[Wavin Floor Heating integration](https://github.com/nic6911/ha-wavin-floor-heating)**
 
-[![Open in Marketplace](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=nic6911&repository=ha-Wavin-AHC9000-Zones&category=integration)
+[![Open in Marketplace](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=nic6911&repository=ha-wavin-floor-heating&category=integration)
 
-<a href="https://github.com/nic6911/ha-Wavin-AHC9000-Zones"><img src="docs/integration-repo-qr.png" width="170" alt="QR code for the Home Assistant integration"></a>
+<a href="https://github.com/nic6911/ha-wavin-floor-heating"><img src="docs/integration-repo-qr.png" width="170" alt="QR code for the Home Assistant integration"></a>
 
 No MQTT. One Home Assistant device per zone. No per-channel YAML editing.
 
@@ -47,7 +47,7 @@ finds. Leave it running.
 2. Select **Add from link**.
 3. Enter this repository:
 
-   `https://github.com/nic6911/ha-Wavin-AHC9000-Zones`
+   `https://github.com/nic6911/ha-wavin-floor-heating`
 
 4. If Marketplace asks for a type, choose **Integration**.
 5. Open **Wavin AHC9000 Zones** and select **Install**.

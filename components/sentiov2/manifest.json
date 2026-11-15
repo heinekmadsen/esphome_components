@@ -1,0 +1,10 @@
+{
+  "domain": "sentiov2",
+  "name": "Wavin Sentio (v2)",
+  "version": "0.1.0",
+  "documentation": "https://github.com/heinekmadsen/esphome_components/tree/main/components/sentiov2",
+  "requirements": [],
+  "dependencies": ["uart", "text_sensor"],
+  "codeowners": ["@nic6911"],
+  "esphome": ">=2024.6.0"
+}
