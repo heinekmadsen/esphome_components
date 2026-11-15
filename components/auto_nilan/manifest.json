@@ -1,0 +1,7 @@
+{
+  "name": "auto_nilan",
+  "version": "0.1.0",
+  "description": "Self-contained Modbus master for Nilan CTS602 / CTS602 Light / CTS400 ventilation units with automatic detection.",
+  "author": "nic6911",
+  "license": "MIT"
+}
