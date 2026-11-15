@@ -49,8 +49,7 @@ For Rev1, use the same configuration but set `flow_control_pin: GPIO10`.
 Use **[example.yaml](example.yaml)**. It contains the full ESPHome
 configuration, the topology text sensor and the API services.
 
-The example currently points at `heinekmadsen/esphome_components@main`.
-Pin `ref` to a release tag once the component is tagged.
+The example is pinned to `1.0.3-stable`.
 
 ## Services
 
