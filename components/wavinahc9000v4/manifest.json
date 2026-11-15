@@ -1,0 +1,17 @@
+{
+  "domain": "wavinahc9000v4",
+  "name": "Wavin AHC 9000 / Jablotron AC-116 (v4)",
+  "version": "0.1.0",
+  "documentation": "https://github.com/heinekmadsen/esphome_components/tree/main/components/wavinahc9000v4",
+  "requirements": [],
+  "dependencies": [
+    "uart",
+    "climate",
+    "sensor",
+    "number",
+    "switch",
+    "button"
+  ],
+  "codeowners": ["@nic6911"],
+  "esphome": ">=2024.6.0"
+}

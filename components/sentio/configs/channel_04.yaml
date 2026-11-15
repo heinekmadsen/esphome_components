@@ -35,7 +35,8 @@ sensor:
     address: 404
     filters:
       - multiply: 0.01
-      
+      - filter_out: 0.0
+      - filter_out: 327.67
   - platform: modbus_controller
     modbus_controller_id: sentio_modbus_controller
     name: "${channel_4} luftfugtighed"
@@ -46,8 +47,9 @@ sensor:
     register_type: read
     address: 406
     filters:
-      - multiply: 0.01 
-
+      - multiply: 0.01
+      - filter_out: 0.0
+      - filter_out: 327.67
   - platform: modbus_controller
     modbus_controller_id: sentio_modbus_controller
     name: "${channel_4} dugpunkt"
@@ -58,8 +60,9 @@ sensor:
     register_type: read
     address: 407
     filters:
-      - multiply: 0.01  
-      
+      - multiply: 0.01
+      - filter_out: 0.0
+      - filter_out: 327.67
 #########################
 ### SETPOINT REGISTER  ##
 #########################
