@@ -50,7 +50,7 @@ finds. Leave it running.
    `https://github.com/nic6911/ha-wavin-floor-heating`
 
 4. If Marketplace asks for a type, choose **Integration**.
-5. Open **Wavin AHC9000 Zones** and select **Install**.
+5. Open **Wavin Floor Heating** and select **Install**.
 6. If Home Assistant asks to restart, restart it.
 7. Home Assistant normally discovers the module. Select **Configure** on the
    discovered **Wavin AHC9000** card and confirm. No IP address is needed.
@@ -67,7 +67,8 @@ The zones appear as devices named like `Zone (1+2)` or `Zone (16)`.
 
 - One device per AHC zone
 - Thermostat with heat/off and setpoint control
-- Current temperature, floor temperature, and battery
+- Current temperature and battery
+- Floor temperature and floor limits only on IR thermostats
 - Child lock switch
 - ESP32 Wi-Fi RSSI
 - Optional **Sync all zones to zone (x)** switch
@@ -81,6 +82,17 @@ When you add, remove, or regroup channels in the AHC controller, the firmware
 picks it up automatically. No recompile and no YAML editing.
 
 The integration adds or removes the Home Assistant devices on the next update.
+
+## Floor sensors
+
+The AHC9000 reports floor-sensor presence per channel. The integration creates
+floor entities only where an IR thermostat actually has a floor probe:
+
+- `Floor temperature`
+- `Floor limits` climate with low/high floor temperature settings
+- `Floor control` switch for the controller's floor-sensing enable bit
+
+Thermostats without a floor probe get none of these entities.
 
 ## Sync all zones
 

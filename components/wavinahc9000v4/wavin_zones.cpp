@@ -702,6 +702,59 @@ bool WavinAHC9000::zone_set_child_lock(uint8_t zone, bool enable) {
   return true;
 }
 
+bool WavinAHC9000::zone_has_floor_sensor(uint8_t zone) const {
+  if (!zone_index_ok(zone)) return false;
+  const auto &cfg = this->zones_.zones[zone - 1];
+  for (uint8_t ch = 1; ch <= 16; ch++) {
+    if (!(cfg.channel_mask & (uint16_t) (1u << (ch - 1)))) continue;
+    auto it = this->channels_.find(ch);
+    if (it != this->channels_.end() && it->second.has_floor_sensor) return true;
+  }
+  return false;
+}
+
+bool WavinAHC9000::zone_set_floor_min(uint8_t zone, float celsius) {
+  if (!zone_index_ok(zone)) return false;
+  const auto &cfg = this->zones_.zones[zone - 1];
+  bool found = false;
+  for (uint8_t ch = 1; ch <= 16; ch++) {
+    if (!(cfg.channel_mask & (uint16_t) (1u << (ch - 1)))) continue;
+    auto it = this->channels_.find(ch);
+    if (it == this->channels_.end() || !it->second.has_floor_sensor) continue;
+    this->write_channel_floor_min_temperature(ch, celsius);
+    found = true;
+  }
+  return found;
+}
+
+bool WavinAHC9000::zone_set_floor_max(uint8_t zone, float celsius) {
+  if (!zone_index_ok(zone)) return false;
+  const auto &cfg = this->zones_.zones[zone - 1];
+  bool found = false;
+  for (uint8_t ch = 1; ch <= 16; ch++) {
+    if (!(cfg.channel_mask & (uint16_t) (1u << (ch - 1)))) continue;
+    auto it = this->channels_.find(ch);
+    if (it == this->channels_.end() || !it->second.has_floor_sensor) continue;
+    this->write_channel_floor_max_temperature(ch, celsius);
+    found = true;
+  }
+  return found;
+}
+
+bool WavinAHC9000::zone_set_floor_enabled(uint8_t zone, bool enabled) {
+  if (!zone_index_ok(zone)) return false;
+  const auto &cfg = this->zones_.zones[zone - 1];
+  bool found = false;
+  for (uint8_t ch = 1; ch <= 16; ch++) {
+    if (!(cfg.channel_mask & (uint16_t) (1u << (ch - 1)))) continue;
+    auto it = this->channels_.find(ch);
+    if (it == this->channels_.end() || !it->second.has_floor_sensor) continue;
+    this->write_channel_floor_enabled(ch, enabled);
+    found = true;
+  }
+  return found;
+}
+
 uint8_t WavinAHC9000::first_zone_() const {
   uint8_t best_zone = 0;
   uint8_t best_channel = 17;
@@ -891,18 +944,36 @@ void WavinAHC9000::publish_topology_() {
     else out << std::fixed << std::setprecision(2) << current;
 
     float floor = NAN;
+    float floor_min = NAN;
+    float floor_max = NAN;
+    bool floor_sensor = false;
+    bool floor_enabled = false;
     uint8_t battery = 255;
     for (uint8_t ch = 1; ch <= 16; ch++) {
       if (!(cfg.channel_mask & (uint16_t) (1u << (ch - 1)))) continue;
-      if (std::isnan(floor)) floor = this->get_channel_floor_temp(ch);
-      if (battery == 255) {
-        auto it = this->channels_.find(ch);
-        if (it != this->channels_.end() && it->second.battery_pct != 255) battery = it->second.battery_pct;
+      auto it = this->channels_.find(ch);
+      if (it != this->channels_.end()) {
+        if (!floor_sensor && it->second.has_floor_sensor) {
+          floor_sensor = true;
+          floor_enabled = it->second.floor_enabled;
+          floor_min = it->second.floor_min_c;
+          floor_max = it->second.floor_max_c;
+        }
+        if (floor_sensor && std::isnan(floor)) floor = it->second.floor_temp_c;
+        if (battery == 255 && it->second.battery_pct != 255) battery = it->second.battery_pct;
       }
     }
     out << ",\"floor\":";
     if (std::isnan(floor)) out << "null";
     else out << std::fixed << std::setprecision(1) << floor;
+    out << ",\"floor_sensor\":" << (floor_sensor ? "true" : "false")
+        << ",\"floor_enabled\":" << (floor_enabled ? "true" : "false")
+        << ",\"floor_min\":";
+    if (std::isnan(floor_min)) out << "null";
+    else out << std::fixed << std::setprecision(1) << floor_min;
+    out << ",\"floor_max\":";
+    if (std::isnan(floor_max)) out << "null";
+    else out << std::fixed << std::setprecision(1) << floor_max;
     out << ",\"battery\":";
     if (battery == 255) out << "null";
     else out << (unsigned) battery;
