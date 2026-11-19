@@ -138,6 +138,11 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   // Write floor temperature limits (Celsius), clamped to sane bounds
   void write_channel_floor_min_temperature(uint8_t channel, float celsius);
   void write_channel_floor_max_temperature(uint8_t channel, float celsius);
+  void write_channel_floor_enabled(uint8_t channel, bool enable);
+  bool is_channel_floor_enabled(uint8_t ch) const {
+    auto it = this->channels_.find(ch);
+    return it != this->channels_.end() && it->second.floor_enabled;
+  }
   void refresh_channel_now(uint8_t channel);
   void set_strict_mode_write(uint8_t channel, bool enable);
   bool is_strict_mode_write(uint8_t channel) const;
@@ -152,6 +157,10 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   bool zone_set_hvac_mode(uint8_t zone, bool off);
   bool zone_is_off(uint8_t zone);
   bool zone_set_child_lock(uint8_t zone, bool enable);
+  bool zone_set_floor_min(uint8_t zone, float celsius);
+  bool zone_set_floor_max(uint8_t zone, float celsius);
+  bool zone_set_floor_enabled(uint8_t zone, bool enabled);
+  bool zone_has_floor_sensor(uint8_t zone) const;
   bool zone_set_sync(bool enabled);
   bool zone_sync_enabled() const { return this->sync_all_zones_; }
   // Debug helper to dump registers for a channel (to identify floor min/max addresses)
@@ -255,6 +264,7 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
     uint16_t primary_index{0};
     bool all_tp_lost{false};
     bool has_floor_sensor{false};
+    bool floor_enabled{false};
     bool child_lock{false};
   };
 
@@ -372,6 +382,8 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   static constexpr uint16_t PACKED_CONFIGURATION_PROGRAM_MASK = 0x0018; // extended clear: bits 3 and 4
   static constexpr uint16_t PACKED_CONFIGURATION_STRICT_UNLOCK_MASK = 0x0078; // bits 3..6 (avoid touching mode bits 0..2)
   static constexpr uint16_t PACKED_CONFIGURATION_CHILD_LOCK_MASK = 0x0800; // child lock bit (0x4000->0x4800)
+  static constexpr uint16_t PACKED_CONFIGURATION_FLOOR_SENSOR_MASK = 0x8000; // bit 15, read-only
+  static constexpr uint16_t PACKED_CONFIGURATION_FLOOR_ENABLE_MASK = 0x4000; // bit 14, read/write
 
   // I/O reliability: number of attempts for read/write before escalating to WARN
   static constexpr uint8_t IO_RETRY_ATTEMPTS = 2; // first failure logged at DEBUG, final at WARN

@@ -153,6 +153,8 @@ void WavinAHC9000::update() {
       bool is_off = (mode_bits == PACKED_CONFIGURATION_MODE_STANDBY) || (mode_bits == PACKED_CONFIGURATION_MODE_STANDBY_ALT);
       st.mode = is_off ? climate::CLIMATE_MODE_OFF : climate::CLIMATE_MODE_HEAT;
       st.child_lock = (raw_cfg & PACKED_CONFIGURATION_CHILD_LOCK_MASK) != 0;
+      st.has_floor_sensor = (raw_cfg & PACKED_CONFIGURATION_FLOOR_SENSOR_MASK) != 0;
+      st.floor_enabled = (raw_cfg & PACKED_CONFIGURATION_FLOOR_ENABLE_MASK) != 0;
       ESP_LOGD(TAG, "CH%u cfg=0x%04X mode=%s child_lock=%s", (unsigned) ch, (unsigned) raw_cfg, is_off ? "OFF" : "HEAT", st.child_lock?"Y":"N");
       this->handle_standby_keepalive_(ch, is_off, keepalive_reassert);
       // Reconcile desired mode if pending and mismatch
@@ -207,7 +209,6 @@ void WavinAHC9000::update() {
           // Basic plausibility filter (>1..90C) to avoid default/zero noise
           if (ft > 1.0f && ft < 90.0f) {
             st.floor_temp_c = ft;
-            st.has_floor_sensor = true;
           } else {
             st.floor_temp_c = NAN;
           }
@@ -268,6 +269,8 @@ void WavinAHC9000::update() {
             bool is_off = (mode_bits == PACKED_CONFIGURATION_MODE_STANDBY) || (mode_bits == PACKED_CONFIGURATION_MODE_STANDBY_ALT);
             st.mode = is_off ? climate::CLIMATE_MODE_OFF : climate::CLIMATE_MODE_HEAT;
             st.child_lock = (raw_cfg & PACKED_CONFIGURATION_CHILD_LOCK_MASK) != 0;
+            st.has_floor_sensor = (raw_cfg & PACKED_CONFIGURATION_FLOOR_SENSOR_MASK) != 0;
+            st.floor_enabled = (raw_cfg & PACKED_CONFIGURATION_FLOOR_ENABLE_MASK) != 0;
             ESP_LOGD(TAG, "CH%u cfg=0x%04X mode=%s child_lock=%s", ch_num, (unsigned) raw_cfg, is_off ? "OFF" : "HEAT", st.child_lock?"Y":"N");
             this->handle_standby_keepalive_(ch_num, is_off, keepalive_reassert);
           } else {
@@ -314,7 +317,6 @@ void WavinAHC9000::update() {
                 float ft = this->raw_to_c(regs[ELEM_FLOOR_TEMPERATURE]);
                 if (ft > 1.0f && ft < 90.0f) {
                   st.floor_temp_c = ft;
-                  st.has_floor_sensor = true;
                 } else {
                   st.floor_temp_c = NAN;
                 }
@@ -700,7 +702,13 @@ void WavinAHC9000::write_channel_mode(uint8_t channel, climate::ClimateMode mode
   // Always use strict baseline to 0x4000/0x4001 for reliable OFF/HEAT
   bool ok = false;
   {
-    uint16_t strict_val = (uint16_t) (0x4000 | (mode == climate::CLIMATE_MODE_OFF ? PACKED_CONFIGURATION_MODE_STANDBY : PACKED_CONFIGURATION_MODE_MANUAL));
+    uint16_t floor_bit = this->channels_[channel].floor_enabled
+                             ? PACKED_CONFIGURATION_FLOOR_ENABLE_MASK
+                             : 0;
+    uint16_t strict_val = (uint16_t) (floor_bit |
+                                      (mode == climate::CLIMATE_MODE_OFF
+                                           ? PACKED_CONFIGURATION_MODE_STANDBY
+                                           : PACKED_CONFIGURATION_MODE_MANUAL));
     ok = this->write_register(CAT_PACKED, page, PACKED_CONFIGURATION, strict_val);
   }
   if (!ok) {
@@ -827,6 +835,32 @@ void WavinAHC9000::write_channel_floor_max_temperature(uint8_t channel, float ce
   }
 }
 
+void WavinAHC9000::write_channel_floor_enabled(uint8_t channel, bool enable) {
+  if (channel < 1 || channel > 16) return;
+  uint8_t page = (uint8_t) (channel - 1);
+  std::vector<uint16_t> regs;
+  if (!this->read_registers(CAT_PACKED, page, PACKED_CONFIGURATION, 1, regs) || regs.size() < 1) {
+    ESP_LOGW(TAG, "Floor control: read config failed ch=%u", (unsigned) channel);
+    return;
+  }
+  uint16_t current = regs[0];
+  uint16_t next = enable ? (uint16_t) (current | PACKED_CONFIGURATION_FLOOR_ENABLE_MASK)
+                         : (uint16_t) (current & ~PACKED_CONFIGURATION_FLOOR_ENABLE_MASK);
+  if (next == current) {
+    this->channels_[channel].floor_enabled = enable;
+    return;
+  }
+  if (this->write_register(CAT_PACKED, page, PACKED_CONFIGURATION, next)) {
+    this->channels_[channel].floor_enabled = enable;
+    this->urgent_channels_.push_back(channel);
+    this->suspend_polling_until_ = millis() + 100;
+    ESP_LOGI(TAG, "Floor control: ch=%u -> %s (0x%04X)", (unsigned) channel,
+             enable ? "ENABLED" : "DISABLED", (unsigned) next);
+  } else {
+    ESP_LOGW(TAG, "Floor control: write failed ch=%u", (unsigned) channel);
+  }
+}
+
 void WavinAHC9000::set_strict_mode_write(uint8_t channel, bool enable) {
   if (channel < 1 || channel > 16) return;
   if (enable) this->strict_mode_channels_.insert(channel);
@@ -845,8 +879,14 @@ void WavinAHC9000::refresh_channel_now(uint8_t channel) {
 void WavinAHC9000::normalize_channel_config(uint8_t channel, bool off) {
   if (channel < 1 || channel > 16) return;
   uint8_t page = (uint8_t) (channel - 1);
-  // Force PACKED_CONFIGURATION to exact baseline used by healthy channels
-  uint16_t value = (uint16_t) (0x4000 | (off ? PACKED_CONFIGURATION_MODE_STANDBY : PACKED_CONFIGURATION_MODE_MANUAL));
+  // Force PACKED_CONFIGURATION to the baseline used by healthy channels,
+  // preserving the floor-control bit.
+  uint16_t floor_bit = this->channels_[channel].floor_enabled
+                           ? PACKED_CONFIGURATION_FLOOR_ENABLE_MASK
+                           : 0;
+  uint16_t value = (uint16_t) (floor_bit |
+                               (off ? PACKED_CONFIGURATION_MODE_STANDBY
+                                    : PACKED_CONFIGURATION_MODE_MANUAL));
   if (this->write_register(CAT_PACKED, page, PACKED_CONFIGURATION, value)) {
     ESP_LOGW(TAG, "Normalize (strict) applied: ch=%u -> 0x%04X", (unsigned) channel, (unsigned) value);
     this->urgent_channels_.push_back(channel);
@@ -893,6 +933,8 @@ void WavinAHC9000::generate_yaml_suggestion() {
           bool is_off = (mode_bits == PACKED_CONFIGURATION_MODE_STANDBY) || (mode_bits == PACKED_CONFIGURATION_MODE_STANDBY_ALT);
           st.mode = is_off ? climate::CLIMATE_MODE_OFF : climate::CLIMATE_MODE_HEAT;
           st.child_lock = (raw_cfg & PACKED_CONFIGURATION_CHILD_LOCK_MASK) != 0;
+          st.has_floor_sensor = (raw_cfg & PACKED_CONFIGURATION_FLOOR_SENSOR_MASK) != 0;
+          st.floor_enabled = (raw_cfg & PACKED_CONFIGURATION_FLOOR_ENABLE_MASK) != 0;
         }
         if (this->read_registers(CAT_PACKED, page, PACKED_MANUAL_TEMPERATURE, 1, regs) && regs.size() >= 1) {
           st.setpoint_c = this->raw_to_c(regs[0]);
@@ -910,9 +952,6 @@ void WavinAHC9000::generate_yaml_suggestion() {
             float ft = this->raw_to_c(regs[ELEM_FLOOR_TEMPERATURE]);
             if (ft > 1.0f && ft < 90.0f) {
               st.floor_temp_c = ft;
-              bool threshold_hit = (ft >= 15.0f);
-              bool deviates = (!std::isnan(st.current_temp_c) && std::fabs(st.current_temp_c - ft) > 0.2f);
-              if (threshold_hit || deviates) st.has_floor_sensor = true;
             } else {
               st.floor_temp_c = NAN;
             }
