@@ -203,7 +203,7 @@ diagnosing wiring or unsupported points.
 
 ## Updating
 
-1. Update the `ref:` in `external_components` (branch, tag or commit).
+1. Update the external component source (branch, tag or commit).
 2. Install the firmware again (OTA).
 3. In Home Assistant, reload the Nilan Ventilation integration if the point list
    changed.
