@@ -17,11 +17,9 @@ values and status. It is designed for the companion Home Assistant integration:
 No MQTT. No hand-written YAML entities. You do not need to know the model or the
 register list in advance.
 
-> **Status:** this component currently lives on the
-> `feature/nilan_auto_discovery` branch of the
-> [nic6911/esphome_components](https://github.com/nic6911/esphome_components/tree/feature/nilan_auto_discovery)
-> fork while it is being tested. Point `ref:` at that branch until it is merged
-> upstream.
+> **Status:** this component is included in
+> [heinekmadsen/esphome_components](https://github.com/heinekmadsen/esphome_components)
+> on `main`.
 
 ---
 
