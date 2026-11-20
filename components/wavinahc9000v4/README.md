@@ -20,7 +20,7 @@ No MQTT. One Home Assistant device per zone. No per-channel YAML editing.
 
 Connect the AHC RS-485 A/B wires to your ESP32 RS-485 module.
 
-For the ModBridge Rev2 hardware, use the configuration in
+For the ESP32 Modbus Module hardware, use the configuration in
 **[example_auto.yaml](example_auto.yaml)**:
 
 - UART TX: GPIO21
