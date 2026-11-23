@@ -31,6 +31,7 @@ CONF_TX_ENABLE_PIN = "tx_enable_pin"
 CONF_FLOW_CONTROL_PIN = "flow_control_pin"
 CONF_TEMP_DIVISOR = "temp_divisor"
 CONF_MODBUS_ADDRESS = "modbus_address"
+CONF_SERVICE_PREFIX = "service_prefix"
 CONF_RECEIVE_TIMEOUT_MS = "receive_timeout_ms"
 CONF_POLL_CHANNELS_PER_CYCLE = "poll_channels_per_cycle"
 CONF_ALLOW_MODE_WRITES = "allow_mode_writes"
@@ -75,6 +76,7 @@ BASE_SCHEMA = (
             cv.Optional(CONF_FLOW_CONTROL_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_TEMP_DIVISOR, default=10.0): cv.positive_float,
             cv.Optional(CONF_MODBUS_ADDRESS, default=1): cv.int_range(min=1, max=247),
+            cv.Optional(CONF_SERVICE_PREFIX, default=""): cv.string,
             # Deadline for a reply to start; the inter-character gap decides
             # when a frame has ended, so this only bounds a dead transaction.
             # Measured reply latency on an AHC-9000 is 3-39 ms.
@@ -121,6 +123,8 @@ async def _to_code_single(config):
         cg.add(var.set_temp_divisor(config[CONF_TEMP_DIVISOR]))
     if CONF_MODBUS_ADDRESS in config:
         cg.add(var.set_modbus_address(config[CONF_MODBUS_ADDRESS]))
+    if config.get(CONF_SERVICE_PREFIX):
+        cg.add(var.set_service_prefix(config[CONF_SERVICE_PREFIX]))
     if CONF_RECEIVE_TIMEOUT_MS in config:
         cg.add(var.set_receive_timeout_ms(config[CONF_RECEIVE_TIMEOUT_MS]))
     if CONF_POLL_CHANNELS_PER_CYCLE in config:

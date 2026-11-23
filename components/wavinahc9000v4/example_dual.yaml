@@ -27,24 +27,26 @@ uart:
   parity: NONE
 
 wavinahc9000v4:
-  - id: wavin2
+  - id: wavin_a
     uart_id: uart_wavin
     flow_control_pin:
       number: GPIO3
       allow_other_uses: true
     modbus_address: 2
+    service_prefix: wavin_a
     update_interval: 5s
     auto_zones: true
     auto_zone_scan_interval: 30s
     poll_channels_per_cycle: 2
     allow_mode_writes: true
 
-  - id: wavin3
+  - id: wavin_b
     uart_id: uart_wavin
     flow_control_pin:
       number: GPIO3
       allow_other_uses: true
     modbus_address: 3
+    service_prefix: wavin_b
     update_interval: 6s
     auto_zones: true
     auto_zone_scan_interval: 31s
@@ -53,120 +55,120 @@ wavinahc9000v4:
 
 text_sensor:
   - platform: wavinahc9000v4
-    wavinahc9000v4_id: wavin2
-    name: "Wavin Zone Topology 2"
+    wavinahc9000v4_id: wavin_a
+    name: "Wavin Zone Topology A"
     type: topology
 
   - platform: wavinahc9000v4
-    wavinahc9000v4_id: wavin3
-    name: "Wavin Zone Topology 3"
+    wavinahc9000v4_id: wavin_b
+    name: "Wavin Zone Topology B"
     type: topology
 
 api:
   services:
-    - service: wavin2_zone_set_target
+    - service: wavin_a_zone_set_target
       variables:
         zone: int
         temperature: float
       then:
-        - lambda: 'id(wavin2).zone_set_target(zone, temperature);'
+        - lambda: 'id(wavin_a).zone_set_target(zone, temperature);'
 
-    - service: wavin2_zone_set_mode
+    - service: wavin_a_zone_set_mode
       variables:
         zone: int
         turn_off: bool
       then:
-        - lambda: 'id(wavin2).zone_set_hvac_mode(zone, turn_off);'
+        - lambda: 'id(wavin_a).zone_set_hvac_mode(zone, turn_off);'
 
-    - service: wavin2_zone_set_child_lock
+    - service: wavin_a_zone_set_child_lock
       variables:
         zone: int
         enabled: bool
       then:
-        - lambda: 'id(wavin2).zone_set_child_lock(zone, enabled);'
+        - lambda: 'id(wavin_a).zone_set_child_lock(zone, enabled);'
 
-    - service: wavin2_zone_set_sync
+    - service: wavin_a_zone_set_sync
       variables:
         enabled: bool
       then:
-        - lambda: 'id(wavin2).zone_set_sync(enabled);'
+        - lambda: 'id(wavin_a).zone_set_sync(enabled);'
 
-    - service: wavin2_zone_set_floor_min
+    - service: wavin_a_zone_set_floor_min
       variables:
         zone: int
         temperature: float
       then:
-        - lambda: 'id(wavin2).zone_set_floor_min(zone, temperature);'
+        - lambda: 'id(wavin_a).zone_set_floor_min(zone, temperature);'
 
-    - service: wavin2_zone_set_floor_max
+    - service: wavin_a_zone_set_floor_max
       variables:
         zone: int
         temperature: float
       then:
-        - lambda: 'id(wavin2).zone_set_floor_max(zone, temperature);'
+        - lambda: 'id(wavin_a).zone_set_floor_max(zone, temperature);'
 
-    - service: wavin2_zone_set_floor_enabled
+    - service: wavin_a_zone_set_floor_enabled
       variables:
         zone: int
         enabled: bool
       then:
-        - lambda: 'id(wavin2).zone_set_floor_enabled(zone, enabled);'
+        - lambda: 'id(wavin_a).zone_set_floor_enabled(zone, enabled);'
 
-    - service: wavin2_zone_discover
+    - service: wavin_a_zone_discover
       then:
-        - lambda: 'id(wavin2).publish_topology();'
+        - lambda: 'id(wavin_a).publish_topology();'
 
-    - service: wavin3_zone_set_target
+    - service: wavin_b_zone_set_target
       variables:
         zone: int
         temperature: float
       then:
-        - lambda: 'id(wavin3).zone_set_target(zone, temperature);'
+        - lambda: 'id(wavin_b).zone_set_target(zone, temperature);'
 
-    - service: wavin3_zone_set_mode
+    - service: wavin_b_zone_set_mode
       variables:
         zone: int
         turn_off: bool
       then:
-        - lambda: 'id(wavin3).zone_set_hvac_mode(zone, turn_off);'
+        - lambda: 'id(wavin_b).zone_set_hvac_mode(zone, turn_off);'
 
-    - service: wavin3_zone_set_child_lock
+    - service: wavin_b_zone_set_child_lock
       variables:
         zone: int
         enabled: bool
       then:
-        - lambda: 'id(wavin3).zone_set_child_lock(zone, enabled);'
+        - lambda: 'id(wavin_b).zone_set_child_lock(zone, enabled);'
 
-    - service: wavin3_zone_set_sync
+    - service: wavin_b_zone_set_sync
       variables:
         enabled: bool
       then:
-        - lambda: 'id(wavin3).zone_set_sync(enabled);'
+        - lambda: 'id(wavin_b).zone_set_sync(enabled);'
 
-    - service: wavin3_zone_set_floor_min
+    - service: wavin_b_zone_set_floor_min
       variables:
         zone: int
         temperature: float
       then:
-        - lambda: 'id(wavin3).zone_set_floor_min(zone, temperature);'
+        - lambda: 'id(wavin_b).zone_set_floor_min(zone, temperature);'
 
-    - service: wavin3_zone_set_floor_max
+    - service: wavin_b_zone_set_floor_max
       variables:
         zone: int
         temperature: float
       then:
-        - lambda: 'id(wavin3).zone_set_floor_max(zone, temperature);'
+        - lambda: 'id(wavin_b).zone_set_floor_max(zone, temperature);'
 
-    - service: wavin3_zone_set_floor_enabled
+    - service: wavin_b_zone_set_floor_enabled
       variables:
         zone: int
         enabled: bool
       then:
-        - lambda: 'id(wavin3).zone_set_floor_enabled(zone, enabled);'
+        - lambda: 'id(wavin_b).zone_set_floor_enabled(zone, enabled);'
 
-    - service: wavin3_zone_discover
+    - service: wavin_b_zone_discover
       then:
-        - lambda: 'id(wavin3).publish_topology();'
+        - lambda: 'id(wavin_b).publish_topology();'
 
 wifi:
   ssid: !secret wifi_ssid

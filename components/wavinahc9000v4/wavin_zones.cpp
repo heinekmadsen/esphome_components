@@ -914,8 +914,11 @@ void WavinAHC9000::publish_topology_() {
 #endif
   const uint8_t master = this->first_zone_();
   const std::string master_name = master ? std::string(this->zones_.zones[master - 1].name) : std::string();
-  std::string service_prefix = "wavin";
-  if (this->modbus_address_ != 1) service_prefix += std::to_string(this->modbus_address_);
+  std::string service_prefix = this->service_prefix_;
+  if (service_prefix.empty()) {
+    service_prefix = "wavin";
+    if (this->modbus_address_ != 1) service_prefix += std::to_string(this->modbus_address_);
+  }
   out << "{\"version\":1,\"address\":" << (unsigned) this->modbus_address_
       << ",\"service_prefix\":\"" << service_prefix << "\""
       << ",\"rssi\":" << rssi

@@ -45,7 +45,11 @@ finds. Leave it running.
 
 This feature branch supports two controllers on one bus and one ESP32. Use
 **[example_dual.yaml](example_dual.yaml)**; it sets addresses 2 and 3, creates
-two topology sensors and exposes separate `wavin2_*` / `wavin3_*` services.
+two topology sensors and exposes separate `wavin_a_*` / `wavin_b_*` services.
+
+The service prefixes are independent of the Modbus addresses. If your controllers
+use addresses 1 and 2, only change `modbus_address`; keep `service_prefix` and
+the YAML service names unchanged.
 
 The shared `flow_control_pin` must be declared with `allow_other_uses: true` on
 both component instances. Keep the two update intervals slightly offset, as in
