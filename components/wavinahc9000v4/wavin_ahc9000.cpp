@@ -475,7 +475,7 @@ bool WavinAHC9000::receive_frame_(uint8_t function_code, uint8_t expected_payloa
       frame.push_back((uint8_t) c);
 
       // Resynchronise: drop bytes until the header looks like our reply.
-      while (!frame.empty() && frame[0] != DEVICE_ADDR) {
+      while (!frame.empty() && frame[0] != this->modbus_address_) {
         frame.erase(frame.begin());
         this->bus_.resyncs++;
       }
@@ -549,7 +549,7 @@ bool WavinAHC9000::read_registers(uint8_t category, uint8_t page, uint8_t index,
     this->inter_frame_delay_();
 
     uint8_t msg[8];
-    msg[0] = DEVICE_ADDR;
+    msg[0] = this->modbus_address_;
     msg[1] = FC_READ;
     msg[2] = category;
     msg[3] = index;
@@ -596,7 +596,7 @@ bool WavinAHC9000::write_register(uint8_t category, uint8_t page, uint8_t index,
     this->inter_frame_delay_();
 
     uint8_t msg[10];
-    msg[0] = DEVICE_ADDR;
+    msg[0] = this->modbus_address_;
     msg[1] = FC_WRITE;
     msg[2] = category;
     msg[3] = index;
@@ -640,7 +640,7 @@ bool WavinAHC9000::write_masked_register(uint8_t category, uint8_t page, uint8_t
     this->inter_frame_delay_();
 
     uint8_t msg[12];
-    msg[0] = DEVICE_ADDR;
+    msg[0] = this->modbus_address_;
     msg[1] = FC_WRITE_MASKED;
     msg[2] = category;
     msg[3] = index;

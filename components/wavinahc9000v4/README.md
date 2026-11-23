@@ -41,6 +41,16 @@ For another board, change the UART pins in the YAML.
 The firmware starts scanning all 16 AHC channels and publishes the zones it
 finds. Leave it running.
 
+### Two AHC9000 controllers on one RS-485 bus
+
+This feature branch supports two controllers on one bus and one ESP32. Use
+**[example_dual.yaml](example_dual.yaml)**; it sets addresses 2 and 3, creates
+two topology sensors and exposes separate `wavin2_*` / `wavin3_*` services.
+
+The shared `flow_control_pin` must be declared with `allow_other_uses: true` on
+both component instances. Keep the two update intervals slightly offset, as in
+the example, so the controllers are polled one at a time.
+
 ### 3. Install the Home Assistant integration
 
 1. Go to **Settings → Marketplace**.
