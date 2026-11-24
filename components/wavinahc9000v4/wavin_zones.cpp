@@ -385,7 +385,9 @@ void WavinAHC9000::zones_tick_() {
   this->zone_prune_unbound_();
   for (uint8_t zone = 1; zone <= WAVIN_MAX_ZONES; zone++) {
     if (this->zones_.zones[zone - 1].enabled == 0) continue;
-    if (this->auto_zones_) {
+    const auto &rt = this->zone_rt_[zone - 1];
+    const bool has_external = rt.ever_seen && !rt.failsafe && !std::isnan(rt.external_temp_c);
+    if (this->auto_zones_ && !has_external) {
       this->auto_zone_sync_target_(zone);
     } else {
       this->zone_apply_(zone);
@@ -949,6 +951,14 @@ void WavinAHC9000::publish_topology_() {
     const float current = this->zone_get_temperature(z);
     if (std::isnan(current)) out << "null";
     else out << std::fixed << std::setprecision(2) << current;
+
+    const auto &rt = this->zone_rt_[z - 1];
+    const bool external_active = rt.ever_seen && !rt.failsafe && !std::isnan(rt.external_temp_c);
+    out << ",\"external_temp\":";
+    if (!rt.ever_seen || std::isnan(rt.external_temp_c)) out << "null";
+    else out << std::fixed << std::setprecision(2) << rt.external_temp_c;
+    out << ",\"external_active\":" << (external_active ? "true" : "false")
+        << ",\"external_failsafe\":" << (rt.failsafe ? "true" : "false");
 
     float floor = NAN;
     float floor_min = NAN;

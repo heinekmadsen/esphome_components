@@ -10,7 +10,8 @@ esp32:
 external_components:
   - source:
       type: git
-      url: https://github.com/heinekmadsen/esphome_components
+      url: https://github.com/nic6911/esphome_components
+      ref: feature/external-sensor
       path: components
     components: [wavinahc9000v4]
 
@@ -90,6 +91,19 @@ api:
         enabled: bool
       then:
         - lambda: 'id(wavin).zone_set_floor_enabled(zone, enabled);'
+
+    - service: wavin_zone_push_temperature
+      variables:
+        zone: int
+        temperature: float
+      then:
+        - lambda: 'id(wavin).zone_push_temperature(zone, temperature);'
+
+    - service: wavin_zone_push_unavailable
+      variables:
+        zone: int
+      then:
+        - lambda: 'id(wavin).zone_push_unavailable(zone);'
 
     - service: wavin_zone_discover
       then:
