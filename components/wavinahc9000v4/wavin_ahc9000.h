@@ -92,6 +92,11 @@ static constexpr ModuleProfile MODULE_USTEPPER = ModuleProfile::MODULE_USTEPPER;
 class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
  public:
   void set_temp_divisor(float d) { this->temp_divisor_ = d; }
+  // Modbus unit address. Keep 1 for a single AHC or the legacy default.
+  void set_modbus_address(uint8_t address) { this->modbus_address_ = address; }
+  uint8_t get_modbus_address() const { return this->modbus_address_; }
+  // Optional service namespace. Keep it independent of the Modbus address.
+  void set_service_prefix(const std::string &prefix) { this->service_prefix_ = prefix; }
   void set_receive_timeout_ms(uint32_t t) { this->receive_timeout_ms_ = t; }
   // Overrides the silence the module profile would enforce between
   // transactions. Applied after setup() has computed the profile defaults.
@@ -296,6 +301,8 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   GPIOPin *tx_enable_pin_{nullptr};
   GPIOPin *flow_control_pin_{nullptr};
   ModuleProfile module_profile_{ModuleProfile::MODULE_DEFAULT};
+  uint8_t modbus_address_{DEVICE_ADDR};
+  std::string service_prefix_;
   uint8_t poll_channels_per_cycle_{2};
   uint8_t next_active_index_{0};
   uint8_t channel_step_[16] = {0};

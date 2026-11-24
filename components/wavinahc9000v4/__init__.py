@@ -30,6 +30,8 @@ CONF_UART_ID = "uart_id"
 CONF_TX_ENABLE_PIN = "tx_enable_pin"
 CONF_FLOW_CONTROL_PIN = "flow_control_pin"
 CONF_TEMP_DIVISOR = "temp_divisor"
+CONF_MODBUS_ADDRESS = "modbus_address"
+CONF_SERVICE_PREFIX = "service_prefix"
 CONF_RECEIVE_TIMEOUT_MS = "receive_timeout_ms"
 CONF_POLL_CHANNELS_PER_CYCLE = "poll_channels_per_cycle"
 CONF_ALLOW_MODE_WRITES = "allow_mode_writes"
@@ -65,7 +67,7 @@ _FRIENDLY_NAME_KEYS = {
     cv.Optional(f"channel_{i:02d}_friendly_name"): cv.string for i in range(1, 17)
 }
 
-CONFIG_SCHEMA = (
+BASE_SCHEMA = (
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(WavinAHC9000),
@@ -73,6 +75,8 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_TX_ENABLE_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_FLOW_CONTROL_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_TEMP_DIVISOR, default=10.0): cv.positive_float,
+            cv.Optional(CONF_MODBUS_ADDRESS, default=1): cv.int_range(min=1, max=247),
+            cv.Optional(CONF_SERVICE_PREFIX, default=""): cv.string,
             # Deadline for a reply to start; the inter-character gap decides
             # when a frame has ended, so this only bounds a dead transaction.
             # Measured reply latency on an AHC-9000 is 3-39 ms.
@@ -101,9 +105,11 @@ CONFIG_SCHEMA = (
     .extend(cv.polling_component_schema("5s"))
 )
 
+CONFIG_SCHEMA = cv.ensure_list(BASE_SCHEMA)
 
 
-async def to_code(config):
+
+async def _to_code_single(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await uart.register_uart_device(var, config)
     await cg.register_component(var, config)
@@ -115,6 +121,10 @@ async def to_code(config):
         cg.add(var.set_flow_control_pin(pin))
     if CONF_TEMP_DIVISOR in config:
         cg.add(var.set_temp_divisor(config[CONF_TEMP_DIVISOR]))
+    if CONF_MODBUS_ADDRESS in config:
+        cg.add(var.set_modbus_address(config[CONF_MODBUS_ADDRESS]))
+    if config.get(CONF_SERVICE_PREFIX):
+        cg.add(var.set_service_prefix(config[CONF_SERVICE_PREFIX]))
     if CONF_RECEIVE_TIMEOUT_MS in config:
         cg.add(var.set_receive_timeout_ms(config[CONF_RECEIVE_TIMEOUT_MS]))
     if CONF_POLL_CHANNELS_PER_CYCLE in config:
@@ -160,3 +170,8 @@ async def to_code(config):
                 continue
             if 1 <= ch <= 16:
                 cg.add(var.set_channel_friendly_name(ch, value))
+
+
+async def to_code(config):
+    for conf in config:
+        await _to_code_single(conf)
