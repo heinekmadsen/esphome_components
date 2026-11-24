@@ -72,9 +72,14 @@ If your sensor says the room is 1 °C colder than the wall thermostat thinks, th
 setpoint goes 1 °C higher. The Wavin keeps doing all the real control: its
 hysteresis, valve timing, pump and frost protection are untouched. Only the
 setpoint is ever written, and it is rate-limited to protect the controller's
-EEPROM (about 6 writes an hour, not one per poll).
+EEPROM (at most one write per hour by default, not one per poll).
 
 Wall thermostats stay installed and working. Nothing is deleted or overridden.
+
+ > **Important:** setpoint values are stored in the AHC9000's non-volatile
+> memory. Keep `min_write_interval` at 60 minutes and the 0.5 °C deadband for
+> normal use. Lowering the interval increases EEPROM wear and is only appropriate
+> for temporary diagnostics.
 
 ### Options
 
@@ -83,8 +88,8 @@ Set on the `wavinahc9000v3:` block, all optional:
 | Key | Default | Meaning |
 |---|---|---|
 | `sensor_timeout` | `30min` | No reading for this long -> use the wall thermostat |
-| `min_write_interval` | `10min` | Minimum gap between setpoint writes |
-| `setpoint_deadband` | `0.3` | Ignore changes smaller than this (°C) |
+| `min_write_interval` | `60min` | Minimum gap between setpoint writes; protects AHC non-volatile memory |
+| `setpoint_deadband` | `0.5` | Ignore changes smaller than this (°C) |
 | `min_setpoint` / `max_setpoint` | `5` / `35` | Clamp on the written setpoint |
 
 The room name and channels come from the YAML on every boot; the target

@@ -49,6 +49,11 @@ wavinahc9000v3:
   # poll_channels_per_cycle: 8
   # update_interval: 2s
   # allow_mode_writes: false  # uncomment to make climates read-only (defaults to true)
+  # External sensor control writes setpoints to AHC non-volatile memory.
+  # Default is deliberately conservative: one write per 60 minutes.
+  # Do not lower min_write_interval for permanent operation.
+  # min_write_interval: 60min
+  # setpoint_deadband: 0.5
   # Optional per-channel friendly names used in the logged YAML suggestion output
   # Provide any subset (1..16). Missing entries fallback to "Zone N".
   channel_01_friendly_name: "Bedroom"

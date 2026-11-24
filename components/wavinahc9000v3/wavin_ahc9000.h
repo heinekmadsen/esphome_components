@@ -393,8 +393,8 @@ class WavinAHC9000 : public PollingComponent, public uart::UARTDevice {
   void zone_reset_channel_state_(uint8_t zone);
 
   uint32_t sensor_timeout_ms_{1800000};     // 30 min without a push -> hand back
-  uint32_t min_write_interval_ms_{600000};  // 10 min; guards the AHC-9000's EEPROM
-  float setpoint_deadband_c_{0.3f};
+  uint32_t min_write_interval_ms_{3600000};  // 60 min; guards the AHC-9000's EEPROM
+  float setpoint_deadband_c_{0.5f};
   float min_setpoint_c_{5.0f};
   float max_setpoint_c_{35.0f};
 

@@ -91,6 +91,19 @@ api:
       then:
         - lambda: 'id(wavin).zone_set_floor_enabled(zone, enabled);'
 
+    - service: wavin_zone_push_temperature
+      variables:
+        zone: int
+        temperature: float
+      then:
+        - lambda: 'id(wavin).zone_push_temperature(zone, temperature);'
+
+    - service: wavin_zone_push_unavailable
+      variables:
+        zone: int
+      then:
+        - lambda: 'id(wavin).zone_push_unavailable(zone);'
+
     - service: wavin_zone_discover
       then:
         - lambda: 'id(wavin).publish_topology();'

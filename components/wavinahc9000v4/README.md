@@ -108,6 +108,27 @@ floor entities only where an IR thermostat actually has a floor probe:
 
 Thermostats without a floor probe get none of these entities.
 
+## External room sensors
+
+The integration can make a zone follow any Home Assistant temperature sensor
+without editing YAML. The ESPHome firmware exposes two services used by the
+integration:
+
+- `wavin_zone_push_temperature` (`zone`, `temperature`)
+- `wavin_zone_push_unavailable` (`zone`)
+
+The integration subscribes to the selected HA sensor and calls these services.
+The existing AHC bias logic keeps the controller in control and falls back to
+the wall thermostat when the sensor disappears or times out.
+
+> **Important:** external sensor control writes the AHC setpoint at most once
+> every **60 minutes** by default, with a **0.5 °C deadband**. These setpoints
+> are stored in the AHC9000's non-volatile memory. Lowering `min_write_interval`
+> shortens EEPROM life and should only be done for temporary diagnostics.
+
+The dual-controller example exposes the same services as `wavin_a_*` and
+`wavin_b_*`.
+
 ## Sync all zones
 
 The sync switch copies the first available zone's setpoint to all other zones.
