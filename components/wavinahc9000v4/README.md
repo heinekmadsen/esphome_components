@@ -121,6 +121,11 @@ The integration subscribes to the selected HA sensor and calls these services.
 The existing AHC bias logic keeps the controller in control and falls back to
 the wall thermostat when the sensor disappears or times out.
 
+> **Important:** external sensor control writes the AHC setpoint at most once
+> every **60 minutes** by default, with a **0.5 °C deadband**. These setpoints
+> are stored in the AHC9000's non-volatile memory. Lowering `min_write_interval`
+> shortens EEPROM life and should only be done for temporary diagnostics.
+
 The dual-controller example exposes the same services as `wavin_a_*` and
 `wavin_b_*`.
 

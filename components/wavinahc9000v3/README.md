@@ -273,11 +273,17 @@ All optional except `uart_id`.
 
 Only used by rooms that follow their own sensor:
 
+> **Important:** these setpoints are written to the AHC9000's non-volatile
+> memory. The default is deliberately **60 minutes** between writes and a **0.5 °C
+> deadband**. Do not lower `min_write_interval` for permanent operation unless
+> you understand the EEPROM wear risk. External sensor control is slower than
+> the wall thermostat.
+
 | Option | Default | Meaning |
 |---|---|---|
 | `sensor_timeout` | `30min` | No reading for this long, fall back to the wall thermostat |
-| `min_write_interval` | `10min` | Minimum gap between setpoint writes |
-| `setpoint_deadband` | `0.3` | Ignore changes smaller than this, in °C |
+| `min_write_interval` | `60min` | Minimum gap between setpoint writes; protects AHC non-volatile memory |
+| `setpoint_deadband` | `0.5` | Ignore changes smaller than this, in °C |
 | `min_setpoint` / `max_setpoint` | `5` / `35` | Clamp on the written setpoint |
 
 ---

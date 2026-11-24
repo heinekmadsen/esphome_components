@@ -85,8 +85,8 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_STANDBY_KEEPALIVE_INTERVAL, default="180s"): cv.time_period,
             # --- secondary temperature feedback (zones) -------------------
             cv.Optional(CONF_SENSOR_TIMEOUT, default="30min"): cv.time_period,
-            cv.Optional(CONF_MIN_WRITE_INTERVAL, default="10min"): cv.time_period,
-            cv.Optional(CONF_SETPOINT_DEADBAND, default=0.3): cv.float_range(min=0.0, max=5.0),
+            cv.Optional(CONF_MIN_WRITE_INTERVAL, default="60min"): cv.time_period,
+            cv.Optional(CONF_SETPOINT_DEADBAND, default=0.5): cv.float_range(min=0.0, max=5.0),
             cv.Optional(CONF_MIN_SETPOINT, default=5.0): cv.float_range(min=0.0, max=30.0),
             cv.Optional(CONF_MAX_SETPOINT, default=35.0): cv.float_range(min=5.0, max=40.0),
             **_FRIENDLY_NAME_KEYS,
