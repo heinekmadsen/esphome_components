@@ -43,7 +43,7 @@ finds. Leave it running.
 
 ### Two AHC9000 controllers on one RS-485 bus
 
-This feature branch supports two controllers on one bus and one ESP32. Use
+This firmware supports two controllers on one bus and one ESP32. Use
 **[example_dual.yaml](example_dual.yaml)**; it sets addresses 2 and 3, creates
 two topology sensors and exposes separate `wavin_a_*` / `wavin_b_*` services.
 
